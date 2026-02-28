@@ -1,0 +1,16 @@
+---
+title: "SQL and Python Integration"
+---
+
+:::cdi-message
+- **ID:** DBSQL-F-L06
+- **Type:** Lesson
+- **Audience:** Public
+- **Theme:** Query then analyze
+:::
+
+Content coming soon.
+
+:::next
+Next: TBD
+:::

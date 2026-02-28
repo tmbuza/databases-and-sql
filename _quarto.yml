@@ -1,0 +1,32 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "Databases and SQL"
+  subtitle: "Building the Data Backbone for Analytical Workflows"
+  author: "Complex Data Insights (CDI)"
+  chapters:
+    - index.qmd
+    - 01-preface-and-setup.qmd
+    - 02-sql-fundamentals.qmd
+    - 03-aggregation-and-grouping.qmd
+    - 04-joins-and-relational-thinking.qmd
+    - 05-database-design-and-normalization.qmd
+    - 06-sql-and-python-integration.qmd
+    - 07-next-steps.qmd
+    - 99-appendix.qmd
+    - 99-references.qmd
+
+execute:
+  echo: true
+  warning: false
+  message: false
+  freeze: auto
+
+format:
+  html:
+    toc: true
+    number-sections: false
+    code-copy: true
+    css: assets/css/cdi.css

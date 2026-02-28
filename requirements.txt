@@ -1,0 +1,9 @@
+pandas
+numpy
+matplotlib
+sqlalchemy
+ipykernel
+
+# Pick ONE MySQL driver if you want MySQL later:
+# pymysql
+# mysql-connector-python

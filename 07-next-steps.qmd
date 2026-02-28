@@ -1,0 +1,16 @@
+---
+title: "Next Steps"
+---
+
+:::cdi-message
+- **ID:** DBSQL-F-L07
+- **Type:** Lesson
+- **Audience:** Public
+- **Theme:** How this connects to the CDI ecosystem
+:::
+
+Content coming soon.
+
+:::next
+Next: TBD
+:::

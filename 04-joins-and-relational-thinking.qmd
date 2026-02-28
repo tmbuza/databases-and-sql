@@ -1,0 +1,16 @@
+---
+title: "Joins and Relational Thinking"
+---
+
+:::cdi-message
+- **ID:** DBSQL-F-L04
+- **Type:** Lesson
+- **Audience:** Public
+- **Theme:** Keys, joins, and avoiding duplication
+:::
+
+Content coming soon.
+
+:::next
+Next: TBD
+:::

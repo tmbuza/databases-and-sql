@@ -1,0 +1,27 @@
+# Quarto
+.quarto/
+_cache/
+*_files/
+*.pdf
+*.docx
+_freeze/
+
+# Ignore HTML outputs in general,
+# but keep the rendered book in docs/ for GitHub Pages
+*.html
+!docs/*.html
+!docs/**/*.html
+
+# Output
+_site/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+/.quarto/

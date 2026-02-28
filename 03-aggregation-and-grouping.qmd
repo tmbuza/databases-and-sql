@@ -1,0 +1,16 @@
+---
+title: "Aggregation and Grouping"
+---
+
+:::cdi-message
+- **ID:** DBSQL-F-L03
+- **Type:** Lesson
+- **Audience:** Public
+- **Theme:** Summaries that answer questions
+:::
+
+Content coming soon.
+
+:::next
+Next: TBD
+:::

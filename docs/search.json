@@ -1,0 +1,112 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Databases and SQL",
+    "section": "",
+    "text": "Free Guide · Updated Feb 2026",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>index.html</span>"
+    ]
+  },
+  {
+    "objectID": "01-preface-and-setup.html",
+    "href": "01-preface-and-setup.html",
+    "title": "Preface and Setup",
+    "section": "",
+    "text": "Setup\nDatabases and SQL are not just storage. They are a way of thinking.\nThis free track focuses on:",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Preface and Setup</span>"
+    ]
+  },
+  {
+    "objectID": "01-preface-and-setup.html#setup",
+    "href": "01-preface-and-setup.html#setup",
+    "title": "Preface and Setup",
+    "section": "",
+    "text": "1) Create the Python environment\nbash scripts/setup-env.sh\n\n\n2) Initialize the sample database (SQLite)\nThis builds a small database file you can query locally.\npython scripts/init-sqlite-db.py\nYou will get:\n\ndata/cdi-retail.sqlite\nschema and seed SQL in data/sql/\n\n\n\n3) Render the book\nbash scripts/build-all.sh\n\nNext: SQL fundamentals",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Preface and Setup</span>"
+    ]
+  },
+  {
+    "objectID": "02-sql-fundamentals.html",
+    "href": "02-sql-fundamentals.html",
+    "title": "SQL Fundamentals",
+    "section": "",
+    "text": "ID: DBSQL-F-L02\nType: Lesson\nAudience: Public\nTheme: Selecting, filtering, ordering\n\n\nContent coming soon.\n\nNext: TBD",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+    ]
+  },
+  {
+    "objectID": "03-aggregation-and-grouping.html",
+    "href": "03-aggregation-and-grouping.html",
+    "title": "Aggregation and Grouping",
+    "section": "",
+    "text": "ID: DBSQL-F-L03\nType: Lesson\nAudience: Public\nTheme: Summaries that answer questions\n\n\nContent coming soon.\n\nNext: TBD",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+    ]
+  },
+  {
+    "objectID": "04-joins-and-relational-thinking.html",
+    "href": "04-joins-and-relational-thinking.html",
+    "title": "Joins and Relational Thinking",
+    "section": "",
+    "text": "ID: DBSQL-F-L04\nType: Lesson\nAudience: Public\nTheme: Keys, joins, and avoiding duplication\n\n\nContent coming soon.\n\nNext: TBD",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
+    ]
+  },
+  {
+    "objectID": "05-database-design-and-normalization.html",
+    "href": "05-database-design-and-normalization.html",
+    "title": "Database Design and Normalization",
+    "section": "",
+    "text": "ID: DBSQL-F-L05\nType: Lesson\nAudience: Public\nTheme: Integrity, redundancy, and schema discipline\n\n\nContent coming soon.\n\nNext: TBD",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Database Design and Normalization</span>"
+    ]
+  },
+  {
+    "objectID": "06-sql-and-python-integration.html",
+    "href": "06-sql-and-python-integration.html",
+    "title": "SQL and Python Integration",
+    "section": "",
+    "text": "ID: DBSQL-F-L06\nType: Lesson\nAudience: Public\nTheme: Query then analyze\n\n\nContent coming soon.\n\nNext: TBD",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>SQL and Python Integration</span>"
+    ]
+  },
+  {
+    "objectID": "07-next-steps.html",
+    "href": "07-next-steps.html",
+    "title": "Next Steps",
+    "section": "",
+    "text": "ID: DBSQL-F-L07\nType: Lesson\nAudience: Public\nTheme: How this connects to the CDI ecosystem\n\n\nContent coming soon.\n\nNext: TBD",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Next Steps</span>"
+    ]
+  },
+  {
+    "objectID": "99-appendix.html",
+    "href": "99-appendix.html",
+    "title": "Appendix",
+    "section": "",
+    "text": "ID: DBSQL-APP\nType: Lesson\nAudience: Public\nTheme: Troubleshooting and extra notes\n\n\nContent coming soon.\n\nNext: TBD",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "99-references.html",
+    "href": "99-references.html",
+    "title": "References",
+    "section": "",
+    "text": "ID: DBSQL-REF\nType: Lesson\nAudience: Public\nTheme: Sources and recommended reading\n\n\nContent coming soon.\n\nNext: TBD",
+    "crumbs": [
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>References</span>"
+    ]
+  }
+]

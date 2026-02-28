@@ -1,0 +1,16 @@
+---
+title: "SQL Fundamentals"
+---
+
+:::cdi-message
+- **ID:** DBSQL-F-L02
+- **Type:** Lesson
+- **Audience:** Public
+- **Theme:** Selecting, filtering, ordering
+:::
+
+Content coming soon.
+
+:::next
+Next: TBD
+:::

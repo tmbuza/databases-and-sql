@@ -1,0 +1,16 @@
+---
+title: "Database Design and Normalization"
+---
+
+:::cdi-message
+- **ID:** DBSQL-F-L05
+- **Type:** Lesson
+- **Audience:** Public
+- **Theme:** Integrity, redundancy, and schema discipline
+:::
+
+Content coming soon.
+
+:::next
+Next: TBD
+:::

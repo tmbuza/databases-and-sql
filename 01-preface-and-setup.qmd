@@ -1,0 +1,51 @@
+---
+title: "Preface and Setup"
+---
+
+:::cdi-message
+- **ID:** DBSQL-F-L01
+- **Type:** Preface
+- **Audience:** Public
+- **Theme:** Building the data backbone
+:::
+
+Databases and SQL are not just storage. They are a way of thinking.
+
+This free track focuses on:
+
+- relational structure (tables, keys, relationships)
+- SQL as a language for answering questions
+- query patterns used in analytics and reporting
+- design discipline (integrity, redundancy, normalization)
+- integration with Python for analysis workflows
+
+## Setup
+
+### 1) Create the Python environment
+
+```bash
+bash scripts/setup-env.sh
+```
+
+### 2) Initialize the sample database (SQLite)
+
+This builds a small database file you can query locally.
+
+```bash
+python scripts/init-sqlite-db.py
+```
+
+You will get:
+
+- `data/cdi-retail.sqlite`
+- schema and seed SQL in `data/sql/`
+
+### 3) Render the book
+
+```bash
+bash scripts/build-all.sh
+```
+
+:::next
+Next: SQL fundamentals
+:::
