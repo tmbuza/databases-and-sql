@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -163,8 +198,18 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#inner-join" id="toc-inner-join" class="nav-link" data-scroll-target="#inner-join">INNER JOIN</a></li>
+  <li><a href="#left-join" id="toc-left-join" class="nav-link" data-scroll-target="#left-join">LEFT JOIN</a></li>
+  <li><a href="#cardinality-and-duplication" id="toc-cardinality-and-duplication" class="nav-link" data-scroll-target="#cardinality-and-duplication">Cardinality and Duplication</a></li>
+  <li><a href="#verify-row-counts" id="toc-verify-row-counts" class="nav-link" data-scroll-target="#verify-row-counts">Verify Row Counts</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -196,12 +241,109 @@ ul.task-list li input[type="checkbox"] {
 <li><strong>Theme:</strong> Keys, joins, and avoiding duplication</li>
 </ul>
 </div>
-<p>Content coming soon.</p>
-<div class="next">
-<p>Next: TBD</p>
+<p>Joins reconstruct meaning across tables.</p>
+<p>Most SQL mistakes in analytics come from joins that change row counts in unexpected ways.</p>
+<p>Relational thinking means understanding:</p>
+<ul>
+<li>what each table represents</li>
+<li>how tables relate</li>
+<li>whether relationships are one-to-one or one-to-many</li>
+</ul>
+<hr>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<hr>
+</section>
+<section id="inner-join" class="level2">
+<h2 class="anchored" data-anchor-id="inner-join">INNER JOIN</h2>
+<p>INNER JOIN keeps rows that match in both tables.</p>
+<p>Orders with customer names:</p>
+<div id="l04-orders-with-customers" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> <span class="st">'''</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT o.order_id,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="st">       c.full_name,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">       o.order_date,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">       o.status</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">FROM orders o</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">JOIN customers c</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st">  ON o.customer_id = c.customer_id</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="st">ORDER BY o.order_date;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="st">'''</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(query, con)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  order_id      full_name  order_date     status
+0    O3001   Amina Hassan  2026-01-15       paid
+1    O3002   Amina Hassan  2026-02-02       paid
+2    O3003  Joseph Kimaro  2026-02-05       paid
+3    O3004    Neema Msuya  2026-02-11  cancelled
+4    O3005  Grace Nyerere  2026-02-14       paid</code></pre>
 </div>
+</div>
+<hr>
+</section>
+<section id="left-join" class="level2">
+<h2 class="anchored" data-anchor-id="left-join">LEFT JOIN</h2>
+<p>LEFT JOIN keeps all rows from the left table, even when no match exists on the right.</p>
+<p>Customers and their orders:</p>
+<div id="l04-customers-left-join-orders" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> <span class="st">'''</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT c.full_name,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">       o.order_id,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">       o.order_date,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">       o.status</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">FROM customers c</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">LEFT JOIN orders o</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">  ON c.customer_id = o.customer_id</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="st">ORDER BY c.full_name, o.order_date;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="st">'''</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(query, con)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>       full_name order_id  order_date     status
+0   Amina Hassan    O3001  2026-01-15       paid
+1   Amina Hassan    O3002  2026-02-02       paid
+2   David Okello      NaN         NaN        NaN
+3  Grace Nyerere    O3005  2026-02-14       paid
+4  Joseph Kimaro    O3003  2026-02-05       paid
+5    Neema Msuya    O3004  2026-02-11  cancelled</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="cardinality-and-duplication" class="level2">
+<h2 class="anchored" data-anchor-id="cardinality-and-duplication">Cardinality and Duplication</h2>
+<p>One-to-many relationships are common:</p>
+<ul>
+<li>one customer → many orders</li>
+<li>one order → many order_items</li>
+</ul>
+<p>Duplication is expected when you join across one-to-many relationships.</p>
+<p>The error happens when duplication is interpreted as more customers, more orders, or more revenue without verifying row counts.</p>
+<hr>
+</section>
+<section id="verify-row-counts" class="level2">
+<h2 class="anchored" data-anchor-id="verify-row-counts">Verify Row Counts</h2>
+<div id="l04-row-counts" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>orders_n <span class="op">=</span> pd.read_sql(<span class="st">"SELECT COUNT(*) AS n_orders FROM orders;"</span>, con)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>items_n  <span class="op">=</span> pd.read_sql(<span class="st">"SELECT COUNT(*) AS n_items FROM order_items;"</span>, con)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(orders_n)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(items_n)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   n_orders
+0         5
+   n_items
+0        8</code></pre>
+</div>
+</div>
+<p>Row count changes after a join are not automatically wrong.</p>
+<p>They must match the structure you expect.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

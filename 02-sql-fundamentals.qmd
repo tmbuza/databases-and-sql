@@ -1,16 +1,136 @@
----
-title: "SQL Fundamentals"
----
+# SQL Fundamentals
 
 :::cdi-message
 - **ID:** DBSQL-F-L02
 - **Type:** Lesson
 - **Audience:** Public
-- **Theme:** Selecting, filtering, ordering
+- **Theme:** Selecting, filtering, and ordering data
 :::
 
-Content coming soon.
+SQL is a language for asking structured questions.
 
-:::next
-Next: TBD
-:::
+In this lesson, we focus on the core pattern used in analytical queries:
+
+SELECT → FROM → WHERE → ORDER BY → LIMIT
+
+---
+
+## Setup
+
+```{python}
+#| label: l02-setup
+#| include: false
+
+import sqlite3
+import pandas as pd
+
+con = sqlite3.connect("data/cdi-retail.sqlite")
+```
+
+---
+
+## Confirm the Database Connection
+
+```{python}
+#| label: l02-connection-object
+#| echo: true
+
+print(con)
+```
+
+The printed object confirms that Python created a live SQLite connection.
+
+This is not a connection to a server.
+
+SQLite is file-based and embedded, so the database engine runs locally within the process.
+
+---
+
+## List Available Tables
+
+```{python}
+#| label: l02-list-tables
+#| echo: true
+
+tables = pd.read_sql(
+    "SELECT name FROM sqlite_master WHERE type='table';",
+    con
+)
+print(tables)
+```
+
+---
+
+## Select Specific Columns
+
+```sql
+SELECT customer_id, full_name, country
+FROM customers;
+```
+
+Selecting only needed columns keeps queries readable and reduces unnecessary data transfer.
+
+---
+
+## Filter with WHERE
+
+```sql
+SELECT full_name, city
+FROM customers
+WHERE country = 'Tanzania';
+```
+
+You can combine conditions:
+
+```sql
+SELECT order_id, order_date, status
+FROM orders
+WHERE status = 'paid' AND order_date >= '2026-02-01';
+```
+
+---
+
+## Sort with ORDER BY
+
+```sql
+SELECT product_name, unit_price
+FROM products
+ORDER BY unit_price DESC;
+```
+
+DESC sorts from largest to smallest.
+
+---
+
+## Limit Results
+
+```sql
+SELECT product_name, unit_price
+FROM products
+ORDER BY unit_price DESC
+LIMIT 3;
+```
+
+---
+
+## Execute SQL in Python
+
+```{python}
+#| label: l02-top-products
+#| echo: true
+
+query = '''
+SELECT product_name, unit_price
+FROM products
+ORDER BY unit_price DESC
+LIMIT 3;
+'''
+
+df = pd.read_sql(query, con)
+print(df)
+```
+
+This is the backbone-to-analysis workflow:
+
+Database → SQL → DataFrame
+

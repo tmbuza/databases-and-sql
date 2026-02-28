@@ -1,6 +1,4 @@
----
-title: "Preface and Setup"
----
+# Preface and Setup
 
 :::cdi-message
 - **ID:** DBSQL-F-L01
@@ -9,43 +7,46 @@ title: "Preface and Setup"
 - **Theme:** Building the data backbone
 :::
 
-Databases and SQL are not just storage. They are a way of thinking.
+Relational databases are formal systems for structuring data @codd1970relational.
 
-This free track focuses on:
+This track focuses on structural clarity before analysis.
 
-- relational structure (tables, keys, relationships)
-- SQL as a language for answering questions
-- query patterns used in analytics and reporting
-- design discipline (integrity, redundancy, normalization)
-- integration with Python for analysis workflows
+---
 
-## Setup
+## Connecting to SQLite
 
-### 1) Create the Python environment
+```{python}
+#| label: connect-sqlite
+#| echo: true
 
-```bash
-bash scripts/setup-env.sh
+import sqlite3
+import pandas as pd
+
+con = sqlite3.connect("data/cdi-retail.sqlite")
+print(con)
 ```
 
-### 2) Initialize the sample database (SQLite)
+The output shows a `sqlite3.Connection` object.  
+This is not a server connection. SQLite is file-based and embedded.
 
-This builds a small database file you can query locally.
+---
 
-```bash
-python scripts/init-sqlite-db.py
+## Inspecting Tables
+
+```{python}
+#| label: list-tables
+#| echo: true
+
+tables = pd.read_sql(
+    "SELECT name FROM sqlite_master WHERE type='table';",
+    con
+)
+print(tables)
 ```
 
-You will get:
+This confirms available tables.
 
-- `data/cdi-retail.sqlite`
-- schema and seed SQL in `data/sql/`
+---
 
-### 3) Render the book
+Structure → Query → Interpretation
 
-```bash
-bash scripts/build-all.sh
-```
-
-:::next
-Next: SQL fundamentals
-:::

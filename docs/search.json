@@ -14,17 +14,17 @@
     "href": "01-preface-and-setup.html",
     "title": "Preface and Setup",
     "section": "",
-    "text": "Setup\nDatabases and SQL are not just storage. They are a way of thinking.\nThis free track focuses on:",
+    "text": "Connecting to SQLite\nRelational databases are formal systems for structuring data Codd (1970).\nThis track focuses on structural clarity before analysis.\nimport sqlite3\nimport pandas as pd\n\ncon = sqlite3.connect(\"data/cdi-retail.sqlite\")\nprint(con)\n\n&lt;sqlite3.Connection object at 0x11f931990&gt;\nThe output shows a sqlite3.Connection object.\nThis is not a server connection. SQLite is file-based and embedded.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Preface and Setup</span>"
     ]
   },
   {
-    "objectID": "01-preface-and-setup.html#setup",
-    "href": "01-preface-and-setup.html#setup",
+    "objectID": "01-preface-and-setup.html#inspecting-tables",
+    "href": "01-preface-and-setup.html#inspecting-tables",
     "title": "Preface and Setup",
-    "section": "",
-    "text": "1) Create the Python environment\nbash scripts/setup-env.sh\n\n\n2) Initialize the sample database (SQLite)\nThis builds a small database file you can query locally.\npython scripts/init-sqlite-db.py\nYou will get:\n\ndata/cdi-retail.sqlite\nschema and seed SQL in data/sql/\n\n\n\n3) Render the book\nbash scripts/build-all.sh\n\nNext: SQL fundamentals",
+    "section": "Inspecting Tables",
+    "text": "Inspecting Tables\n\ntables = pd.read_sql(\n    \"SELECT name FROM sqlite_master WHERE type='table';\",\n    con\n)\nprint(tables)\n\n          name\n0    customers\n1     products\n2       orders\n3  order_items\n\n\nThis confirms available tables.\n\nStructure → Query → Interpretation\n\n\n\n\nCodd, Edgar F. 1970. “A Relational Model of Data for Large Shared Data Banks.” Communications of the ACM 13 (6): 377–87. https://doi.org/10.1145/362384.362685.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Preface and Setup</span>"
     ]
@@ -34,7 +34,77 @@
     "href": "02-sql-fundamentals.html",
     "title": "SQL Fundamentals",
     "section": "",
-    "text": "ID: DBSQL-F-L02\nType: Lesson\nAudience: Public\nTheme: Selecting, filtering, ordering\n\n\nContent coming soon.\n\nNext: TBD",
+    "text": "Setup\nSQL is a language for asking structured questions.\nIn this lesson, we focus on the core pattern used in analytical queries:\nSELECT → FROM → WHERE → ORDER BY → LIMIT",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+    ]
+  },
+  {
+    "objectID": "02-sql-fundamentals.html#confirm-the-database-connection",
+    "href": "02-sql-fundamentals.html#confirm-the-database-connection",
+    "title": "SQL Fundamentals",
+    "section": "Confirm the Database Connection",
+    "text": "Confirm the Database Connection\n\nprint(con)\n\n&lt;sqlite3.Connection object at 0x10b6f9990&gt;\n\n\nThe printed object confirms that Python created a live SQLite connection.\nThis is not a connection to a server.\nSQLite is file-based and embedded, so the database engine runs locally within the process.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+    ]
+  },
+  {
+    "objectID": "02-sql-fundamentals.html#list-available-tables",
+    "href": "02-sql-fundamentals.html#list-available-tables",
+    "title": "SQL Fundamentals",
+    "section": "List Available Tables",
+    "text": "List Available Tables\n\ntables = pd.read_sql(\n    \"SELECT name FROM sqlite_master WHERE type='table';\",\n    con\n)\nprint(tables)\n\n          name\n0    customers\n1     products\n2       orders\n3  order_items",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+    ]
+  },
+  {
+    "objectID": "02-sql-fundamentals.html#select-specific-columns",
+    "href": "02-sql-fundamentals.html#select-specific-columns",
+    "title": "SQL Fundamentals",
+    "section": "Select Specific Columns",
+    "text": "Select Specific Columns\nSELECT customer_id, full_name, country\nFROM customers;\nSelecting only needed columns keeps queries readable and reduces unnecessary data transfer.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+    ]
+  },
+  {
+    "objectID": "02-sql-fundamentals.html#filter-with-where",
+    "href": "02-sql-fundamentals.html#filter-with-where",
+    "title": "SQL Fundamentals",
+    "section": "Filter with WHERE",
+    "text": "Filter with WHERE\nSELECT full_name, city\nFROM customers\nWHERE country = 'Tanzania';\nYou can combine conditions:\nSELECT order_id, order_date, status\nFROM orders\nWHERE status = 'paid' AND order_date &gt;= '2026-02-01';",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+    ]
+  },
+  {
+    "objectID": "02-sql-fundamentals.html#sort-with-order-by",
+    "href": "02-sql-fundamentals.html#sort-with-order-by",
+    "title": "SQL Fundamentals",
+    "section": "Sort with ORDER BY",
+    "text": "Sort with ORDER BY\nSELECT product_name, unit_price\nFROM products\nORDER BY unit_price DESC;\nDESC sorts from largest to smallest.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+    ]
+  },
+  {
+    "objectID": "02-sql-fundamentals.html#limit-results",
+    "href": "02-sql-fundamentals.html#limit-results",
+    "title": "SQL Fundamentals",
+    "section": "Limit Results",
+    "text": "Limit Results\nSELECT product_name, unit_price\nFROM products\nORDER BY unit_price DESC\nLIMIT 3;",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+    ]
+  },
+  {
+    "objectID": "02-sql-fundamentals.html#execute-sql-in-python",
+    "href": "02-sql-fundamentals.html#execute-sql-in-python",
+    "title": "SQL Fundamentals",
+    "section": "Execute SQL in Python",
+    "text": "Execute SQL in Python\n\nquery = '''\nSELECT product_name, unit_price\nFROM products\nORDER BY unit_price DESC\nLIMIT 3;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n     product_name  unit_price\n0      Headphones       19.50\n1  USB Drive 32GB        8.90\n2    Water Bottle        6.25\n\n\nThis is the backbone-to-analysis workflow:\nDatabase → SQL → DataFrame",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
     ]
@@ -44,7 +114,67 @@
     "href": "03-aggregation-and-grouping.html",
     "title": "Aggregation and Grouping",
     "section": "",
-    "text": "ID: DBSQL-F-L03\nType: Lesson\nAudience: Public\nTheme: Summaries that answer questions\n\n\nContent coming soon.\n\nNext: TBD",
+    "text": "Setup\nSelecting rows retrieves information.\nAggregation summarizes it.\nIn analytics, we often need answers like:",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+    ]
+  },
+  {
+    "objectID": "03-aggregation-and-grouping.html#core-aggregate-functions",
+    "href": "03-aggregation-and-grouping.html#core-aggregate-functions",
+    "title": "Aggregation and Grouping",
+    "section": "Core Aggregate Functions",
+    "text": "Core Aggregate Functions\nCommon aggregate functions:\n\nCOUNT()\nSUM()\nAVG()\nMIN()\nMAX()",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+    ]
+  },
+  {
+    "objectID": "03-aggregation-and-grouping.html#count-orders",
+    "href": "03-aggregation-and-grouping.html#count-orders",
+    "title": "Aggregation and Grouping",
+    "section": "Count Orders",
+    "text": "Count Orders\n\ndf = pd.read_sql(\n    \"SELECT COUNT(*) AS total_orders FROM orders;\",\n    con\n)\nprint(df)\n\n   total_orders\n0             5",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+    ]
+  },
+  {
+    "objectID": "03-aggregation-and-grouping.html#compute-total-revenue",
+    "href": "03-aggregation-and-grouping.html#compute-total-revenue",
+    "title": "Aggregation and Grouping",
+    "section": "Compute Total Revenue",
+    "text": "Compute Total Revenue\nRevenue in this dataset is computed from line items:\nquantity × unit_price\n\ndf = pd.read_sql(\n    \"SELECT SUM(quantity * unit_price) AS total_revenue FROM order_items;\",\n    con\n)\nprint(df)\n\n   total_revenue\n0          65.55",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+    ]
+  },
+  {
+    "objectID": "03-aggregation-and-grouping.html#group-by",
+    "href": "03-aggregation-and-grouping.html#group-by",
+    "title": "Aggregation and Grouping",
+    "section": "GROUP BY",
+    "text": "GROUP BY\nGROUP BY creates summaries per group.\n\nOrders by Status\n\ndf = pd.read_sql(\n    '''\n    SELECT status, COUNT(*) AS order_count\n    FROM orders\n    GROUP BY status\n    ORDER BY order_count DESC;\n    ''',\n    con\n)\nprint(df)\n\n      status  order_count\n0       paid            4\n1  cancelled            1",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+    ]
+  },
+  {
+    "objectID": "03-aggregation-and-grouping.html#aggregation-with-joins",
+    "href": "03-aggregation-and-grouping.html#aggregation-with-joins",
+    "title": "Aggregation and Grouping",
+    "section": "Aggregation with Joins",
+    "text": "Aggregation with Joins\nTo summarize revenue by product name, we join order_items to products.\n\nquery = '''\nSELECT p.product_name,\n       SUM(oi.quantity * oi.unit_price) AS revenue\nFROM order_items oi\nJOIN products p\n  ON oi.product_id = p.product_id\nGROUP BY p.product_name\nORDER BY revenue DESC;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n     product_name  revenue\n0  USB Drive 32GB    26.70\n1      Headphones    19.50\n2     Notebook A5     7.50\n3    Water Bottle     6.25\n4        Pen Blue     5.60",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+    ]
+  },
+  {
+    "objectID": "03-aggregation-and-grouping.html#having",
+    "href": "03-aggregation-and-grouping.html#having",
+    "title": "Aggregation and Grouping",
+    "section": "HAVING",
+    "text": "HAVING\nWHERE filters rows before grouping.\nHAVING filters groups after aggregation.\n\ndf = pd.read_sql(\n    '''\n    SELECT status, COUNT(*) AS order_count\n    FROM orders\n    GROUP BY status\n    HAVING COUNT(*) &gt; 1;\n    ''',\n    con\n)\nprint(df)\n\n  status  order_count\n0   paid            4\n\n\nAggregation is powerful.\nIt must be paired with structural discipline, especially when joins are involved.",
     "crumbs": [
       "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
     ]
@@ -54,7 +184,47 @@
     "href": "04-joins-and-relational-thinking.html",
     "title": "Joins and Relational Thinking",
     "section": "",
-    "text": "ID: DBSQL-F-L04\nType: Lesson\nAudience: Public\nTheme: Keys, joins, and avoiding duplication\n\n\nContent coming soon.\n\nNext: TBD",
+    "text": "Setup\nJoins reconstruct meaning across tables.\nMost SQL mistakes in analytics come from joins that change row counts in unexpected ways.\nRelational thinking means understanding:",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
+    ]
+  },
+  {
+    "objectID": "04-joins-and-relational-thinking.html#inner-join",
+    "href": "04-joins-and-relational-thinking.html#inner-join",
+    "title": "Joins and Relational Thinking",
+    "section": "INNER JOIN",
+    "text": "INNER JOIN\nINNER JOIN keeps rows that match in both tables.\nOrders with customer names:\n\nquery = '''\nSELECT o.order_id,\n       c.full_name,\n       o.order_date,\n       o.status\nFROM orders o\nJOIN customers c\n  ON o.customer_id = c.customer_id\nORDER BY o.order_date;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n  order_id      full_name  order_date     status\n0    O3001   Amina Hassan  2026-01-15       paid\n1    O3002   Amina Hassan  2026-02-02       paid\n2    O3003  Joseph Kimaro  2026-02-05       paid\n3    O3004    Neema Msuya  2026-02-11  cancelled\n4    O3005  Grace Nyerere  2026-02-14       paid",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
+    ]
+  },
+  {
+    "objectID": "04-joins-and-relational-thinking.html#left-join",
+    "href": "04-joins-and-relational-thinking.html#left-join",
+    "title": "Joins and Relational Thinking",
+    "section": "LEFT JOIN",
+    "text": "LEFT JOIN\nLEFT JOIN keeps all rows from the left table, even when no match exists on the right.\nCustomers and their orders:\n\nquery = '''\nSELECT c.full_name,\n       o.order_id,\n       o.order_date,\n       o.status\nFROM customers c\nLEFT JOIN orders o\n  ON c.customer_id = o.customer_id\nORDER BY c.full_name, o.order_date;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n       full_name order_id  order_date     status\n0   Amina Hassan    O3001  2026-01-15       paid\n1   Amina Hassan    O3002  2026-02-02       paid\n2   David Okello      NaN         NaN        NaN\n3  Grace Nyerere    O3005  2026-02-14       paid\n4  Joseph Kimaro    O3003  2026-02-05       paid\n5    Neema Msuya    O3004  2026-02-11  cancelled",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
+    ]
+  },
+  {
+    "objectID": "04-joins-and-relational-thinking.html#cardinality-and-duplication",
+    "href": "04-joins-and-relational-thinking.html#cardinality-and-duplication",
+    "title": "Joins and Relational Thinking",
+    "section": "Cardinality and Duplication",
+    "text": "Cardinality and Duplication\nOne-to-many relationships are common:\n\none customer → many orders\none order → many order_items\n\nDuplication is expected when you join across one-to-many relationships.\nThe error happens when duplication is interpreted as more customers, more orders, or more revenue without verifying row counts.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
+    ]
+  },
+  {
+    "objectID": "04-joins-and-relational-thinking.html#verify-row-counts",
+    "href": "04-joins-and-relational-thinking.html#verify-row-counts",
+    "title": "Joins and Relational Thinking",
+    "section": "Verify Row Counts",
+    "text": "Verify Row Counts\n\norders_n = pd.read_sql(\"SELECT COUNT(*) AS n_orders FROM orders;\", con)\nitems_n  = pd.read_sql(\"SELECT COUNT(*) AS n_items FROM order_items;\", con)\n\nprint(orders_n)\nprint(items_n)\n\n   n_orders\n0         5\n   n_items\n0        8\n\n\nRow count changes after a join are not automatically wrong.\nThey must match the structure you expect.",
     "crumbs": [
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
     ]
@@ -64,7 +234,37 @@
     "href": "05-database-design-and-normalization.html",
     "title": "Database Design and Normalization",
     "section": "",
-    "text": "ID: DBSQL-F-L05\nType: Lesson\nAudience: Public\nTheme: Integrity, redundancy, and schema discipline\n\n\nContent coming soon.\n\nNext: TBD",
+    "text": "Setup\nSchema design determines whether queries remain reliable.\nNormalization reduces redundancy and prevents update, insert, and delete anomalies.\nThis lesson follows standard database design treatments Date (2004); Silberschatz, Korth, and Sudarshan (2019).",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Database Design and Normalization</span>"
+    ]
+  },
+  {
+    "objectID": "05-database-design-and-normalization.html#inspect-table-structure",
+    "href": "05-database-design-and-normalization.html#inspect-table-structure",
+    "title": "Database Design and Normalization",
+    "section": "Inspect Table Structure",
+    "text": "Inspect Table Structure\nSQLite provides schema inspection through PRAGMA.\n\ndf = pd.read_sql(\"PRAGMA table_info(customers);\", con)\nprint(df)\n\n   cid         name  type  notnull dflt_value  pk\n0    0  customer_id  TEXT        0       None   1\n1    1    full_name  TEXT        1       None   0\n2    2         city  TEXT        1       None   0\n3    3      country  TEXT        1       None   0\n4    4  signup_date  DATE        1       None   0\n\n\n\ndf = pd.read_sql(\"PRAGMA table_info(orders);\", con)\nprint(df)\n\n   cid         name  type  notnull dflt_value  pk\n0    0     order_id  TEXT        0       None   1\n1    1  customer_id  TEXT        1       None   0\n2    2   order_date  DATE        1       None   0\n3    3       status  TEXT        1       None   0",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Database Design and Normalization</span>"
+    ]
+  },
+  {
+    "objectID": "05-database-design-and-normalization.html#why-normalization-helps",
+    "href": "05-database-design-and-normalization.html#why-normalization-helps",
+    "title": "Database Design and Normalization",
+    "section": "Why Normalization Helps",
+    "text": "Why Normalization Helps\nIf customer information were repeated in every order row, a city update would require changing many rows.\nSeparating customers from orders prevents redundancy.\nIn this schema:\n\ncustomers stores identity and profile attributes\norders stores transaction events\norder_items stores line items\nproducts stores product attributes\n\nThe goal is one entity per table and relationships enforced through keys.",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Database Design and Normalization</span>"
+    ]
+  },
+  {
+    "objectID": "05-database-design-and-normalization.html#constraints-protect-integrity",
+    "href": "05-database-design-and-normalization.html#constraints-protect-integrity",
+    "title": "Database Design and Normalization",
+    "section": "Constraints Protect Integrity",
+    "text": "Constraints Protect Integrity\nConstraints prevent invalid data at the database level.\n\ndf = pd.read_sql(\"SELECT sql FROM sqlite_master WHERE name = 'products';\", con)\nprint(df)\n\n                                                 sql\n0  CREATE TABLE products (\\n  product_id   TEXT P...\n\n\nLook for:\n\nPRIMARY KEY\nNOT NULL\nCHECK constraints\n\nDesign discipline reduces analytical fragility.\n\n\n\n\nDate, C. J. 2004. An Introduction to Database Systems. 8th ed. Addison-Wesley.\n\n\nSilberschatz, Abraham, Henry F. Korth, and S. Sudarshan. 2019. Database System Concepts. 7th ed. McGraw-Hill Education.",
     "crumbs": [
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Database Design and Normalization</span>"
     ]
@@ -74,7 +274,37 @@
     "href": "06-sql-and-python-integration.html",
     "title": "SQL and Python Integration",
     "section": "",
-    "text": "ID: DBSQL-F-L06\nType: Lesson\nAudience: Public\nTheme: Query then analyze\n\n\nContent coming soon.\n\nNext: TBD",
+    "text": "Setup\nSQL and Python work best together when responsibilities are clear.\nSQLite engine behavior is documented in the official documentation SQLite Consortium (2026).",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>SQL and Python Integration</span>"
+    ]
+  },
+  {
+    "objectID": "06-sql-and-python-integration.html#revenue-per-customer",
+    "href": "06-sql-and-python-integration.html#revenue-per-customer",
+    "title": "SQL and Python Integration",
+    "section": "Revenue per Customer",
+    "text": "Revenue per Customer\n\nquery = '''\nSELECT c.full_name,\n       SUM(oi.quantity * oi.unit_price) AS revenue\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nJOIN order_items oi ON o.order_id = oi.order_id\nGROUP BY c.full_name\nORDER BY revenue DESC;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n       full_name  revenue\n0  Joseph Kimaro    25.75\n1   Amina Hassan    19.50\n2  Grace Nyerere    17.80\n3    Neema Msuya     2.50",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>SQL and Python Integration</span>"
+    ]
+  },
+  {
+    "objectID": "06-sql-and-python-integration.html#visualize-the-summary",
+    "href": "06-sql-and-python-integration.html#visualize-the-summary",
+    "title": "SQL and Python Integration",
+    "section": "Visualize the Summary",
+    "text": "Visualize the Summary\n\nplt.bar(df[\"full_name\"], df[\"revenue\"])\nplt.xticks(rotation=45)\nplt.title(\"Revenue by Customer\")\nplt.tight_layout()\nplt.show()",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>SQL and Python Integration</span>"
+    ]
+  },
+  {
+    "objectID": "06-sql-and-python-integration.html#why-sql-first-matters",
+    "href": "06-sql-and-python-integration.html#why-sql-first-matters",
+    "title": "SQL and Python Integration",
+    "section": "Why SQL First Matters",
+    "text": "Why SQL First Matters\nA common workflow mistake is to load full tables into Python and then join or filter there.\nBetter practice is to:\n\nFilter in SQL\nJoin in SQL\nAggregate in SQL\nTransfer only structured results into Python\n\nThis keeps analysis efficient and reduces opportunities for structural mistakes.\n\n\n\n\nSQLite Consortium. 2026. “SQLite Documentation.” Online documentation.",
     "crumbs": [
       "<span class='chapter-number'>7</span>  <span class='chapter-title'>SQL and Python Integration</span>"
     ]
@@ -84,7 +314,7 @@
     "href": "07-next-steps.html",
     "title": "Next Steps",
     "section": "",
-    "text": "ID: DBSQL-F-L07\nType: Lesson\nAudience: Public\nTheme: How this connects to the CDI ecosystem\n\n\nContent coming soon.\n\nNext: TBD",
+    "text": "ID: DBSQL-F-L07\nType: Conclusion\nAudience: Public\nTheme: Structural discipline scales\n\n\nYou now understand:\n\nDatabase connections\nSQL querying\nAggregation\nJoins\nNormalization\nPython integration\n\nThis backbone supports all CDI domains.",
     "crumbs": [
       "<span class='chapter-number'>8</span>  <span class='chapter-title'>Next Steps</span>"
     ]
@@ -94,7 +324,67 @@
     "href": "99-appendix.html",
     "title": "Appendix",
     "section": "",
-    "text": "ID: DBSQL-APP\nType: Lesson\nAudience: Public\nTheme: Troubleshooting and extra notes\n\n\nContent coming soon.\n\nNext: TBD",
+    "text": "Common SQL Errors\nThis appendix provides additional reference material and troubleshooting guidance for the Databases and SQL free track.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "99-appendix.html#common-sql-errors",
+    "href": "99-appendix.html#common-sql-errors",
+    "title": "Appendix",
+    "section": "",
+    "text": "1. No such table\nError example:\nno such table: customers\nPossible causes:\n\nThe SQLite database was not initialized.\nThe file path to the database is incorrect.\nThe working directory is not the project root.\n\nFix:\npython scripts/init-sqlite-db.py\nEnsure you are running commands from the repository root directory.\n\n\n\n2. No such column\nError example:\nno such column: customer_name\nPossible causes:\n\nMisspelled column name\nColumn does not exist in the selected table\nAlias not referenced correctly\n\nFix:\nInspect the schema:\nPRAGMA table_info(customers);\nAlways verify column names before writing complex queries.\n\n\n\n3. Incorrect Aggregation\nIf you see an error related to GROUP BY, verify:\n\nAll non-aggregated columns are included in GROUP BY\nAggregation functions are used correctly\n\nExample of correct usage:\nSELECT status, COUNT(*)\nFROM orders\nGROUP BY status;",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "99-appendix.html#inspecting-the-schema",
+    "href": "99-appendix.html#inspecting-the-schema",
+    "title": "Appendix",
+    "section": "Inspecting the Schema",
+    "text": "Inspecting the Schema\nTo list tables:\nSELECT name\nFROM sqlite_master\nWHERE type='table';\nTo inspect columns:\nPRAGMA table_info(orders);\nUnderstanding structure prevents most SQL mistakes.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "99-appendix.html#verifying-join-integrity",
+    "href": "99-appendix.html#verifying-join-integrity",
+    "title": "Appendix",
+    "section": "Verifying Join Integrity",
+    "text": "Verifying Join Integrity\nBefore trusting joined results:\n\nCount rows before join.\nCount rows after join.\nConfirm expected cardinality.\n\nExample:\nSELECT COUNT(*) FROM orders;\nIf the count increases unexpectedly after a join, review cardinality and join conditions.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "99-appendix.html#sqlite-notes",
+    "href": "99-appendix.html#sqlite-notes",
+    "title": "Appendix",
+    "section": "SQLite Notes",
+    "text": "SQLite Notes\nThis free track uses SQLite for simplicity.\nKey characteristics:\n\nFile-based database\nNo server required\nLightweight and portable\n\nFor production systems, similar SQL concepts apply in:\n\nMySQL\nPostgreSQL\nCloud data warehouses\n\nOnly connection configuration changes. The relational logic remains the same.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "99-appendix.html#suggested-practice-questions",
+    "href": "99-appendix.html#suggested-practice-questions",
+    "title": "Appendix",
+    "section": "Suggested Practice Questions",
+    "text": "Suggested Practice Questions\n\nWhat is total revenue per country?\nWhich product category generates the most revenue?\nWhich customer placed the highest-value single order?\nHow many orders were cancelled?\nWhat is the average order value?\n\nTry answering these questions using only SQL before moving results into Python.",
+    "crumbs": [
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "99-appendix.html#final-reminder",
+    "href": "99-appendix.html#final-reminder",
+    "title": "Appendix",
+    "section": "Final Reminder",
+    "text": "Final Reminder\nSQL proficiency improves through structured repetition.\n\nInspect schema before writing joins.\nVerify assumptions with row counts.\nKeep queries readable and explicit.\nLet structure guide interpretation.\n\nRelational discipline reduces analytical fragility.\nThat is the purpose of this pillar.",
     "crumbs": [
       "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
     ]
@@ -104,7 +394,7 @@
     "href": "99-references.html",
     "title": "References",
     "section": "",
-    "text": "ID: DBSQL-REF\nType: Lesson\nAudience: Public\nTheme: Sources and recommended reading\n\n\nContent coming soon.\n\nNext: TBD",
+    "text": "ID: DBSQL-REF\nType: References\nAudience: Public\nTheme: BibTeX-backed citations used across the guide\n\n\nThis guide uses BibTeX-based references via references.bib.\nCitations appear inline using keys like @codd1970relational and @silberschatz2019database.\nBelow is the automatically generated reference list for all works cited in the guide.\n\n\nCodd, Edgar F. 1970. “A Relational Model of Data for Large Shared\nData Banks.” Communications of the ACM 13 (6): 377–87.\nhttps://doi.org/10.1145/362384.362685.\n\n\nDate, C. J. 2004. An Introduction to Database Systems. 8th ed.\nAddison-Wesley.\n\n\nSilberschatz, Abraham, Henry F. Korth, and S. Sudarshan. 2019.\nDatabase System Concepts. 7th ed. McGraw-Hill Education.\n\n\nSQLite Consortium. 2026. “SQLite Documentation.” Online\ndocumentation.",
     "crumbs": [
       "<span class='chapter-number'>10</span>  <span class='chapter-title'>References</span>"
     ]

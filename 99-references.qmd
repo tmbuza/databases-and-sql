@@ -1,16 +1,17 @@
----
-title: "References"
----
+# References
 
 :::cdi-message
 - **ID:** DBSQL-REF
-- **Type:** Lesson
+- **Type:** References
 - **Audience:** Public
-- **Theme:** Sources and recommended reading
+- **Theme:** BibTeX-backed citations used across the guide
 :::
 
-Content coming soon.
+This guide uses BibTeX-based references via `references.bib`.
 
-:::next
-Next: TBD
+Citations appear inline using keys like `@codd1970relational` and `@silberschatz2019database`.
+
+Below is the automatically generated reference list for all works cited in the guide.
+
+::: {#refs}
 :::

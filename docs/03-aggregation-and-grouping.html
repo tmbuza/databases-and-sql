@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -163,8 +198,23 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#core-aggregate-functions" id="toc-core-aggregate-functions" class="nav-link" data-scroll-target="#core-aggregate-functions">Core Aggregate Functions</a></li>
+  <li><a href="#count-orders" id="toc-count-orders" class="nav-link" data-scroll-target="#count-orders">Count Orders</a></li>
+  <li><a href="#compute-total-revenue" id="toc-compute-total-revenue" class="nav-link" data-scroll-target="#compute-total-revenue">Compute Total Revenue</a></li>
+  <li><a href="#group-by" id="toc-group-by" class="nav-link" data-scroll-target="#group-by">GROUP BY</a>
+  <ul class="collapse">
+  <li><a href="#orders-by-status" id="toc-orders-by-status" class="nav-link" data-scroll-target="#orders-by-status">Orders by Status</a></li>
+  </ul></li>
+  <li><a href="#aggregation-with-joins" id="toc-aggregation-with-joins" class="nav-link" data-scroll-target="#aggregation-with-joins">Aggregation with Joins</a></li>
+  <li><a href="#having" id="toc-having" class="nav-link" data-scroll-target="#having">HAVING</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -193,15 +243,143 @@ ul.task-list li input[type="checkbox"] {
 <li><strong>ID:</strong> DBSQL-F-L03</li>
 <li><strong>Type:</strong> Lesson</li>
 <li><strong>Audience:</strong> Public</li>
-<li><strong>Theme:</strong> Summaries that answer questions</li>
+<li><strong>Theme:</strong> Summarizing data with aggregation</li>
 </ul>
 </div>
-<p>Content coming soon.</p>
-<div class="next">
-<p>Next: TBD</p>
+<p>Selecting rows retrieves information.</p>
+<p>Aggregation summarizes it.</p>
+<p>In analytics, we often need answers like:</p>
+<ul>
+<li>How many orders exist?</li>
+<li>What is total revenue?</li>
+<li>Which products generate the most revenue?</li>
+</ul>
+<hr>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<hr>
+</section>
+<section id="core-aggregate-functions" class="level2">
+<h2 class="anchored" data-anchor-id="core-aggregate-functions">Core Aggregate Functions</h2>
+<p>Common aggregate functions:</p>
+<ul>
+<li>COUNT()</li>
+<li>SUM()</li>
+<li>AVG()</li>
+<li>MIN()</li>
+<li>MAX()</li>
+</ul>
+<hr>
+</section>
+<section id="count-orders" class="level2">
+<h2 class="anchored" data-anchor-id="count-orders">Count Orders</h2>
+<div id="l03-count-orders" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SELECT COUNT(*) AS total_orders FROM orders;"</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    con</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   total_orders
+0             5</code></pre>
 </div>
+</div>
+<hr>
+</section>
+<section id="compute-total-revenue" class="level2">
+<h2 class="anchored" data-anchor-id="compute-total-revenue">Compute Total Revenue</h2>
+<p>Revenue in this dataset is computed from line items:</p>
+<p>quantity × unit_price</p>
+<div id="l03-total-revenue" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SELECT SUM(quantity * unit_price) AS total_revenue FROM order_items;"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    con</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   total_revenue
+0          65.55</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="group-by" class="level2">
+<h2 class="anchored" data-anchor-id="group-by">GROUP BY</h2>
+<p>GROUP BY creates summaries per group.</p>
+<section id="orders-by-status" class="level3">
+<h3 class="anchored" data-anchor-id="orders-by-status">Orders by Status</h3>
+<div id="l03-orders-by-status" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'''</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT status, COUNT(*) AS order_count</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM orders</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">    GROUP BY status</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="st">    ORDER BY order_count DESC;</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="st">    '''</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    con</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      status  order_count
+0       paid            4
+1  cancelled            1</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="aggregation-with-joins" class="level2">
+<h2 class="anchored" data-anchor-id="aggregation-with-joins">Aggregation with Joins</h2>
+<p>To summarize revenue by product name, we join order_items to products.</p>
+<div id="l03-revenue-by-product" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> <span class="st">'''</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT p.product_name,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="st">       SUM(oi.quantity * oi.unit_price) AS revenue</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="st">FROM order_items oi</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="st">JOIN products p</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="st">  ON oi.product_id = p.product_id</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="st">GROUP BY p.product_name</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="st">ORDER BY revenue DESC;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="st">'''</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(query, con)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     product_name  revenue
+0  USB Drive 32GB    26.70
+1      Headphones    19.50
+2     Notebook A5     7.50
+3    Water Bottle     6.25
+4        Pen Blue     5.60</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="having" class="level2">
+<h2 class="anchored" data-anchor-id="having">HAVING</h2>
+<p>WHERE filters rows before grouping.</p>
+<p>HAVING filters groups after aggregation.</p>
+<div id="l03-having-example" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">'''</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT status, COUNT(*) AS order_count</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM orders</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="st">    GROUP BY status</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="st">    HAVING COUNT(*) &gt; 1;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="st">    '''</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    con</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  status  order_count
+0   paid            4</code></pre>
+</div>
+</div>
+<p>Aggregation is powerful.</p>
+<p>It must be paired with structural discipline, especially when joins are involved.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

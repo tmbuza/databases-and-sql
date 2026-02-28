@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -163,8 +198,24 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#common-sql-errors" id="toc-common-sql-errors" class="nav-link active" data-scroll-target="#common-sql-errors">Common SQL Errors</a>
+  <ul class="collapse">
+  <li><a href="#no-such-table" id="toc-no-such-table" class="nav-link" data-scroll-target="#no-such-table">1. No such table</a></li>
+  <li><a href="#no-such-column" id="toc-no-such-column" class="nav-link" data-scroll-target="#no-such-column">2. No such column</a></li>
+  <li><a href="#incorrect-aggregation" id="toc-incorrect-aggregation" class="nav-link" data-scroll-target="#incorrect-aggregation">3. Incorrect Aggregation</a></li>
+  </ul></li>
+  <li><a href="#inspecting-the-schema" id="toc-inspecting-the-schema" class="nav-link" data-scroll-target="#inspecting-the-schema">Inspecting the Schema</a></li>
+  <li><a href="#verifying-join-integrity" id="toc-verifying-join-integrity" class="nav-link" data-scroll-target="#verifying-join-integrity">Verifying Join Integrity</a></li>
+  <li><a href="#sqlite-notes" id="toc-sqlite-notes" class="nav-link" data-scroll-target="#sqlite-notes">SQLite Notes</a></li>
+  <li><a href="#suggested-practice-questions" id="toc-suggested-practice-questions" class="nav-link" data-scroll-target="#suggested-practice-questions">Suggested Practice Questions</a></li>
+  <li><a href="#final-reminder" id="toc-final-reminder" class="nav-link" data-scroll-target="#final-reminder">Final Reminder</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -191,17 +242,128 @@ ul.task-list li input[type="checkbox"] {
 <div class="cdi-message">
 <ul>
 <li><strong>ID:</strong> DBSQL-APP</li>
-<li><strong>Type:</strong> Lesson</li>
+<li><strong>Type:</strong> Appendix</li>
 <li><strong>Audience:</strong> Public</li>
-<li><strong>Theme:</strong> Troubleshooting and extra notes</li>
+<li><strong>Theme:</strong> Troubleshooting and reference notes</li>
 </ul>
 </div>
-<p>Content coming soon.</p>
-<div class="next">
-<p>Next: TBD</p>
-</div>
+<p>This appendix provides additional reference material and troubleshooting guidance for the Databases and SQL free track.</p>
+<hr>
+<section id="common-sql-errors" class="level2">
+<h2 class="anchored" data-anchor-id="common-sql-errors">Common SQL Errors</h2>
+<section id="no-such-table" class="level3">
+<h3 class="anchored" data-anchor-id="no-such-table">1. No such table</h3>
+<p>Error example:</p>
+<pre><code>no such table: customers</code></pre>
+<p>Possible causes:</p>
+<ul>
+<li>The SQLite database was not initialized.</li>
+<li>The file path to the database is incorrect.</li>
+<li>The working directory is not the project root.</li>
+</ul>
+<p>Fix:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/init-sqlite-db.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Ensure you are running commands from the repository root directory.</p>
+<hr>
+</section>
+<section id="no-such-column" class="level3">
+<h3 class="anchored" data-anchor-id="no-such-column">2. No such column</h3>
+<p>Error example:</p>
+<pre><code>no such column: customer_name</code></pre>
+<p>Possible causes:</p>
+<ul>
+<li>Misspelled column name</li>
+<li>Column does not exist in the selected table</li>
+<li>Alias not referenced correctly</li>
+</ul>
+<p>Fix:</p>
+<p>Inspect the schema:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>PRAGMA table_info(customers);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Always verify column names before writing complex queries.</p>
+<hr>
+</section>
+<section id="incorrect-aggregation" class="level3">
+<h3 class="anchored" data-anchor-id="incorrect-aggregation">3. Incorrect Aggregation</h3>
+<p>If you see an error related to GROUP BY, verify:</p>
+<ul>
+<li>All non-aggregated columns are included in GROUP BY</li>
+<li>Aggregation functions are used correctly</li>
+</ul>
+<p>Example of correct usage:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> status, <span class="fu">COUNT</span>(<span class="op">*</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> status;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+</section>
+</section>
+<section id="inspecting-the-schema" class="level2">
+<h2 class="anchored" data-anchor-id="inspecting-the-schema">Inspecting the Schema</h2>
+<p>To list tables:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> name</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> sqlite_master</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> <span class="kw">type</span><span class="op">=</span><span class="st">'table'</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To inspect columns:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>PRAGMA table_info(orders);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Understanding structure prevents most SQL mistakes.</p>
+<hr>
+</section>
+<section id="verifying-join-integrity" class="level2">
+<h2 class="anchored" data-anchor-id="verifying-join-integrity">Verifying Join Integrity</h2>
+<p>Before trusting joined results:</p>
+<ol type="1">
+<li>Count rows before join.</li>
+<li>Count rows after join.</li>
+<li>Confirm expected cardinality.</li>
+</ol>
+<p>Example:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">FROM</span> orders;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If the count increases unexpectedly after a join, review cardinality and join conditions.</p>
+<hr>
+</section>
+<section id="sqlite-notes" class="level2">
+<h2 class="anchored" data-anchor-id="sqlite-notes">SQLite Notes</h2>
+<p>This free track uses SQLite for simplicity.</p>
+<p>Key characteristics:</p>
+<ul>
+<li>File-based database</li>
+<li>No server required</li>
+<li>Lightweight and portable</li>
+</ul>
+<p>For production systems, similar SQL concepts apply in:</p>
+<ul>
+<li>MySQL</li>
+<li>PostgreSQL</li>
+<li>Cloud data warehouses</li>
+</ul>
+<p>Only connection configuration changes. The relational logic remains the same.</p>
+<hr>
+</section>
+<section id="suggested-practice-questions" class="level2">
+<h2 class="anchored" data-anchor-id="suggested-practice-questions">Suggested Practice Questions</h2>
+<ol type="1">
+<li>What is total revenue per country?</li>
+<li>Which product category generates the most revenue?</li>
+<li>Which customer placed the highest-value single order?</li>
+<li>How many orders were cancelled?</li>
+<li>What is the average order value?</li>
+</ol>
+<p>Try answering these questions using only SQL before moving results into Python.</p>
+<hr>
+</section>
+<section id="final-reminder" class="level2">
+<h2 class="anchored" data-anchor-id="final-reminder">Final Reminder</h2>
+<p>SQL proficiency improves through structured repetition.</p>
+<ul>
+<li>Inspect schema before writing joins.</li>
+<li>Verify assumptions with row counts.</li>
+<li>Keep queries readable and explicit.</li>
+<li>Let structure guide interpretation.</li>
+</ul>
+<p>Relational discipline reduces analytical fragility.</p>
+<p>That is the purpose of this pillar.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

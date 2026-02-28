@@ -20,7 +20,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -190,14 +209,32 @@ ul.task-list li input[type="checkbox"] {
 <div class="cdi-message">
 <ul>
 <li><strong>ID:</strong> DBSQL-REF</li>
-<li><strong>Type:</strong> Lesson</li>
+<li><strong>Type:</strong> References</li>
 <li><strong>Audience:</strong> Public</li>
-<li><strong>Theme:</strong> Sources and recommended reading</li>
+<li><strong>Theme:</strong> BibTeX-backed citations used across the guide</li>
 </ul>
 </div>
-<p>Content coming soon.</p>
-<div class="next">
-<p>Next: TBD</p>
+<p>This guide uses BibTeX-based references via <code>references.bib</code>.</p>
+<p>Citations appear inline using keys like <code>@codd1970relational</code> and <code>@silberschatz2019database</code>.</p>
+<p>Below is the automatically generated reference list for all works cited in the guide.</p>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-codd1970relational" class="csl-entry" role="listitem">
+Codd, Edgar F. 1970. <span>“A Relational Model of Data for Large Shared
+Data Banks.”</span> <em>Communications of the ACM</em> 13 (6): 377–87.
+<a href="https://doi.org/10.1145/362384.362685">https://doi.org/10.1145/362384.362685</a>.
+</div>
+<div id="ref-date2004introduction" class="csl-entry" role="listitem">
+Date, C. J. 2004. <em>An Introduction to Database Systems</em>. 8th ed.
+Addison-Wesley.
+</div>
+<div id="ref-silberschatz2019database" class="csl-entry" role="listitem">
+Silberschatz, Abraham, Henry F. Korth, and S. Sudarshan. 2019.
+<em>Database System Concepts</em>. 7th ed. McGraw-Hill Education.
+</div>
+<div id="ref-sqliteDocs" class="csl-entry" role="listitem">
+SQLite Consortium. 2026. <span>“SQLite Documentation.”</span> Online
+documentation.
+</div>
 </div>
 
 

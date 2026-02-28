@@ -1,6 +1,4 @@
----
-title: "Database Design and Normalization"
----
+# Database Design and Normalization
 
 :::cdi-message
 - **ID:** DBSQL-F-L05
@@ -9,8 +7,84 @@ title: "Database Design and Normalization"
 - **Theme:** Integrity, redundancy, and schema discipline
 :::
 
-Content coming soon.
+Schema design determines whether queries remain reliable.
 
-:::next
-Next: TBD
-:::
+Normalization reduces redundancy and prevents update, insert, and delete anomalies.
+
+This lesson follows standard database design treatments @date2004introduction; @silberschatz2019database.
+
+---
+
+## Setup
+
+```{python}
+#| label: l05-setup
+#| include: false
+
+import sqlite3
+import pandas as pd
+
+con = sqlite3.connect("data/cdi-retail.sqlite")
+```
+
+---
+
+## Inspect Table Structure
+
+SQLite provides schema inspection through PRAGMA.
+
+```{python}
+#| label: l05-schema-customers
+#| echo: true
+
+df = pd.read_sql("PRAGMA table_info(customers);", con)
+print(df)
+```
+
+```{python}
+#| label: l05-schema-orders
+#| echo: true
+
+df = pd.read_sql("PRAGMA table_info(orders);", con)
+print(df)
+```
+
+---
+
+## Why Normalization Helps
+
+If customer information were repeated in every order row, a city update would require changing many rows.
+
+Separating customers from orders prevents redundancy.
+
+In this schema:
+
+- customers stores identity and profile attributes
+- orders stores transaction events
+- order_items stores line items
+- products stores product attributes
+
+The goal is one entity per table and relationships enforced through keys.
+
+---
+
+## Constraints Protect Integrity
+
+Constraints prevent invalid data at the database level.
+
+```{python}
+#| label: l05-example-constraints
+#| echo: true
+
+df = pd.read_sql("SELECT sql FROM sqlite_master WHERE name = 'products';", con)
+print(df)
+```
+
+Look for:
+
+- PRIMARY KEY
+- NOT NULL
+- CHECK constraints
+
+Design discipline reduces analytical fragility.
+

@@ -20,7 +20,62 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -163,8 +218,17 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#inspect-table-structure" id="toc-inspect-table-structure" class="nav-link" data-scroll-target="#inspect-table-structure">Inspect Table Structure</a></li>
+  <li><a href="#why-normalization-helps" id="toc-why-normalization-helps" class="nav-link" data-scroll-target="#why-normalization-helps">Why Normalization Helps</a></li>
+  <li><a href="#constraints-protect-integrity" id="toc-constraints-protect-integrity" class="nav-link" data-scroll-target="#constraints-protect-integrity">Constraints Protect Integrity</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -196,12 +260,85 @@ ul.task-list li input[type="checkbox"] {
 <li><strong>Theme:</strong> Integrity, redundancy, and schema discipline</li>
 </ul>
 </div>
-<p>Content coming soon.</p>
-<div class="next">
-<p>Next: TBD</p>
+<p>Schema design determines whether queries remain reliable.</p>
+<p>Normalization reduces redundancy and prevents update, insert, and delete anomalies.</p>
+<p>This lesson follows standard database design treatments <span class="citation" data-cites="date2004introduction">Date (<a href="99-references.html#ref-date2004introduction" role="doc-biblioref">2004</a>)</span>; <span class="citation" data-cites="silberschatz2019database">Silberschatz, Korth, and Sudarshan (<a href="99-references.html#ref-silberschatz2019database" role="doc-biblioref">2019</a>)</span>.</p>
+<hr>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<hr>
+</section>
+<section id="inspect-table-structure" class="level2">
+<h2 class="anchored" data-anchor-id="inspect-table-structure">Inspect Table Structure</h2>
+<p>SQLite provides schema inspection through PRAGMA.</p>
+<div id="l05-schema-customers" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(<span class="st">"PRAGMA table_info(customers);"</span>, con)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   cid         name  type  notnull dflt_value  pk
+0    0  customer_id  TEXT        0       None   1
+1    1    full_name  TEXT        1       None   0
+2    2         city  TEXT        1       None   0
+3    3      country  TEXT        1       None   0
+4    4  signup_date  DATE        1       None   0</code></pre>
 </div>
+</div>
+<div id="l05-schema-orders" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(<span class="st">"PRAGMA table_info(orders);"</span>, con)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   cid         name  type  notnull dflt_value  pk
+0    0     order_id  TEXT        0       None   1
+1    1  customer_id  TEXT        1       None   0
+2    2   order_date  DATE        1       None   0
+3    3       status  TEXT        1       None   0</code></pre>
+</div>
+</div>
+<hr>
+</section>
+<section id="why-normalization-helps" class="level2">
+<h2 class="anchored" data-anchor-id="why-normalization-helps">Why Normalization Helps</h2>
+<p>If customer information were repeated in every order row, a city update would require changing many rows.</p>
+<p>Separating customers from orders prevents redundancy.</p>
+<p>In this schema:</p>
+<ul>
+<li>customers stores identity and profile attributes</li>
+<li>orders stores transaction events</li>
+<li>order_items stores line items</li>
+<li>products stores product attributes</li>
+</ul>
+<p>The goal is one entity per table and relationships enforced through keys.</p>
+<hr>
+</section>
+<section id="constraints-protect-integrity" class="level2">
+<h2 class="anchored" data-anchor-id="constraints-protect-integrity">Constraints Protect Integrity</h2>
+<p>Constraints prevent invalid data at the database level.</p>
+<div id="l05-example-constraints" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_sql(<span class="st">"SELECT sql FROM sqlite_master WHERE name = 'products';"</span>, con)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                                 sql
+0  CREATE TABLE products (\n  product_id   TEXT P...</code></pre>
+</div>
+</div>
+<p>Look for:</p>
+<ul>
+<li>PRIMARY KEY</li>
+<li>NOT NULL</li>
+<li>CHECK constraints</li>
+</ul>
+<p>Design discipline reduces analytical fragility.</p>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-date2004introduction" class="csl-entry" role="listitem">
+Date, C. J. 2004. <em>An Introduction to Database Systems</em>. 8th ed. Addison-Wesley.
+</div>
+<div id="ref-silberschatz2019database" class="csl-entry" role="listitem">
+Silberschatz, Abraham, Henry F. Korth, and S. Sudarshan. 2019. <em>Database System Concepts</em>. 7th ed. McGraw-Hill Education.
+</div>
+</div>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -203,12 +223,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a>
-  <ul class="collapse">
-  <li><a href="#create-the-python-environment" id="toc-create-the-python-environment" class="nav-link" data-scroll-target="#create-the-python-environment">1) Create the Python environment</a></li>
-  <li><a href="#initialize-the-sample-database-sqlite" id="toc-initialize-the-sample-database-sqlite" class="nav-link" data-scroll-target="#initialize-the-sample-database-sqlite">2) Initialize the sample database (SQLite)</a></li>
-  <li><a href="#render-the-book" id="toc-render-the-book" class="nav-link" data-scroll-target="#render-the-book">3) Render the book</a></li>
-  </ul></li>
+  <li><a href="#connecting-to-sqlite" id="toc-connecting-to-sqlite" class="nav-link active" data-scroll-target="#connecting-to-sqlite">Connecting to SQLite</a></li>
+  <li><a href="#inspecting-tables" id="toc-inspecting-tables" class="nav-link" data-scroll-target="#inspecting-tables">Inspecting Tables</a></li>
   </ul>
 </nav>
     </div>
@@ -242,40 +258,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Theme:</strong> Building the data backbone</li>
 </ul>
 </div>
-<p>Databases and SQL are not just storage. They are a way of thinking.</p>
-<p>This free track focuses on:</p>
-<ul>
-<li>relational structure (tables, keys, relationships)</li>
-<li>SQL as a language for answering questions</li>
-<li>query patterns used in analytics and reporting</li>
-<li>design discipline (integrity, redundancy, normalization)</li>
-<li>integration with Python for analysis workflows</li>
-</ul>
-<section id="setup" class="level2">
-<h2 class="anchored" data-anchor-id="setup">Setup</h2>
-<section id="create-the-python-environment" class="level3">
-<h3 class="anchored" data-anchor-id="create-the-python-environment">1) Create the Python environment</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/setup-env.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="initialize-the-sample-database-sqlite" class="level3">
-<h3 class="anchored" data-anchor-id="initialize-the-sample-database-sqlite">2) Initialize the sample database (SQLite)</h3>
-<p>This builds a small database file you can query locally.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/init-sqlite-db.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>You will get:</p>
-<ul>
-<li><code>data/cdi-retail.sqlite</code></li>
-<li>schema and seed SQL in <code>data/sql/</code></li>
-</ul>
-</section>
-<section id="render-the-book" class="level3">
-<h3 class="anchored" data-anchor-id="render-the-book">3) Render the book</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/build-all.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="next">
-<p>Next: SQL fundamentals</p>
+<p>Relational databases are formal systems for structuring data <span class="citation" data-cites="codd1970relational">Codd (<a href="99-references.html#ref-codd1970relational" role="doc-biblioref">1970</a>)</span>.</p>
+<p>This track focuses on structural clarity before analysis.</p>
+<hr>
+<section id="connecting-to-sqlite" class="level2">
+<h2 class="anchored" data-anchor-id="connecting-to-sqlite">Connecting to SQLite</h2>
+<div id="connect-sqlite" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sqlite3</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>con <span class="op">=</span> sqlite3.<span class="ex">connect</span>(<span class="st">"data/cdi-retail.sqlite"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(con)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;sqlite3.Connection object at 0x11f931990&gt;</code></pre>
 </div>
-
-
+</div>
+<p>The output shows a <code>sqlite3.Connection</code> object.<br>
+This is not a server connection. SQLite is file-based and embedded.</p>
+<hr>
 </section>
+<section id="inspecting-tables" class="level2">
+<h2 class="anchored" data-anchor-id="inspecting-tables">Inspecting Tables</h2>
+<div id="list-tables" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tables <span class="op">=</span> pd.read_sql(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SELECT name FROM sqlite_master WHERE type='table';"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    con</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(tables)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          name
+0    customers
+1     products
+2       orders
+3  order_items</code></pre>
+</div>
+</div>
+<p>This confirms available tables.</p>
+<hr>
+<p>Structure → Query → Interpretation</p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-codd1970relational" class="csl-entry" role="listitem">
+Codd, Edgar F. 1970. <span>“A Relational Model of Data for Large Shared Data Banks.”</span> <em>Communications of the ACM</em> 13 (6): 377–87. <a href="https://doi.org/10.1145/362384.362685">https://doi.org/10.1145/362384.362685</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

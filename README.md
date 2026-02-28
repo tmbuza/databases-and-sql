@@ -1,52 +1,91 @@
-# Databases and SQL (Free Track)
+# Databases and SQL
+## Building the Data Backbone for Analytical Workflows
 
 This repository is part of **Complex Data Insights (CDI)**.
 
-It teaches databases and SQL as the backbone behind analytical workflows.
+Databases and SQL form the structural foundation of modern analytical workflows.  
+Before modeling, visualization, or machine learning, data must be structured correctly.
 
-## What you will learn
+This free track teaches:
 
-- how relational databases structure data
-- how to write SQL to answer real questions
-- how joins work and where they break
-- how to think about normalization and integrity
-- how to connect SQL to Python for analysis
+- Relational thinking
+- SQL query fundamentals
+- Aggregation and grouping discipline
+- Join integrity and cardinality awareness
+- Normalization and schema design principles
+- SQL-to-Python integration for analysis
 
-## Quick start
+The emphasis is not only syntax.
 
-1. Create the environment
+It is structural clarity.
+
+---
+
+## Learning Philosophy
+
+Structure → Query → Interpretation
+
+When structure is correct, queries are predictable.  
+When structure is weak, analysis becomes fragile.
+
+This guide builds the backbone that supports every other CDI domain.
+
+---
+
+## Quick Start
+
+Create the Python environment:
 
 ```bash
 bash scripts/setup-env.sh
 ```
 
-2. Build the sample SQLite database
+Initialize the SQLite database:
 
 ```bash
 python scripts/init-sqlite-db.py
 ```
 
-3. Render the book
+Render the book:
 
 ```bash
 bash scripts/build-all.sh
 ```
 
-## Repository conventions
+---
+
+## Repository Conventions
 
 - `index.qmd` is cover-only
-- Gateway text and `:::cdi-message` start in `01-preface-and-setup.qmd`
-- Output is rendered to `docs/` for GitHub Pages
-- Filenames use hyphens
+- Lessons use header-based structure (no YAML titles)
+- No navigation callouts inside chapters
+- Output renders to `docs/` for GitHub Pages
+- Filenames use hyphen naming
 
-## Data
+---
 
-This free track includes a small retail dataset stored as:
+## Versioning
 
-- SQL schema and seed scripts in `data/sql/`
-- a generated SQLite database file: `data/cdi-retail.sqlite`
+This free track follows CDI semantic versioning:
 
-## License
+- v0.x → structural drafts
+- v1.0 → first fully coherent release
+- v1.x → refinements and improvements
+- v2.0 → major structural or scope changes
 
-TBD
+Current status: **Pre–v1.0 (Structural Complete)**
 
+---
+
+## Part of the CDI Ecosystem
+
+This pillar connects directly to:
+
+- Data Science
+- Visualization
+- Machine Learning
+- Applied Bioinformatics
+
+Every advanced workflow depends on reliable structure.
+
+This repository ensures that foundation.

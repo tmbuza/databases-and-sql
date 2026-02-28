@@ -1,6 +1,4 @@
----
-title: "Joins and Relational Thinking"
----
+# Joins and Relational Thinking
 
 :::cdi-message
 - **ID:** DBSQL-F-L04
@@ -9,8 +7,113 @@ title: "Joins and Relational Thinking"
 - **Theme:** Keys, joins, and avoiding duplication
 :::
 
-Content coming soon.
+Joins reconstruct meaning across tables.
 
-:::next
-Next: TBD
-:::
+Most SQL mistakes in analytics come from joins that change row counts in unexpected ways.
+
+Relational thinking means understanding:
+
+- what each table represents
+- how tables relate
+- whether relationships are one-to-one or one-to-many
+
+---
+
+## Setup
+
+```{python}
+#| label: l04-setup
+#| include: false
+
+import sqlite3
+import pandas as pd
+
+con = sqlite3.connect("data/cdi-retail.sqlite")
+```
+
+---
+
+## INNER JOIN
+
+INNER JOIN keeps rows that match in both tables.
+
+Orders with customer names:
+
+```{python}
+#| label: l04-orders-with-customers
+#| echo: true
+
+query = '''
+SELECT o.order_id,
+       c.full_name,
+       o.order_date,
+       o.status
+FROM orders o
+JOIN customers c
+  ON o.customer_id = c.customer_id
+ORDER BY o.order_date;
+'''
+
+df = pd.read_sql(query, con)
+print(df)
+```
+
+---
+
+## LEFT JOIN
+
+LEFT JOIN keeps all rows from the left table, even when no match exists on the right.
+
+Customers and their orders:
+
+```{python}
+#| label: l04-customers-left-join-orders
+#| echo: true
+
+query = '''
+SELECT c.full_name,
+       o.order_id,
+       o.order_date,
+       o.status
+FROM customers c
+LEFT JOIN orders o
+  ON c.customer_id = o.customer_id
+ORDER BY c.full_name, o.order_date;
+'''
+
+df = pd.read_sql(query, con)
+print(df)
+```
+
+---
+
+## Cardinality and Duplication
+
+One-to-many relationships are common:
+
+- one customer → many orders
+- one order → many order_items
+
+Duplication is expected when you join across one-to-many relationships.
+
+The error happens when duplication is interpreted as more customers, more orders, or more revenue without verifying row counts.
+
+---
+
+## Verify Row Counts
+
+```{python}
+#| label: l04-row-counts
+#| echo: true
+
+orders_n = pd.read_sql("SELECT COUNT(*) AS n_orders FROM orders;", con)
+items_n  = pd.read_sql("SELECT COUNT(*) AS n_items FROM order_items;", con)
+
+print(orders_n)
+print(items_n)
+```
+
+Row count changes after a join are not automatically wrong.
+
+They must match the structure you expect.
+

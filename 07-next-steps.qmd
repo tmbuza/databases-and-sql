@@ -1,16 +1,20 @@
----
-title: "Next Steps"
----
+# Next Steps
 
 :::cdi-message
 - **ID:** DBSQL-F-L07
-- **Type:** Lesson
+- **Type:** Conclusion
 - **Audience:** Public
-- **Theme:** How this connects to the CDI ecosystem
+- **Theme:** Structural discipline scales
 :::
 
-Content coming soon.
+You now understand:
 
-:::next
-Next: TBD
-:::
+- Database connections
+- SQL querying
+- Aggregation
+- Joins
+- Normalization
+- Python integration
+
+This backbone supports all CDI domains.
+

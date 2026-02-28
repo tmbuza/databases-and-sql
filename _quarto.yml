@@ -18,6 +18,8 @@ book:
     - 99-appendix.qmd
     - 99-references.qmd
 
+bibliography: references.bib
+
 execute:
   echo: true
   warning: false
