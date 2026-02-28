@@ -5,7 +5,6 @@ project:
 book:
   title: "Databases and SQL"
   subtitle: "Building the Data Backbone for Analytical Workflows"
-  author: "Complex Data Insights (CDI)"
   chapters:
     - index.qmd
     - 01-preface-and-setup.qmd
