@@ -13,7 +13,7 @@ This appendix provides additional reference material and troubleshooting guidanc
 
 ## Common SQL Errors
 
-### 1. No such table
+### No such table
 
 Error example:
 
@@ -37,7 +37,7 @@ Ensure you are running commands from the repository root directory.
 
 ---
 
-### 2. No such column
+### No such column
 
 Error example:
 
@@ -63,7 +63,7 @@ Always verify column names before writing complex queries.
 
 ---
 
-### 3. Incorrect Aggregation
+### Incorrect Aggregation
 
 If you see an error related to GROUP BY, verify:
 

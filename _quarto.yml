@@ -5,17 +5,33 @@ project:
 book:
   title: "Databases and SQL"
   subtitle: "Building the Data Backbone for Analytical Workflows"
+
   chapters:
     - index.qmd
-    - 01-preface-and-setup.qmd
-    - 02-sql-fundamentals.qmd
-    - 03-aggregation-and-grouping.qmd
-    - 04-joins-and-relational-thinking.qmd
-    - 05-database-design-and-normalization.qmd
-    - 06-sql-and-python-integration.qmd
-    - 07-next-steps.qmd
-    - 99-appendix.qmd
-    - 99-references.qmd
+
+    - part: "Foundations & Setup"
+      chapters:
+        - 01-preface-and-setup.qmd
+        - 02-sql-fundamentals.qmd
+
+    - part: "Querying Data"
+      chapters:
+        - 03-aggregation-and-grouping.qmd
+        - 04-joins-and-relational-thinking.qmd
+
+    - part: "Design & Integration"
+      chapters:
+        - 05-database-design-and-normalization.qmd
+        - 06-sql-and-python-integration.qmd
+
+    - part: "Summary & Next Steps"
+      chapters:
+        - 07-next-steps.qmd
+
+    - part: "Appendix"
+      chapters:
+        - 99-appendix.qmd
+        - 99-references.qmd
 
 bibliography: references.bib
 
