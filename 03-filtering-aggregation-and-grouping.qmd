@@ -1,12 +1,532 @@
-# Filtering, Aggregation, and Grouping {#sec-aggregation-grouping}
+# Filtering, Aggregation, and Grouping {#sec-filtering-aggregation-and-grouping}
+
+:::cdi-message
+- **ID:** DBSQL-03
+- **Type:** Core
+- **Audience:** Data analysts, data scientists, and learners building SQL foundations
+- **Theme:** Turn rows into trustworthy answers by filtering deliberately and aggregating at the correct grain
+:::
+
+Chapter 02 introduced the structure of a SQL query and the discipline of selecting explicit columns. This chapter moves from retrieving rows to answering analytical questions. You will restrict data with `WHERE`, summarize values with aggregate functions, define groups with `GROUP BY`, filter those groups with `HAVING`, and use conditional aggregation to calculate several measures in one query.
+
+The examples use a small SQLite retail database created by the accompanying Python script. The same reasoning applies to PostgreSQL, MySQL, DuckDB, SQL Server, and other relational database systems, although date functions and a few syntax details vary.
 
 ## Learning objectives
 
-- Filter records with compound conditions.
-- Summarize data with counts, totals, averages, minima, and maxima.
-- Use `GROUP BY` and `HAVING` to answer questions at the correct grain.
+By the end of this chapter, you will be able to:
 
-## Supporting example
+- translate analytical conditions into correct `WHERE` predicates;
+- combine conditions safely with `AND`, `OR`, `NOT`, and parentheses;
+- handle ranges, lists, patterns, and missing values;
+- explain how `NULL` changes comparisons and aggregates;
+- use `COUNT`, `SUM`, `AVG`, `MIN`, and `MAX` appropriately;
+- choose a grouping grain that matches the analytical question;
+- distinguish row filtering with `WHERE` from group filtering with `HAVING`;
+- create multiple metrics with conditional aggregation; and
+- validate summary results against totals and known invariants.
 
-The file `scripts/sql/03-aggregation-and-grouping.sql` calculates order counts and revenue by customer.
+## Chapter workflow
 
+Run the chapter workflow from the repository root:
+
+```bash
+bash scripts/bash/03-run-filtering-aggregation.sh
+```
+
+Or run the Python program directly:
+
+```bash
+python scripts/python/03-filtering-aggregation-and-grouping.py
+```
+
+The program creates:
+
+```text
+data/processed/03-retail.db
+results/03-category-summary.csv
+results/03-region-status-summary.csv
+results/03-validation-summary.txt
+results/figures/03-net-revenue-by-category.png
+```
+
+The database and result files are reproducible outputs. The script is the source of truth.
+
+## The analytical table
+
+The `orders` table contains one row per order line. This is the table's **grain**.
+
+| Column | Meaning |
+|---|---|
+| `order_id` | Order identifier |
+| `order_date` | Date recorded as ISO text (`YYYY-MM-DD`) |
+| `region` | Sales region |
+| `category` | Product category |
+| `sales_channel` | `Online`, `Retail`, or `Partner` |
+| `status` | `Completed`, `Returned`, or `Cancelled` |
+| `quantity` | Number of units |
+| `unit_price` | Price per unit |
+| `discount_rate` | Proportion discounted; may be `NULL` |
+
+Because each row is already an order line, `COUNT(*)` counts order lines. It does not automatically count unique customers, shipments, or products. Every aggregation must be interpreted at the source table's grain.
+
+::: {.callout-important}
+## Ask what one row represents
+
+Before writing `GROUP BY`, state the input grain and the desired output grain. Many plausible-looking SQL errors are grain errors rather than syntax errors.
+:::
+
+## Filter rows with `WHERE`
+
+`WHERE` removes rows before grouping and aggregation. A simple comparison uses a column, an operator, and a value:
+
+```sql
+SELECT
+    order_id,
+    order_date,
+    region,
+    category,
+    quantity,
+    unit_price
+FROM orders
+WHERE status = 'Completed';
+```
+
+Common comparison operators are:
+
+| Operator | Meaning |
+|---|---|
+| `=` | equal to |
+| `<>` or `!=` | not equal to |
+| `>` | greater than |
+| `>=` | greater than or equal to |
+| `<` | less than |
+| `<=` | less than or equal to |
+
+Text literals use single quotes. Numeric literals do not:
+
+```sql
+SELECT order_id, category, quantity
+FROM orders
+WHERE quantity >= 4;
+```
+
+### Combine predicates deliberately
+
+Use `AND` when every condition must be true:
+
+```sql
+SELECT order_id, region, category, quantity
+FROM orders
+WHERE status = 'Completed'
+  AND region = 'East'
+  AND quantity >= 2;
+```
+
+Use `OR` when at least one condition may be true:
+
+```sql
+SELECT order_id, region, status
+FROM orders
+WHERE region = 'North'
+   OR region = 'West';
+```
+
+SQL evaluates `AND` before `OR`. Parentheses make the intended logic visible and prevent accidental broadening:
+
+```sql
+SELECT order_id, region, status, quantity
+FROM orders
+WHERE status = 'Completed'
+  AND (region = 'North' OR region = 'West')
+  AND quantity >= 2;
+```
+
+Without the parentheses, completed North orders and *all* West orders could be returned, depending on how the expression is written.
+
+::: {.callout-tip}
+## Read the predicate as a sentence
+
+Say the condition aloud before running it: “completed orders that are in North or West and have at least two units.” If the SQL grouping does not match the sentence, add parentheses.
+:::
+
+### Use `IN` for a known set
+
+`IN` is clearer than repeating the same column with several `OR` conditions:
+
+```sql
+SELECT order_id, region, category
+FROM orders
+WHERE region IN ('North', 'West');
+```
+
+Its complement is `NOT IN`, but missing values require extra care because `NULL` represents unknown information.
+
+### Use `BETWEEN` for inclusive ranges
+
+`BETWEEN` includes both endpoints:
+
+```sql
+SELECT order_id, order_date, unit_price
+FROM orders
+WHERE unit_price BETWEEN 50 AND 150;
+```
+
+For dates stored in ISO format, lexical order matches chronological order:
+
+```sql
+SELECT order_id, order_date, category
+FROM orders
+WHERE order_date BETWEEN '2026-01-01' AND '2026-01-31';
+```
+
+For timestamps, a half-open interval is often safer because it includes the start and excludes the next boundary:
+
+```sql
+WHERE event_timestamp >= '2026-01-01'
+  AND event_timestamp <  '2026-02-01'
+```
+
+This avoids guessing the final possible time on the last day.
+
+### Match text patterns with `LIKE`
+
+`LIKE` uses `%` for any sequence of characters and `_` for one character:
+
+```sql
+SELECT DISTINCT category
+FROM orders
+WHERE category LIKE 'E%';
+```
+
+Pattern matching and case sensitivity vary across database systems and collations. Use it deliberately, especially when identifiers, codes, or user-entered text are involved.
+
+## Treat `NULL` as unknown
+
+`NULL` is not zero, an empty string, or the word “NULL.” It means that a value is missing or unknown. Comparisons such as `discount_rate = NULL` do not return the intended rows. Use `IS NULL` or `IS NOT NULL`:
+
+```sql
+SELECT order_id, discount_rate
+FROM orders
+WHERE discount_rate IS NULL;
+```
+
+SQL predicates use three-valued logic: true, false, and unknown. A `WHERE` clause retains only rows for which the predicate is true. Rows producing false or unknown are removed.
+
+Use `COALESCE` when a justified replacement is needed:
+
+```sql
+SELECT
+    order_id,
+    unit_price,
+    discount_rate,
+    unit_price * (1 - COALESCE(discount_rate, 0)) AS discounted_unit_price
+FROM orders;
+```
+
+Here, the chapter's data contract defines a missing discount as no discount. In another system, missing might mean “not yet known,” making zero an unsafe replacement. The business meaning must come before the function.
+
+## Summarize rows with aggregate functions
+
+Aggregate functions reduce many input rows to one summary value.
+
+```sql
+SELECT
+    COUNT(*) AS order_lines,
+    SUM(quantity) AS units,
+    AVG(unit_price) AS average_unit_price,
+    MIN(unit_price) AS minimum_unit_price,
+    MAX(unit_price) AS maximum_unit_price
+FROM orders
+WHERE status = 'Completed';
+```
+
+### Understand the different counts
+
+These expressions answer different questions:
+
+| Expression | What it counts |
+|---|---|
+| `COUNT(*)` | all rows that survive `WHERE` |
+| `COUNT(discount_rate)` | rows where `discount_rate` is not `NULL` |
+| `COUNT(DISTINCT region)` | distinct non-`NULL` regions |
+
+```sql
+SELECT
+    COUNT(*) AS all_order_lines,
+    COUNT(discount_rate) AS lines_with_known_discount,
+    COUNT(*) - COUNT(discount_rate) AS lines_with_missing_discount
+FROM orders;
+```
+
+`SUM`, `AVG`, `MIN`, and `MAX` generally ignore `NULL`. If every input value is `NULL`, their result is normally `NULL`, not zero.
+
+### Aggregate meaningful measures
+
+Adding unit prices usually has no useful interpretation. Revenue should reflect quantity and discount:
+
+```sql
+SELECT
+    SUM(
+        quantity * unit_price * (1 - COALESCE(discount_rate, 0))
+    ) AS net_revenue
+FROM orders
+WHERE status = 'Completed';
+```
+
+The formula is evaluated for each row and then summed. The definition also excludes cancelled and returned orders through `WHERE`.
+
+## Define output grain with `GROUP BY`
+
+`GROUP BY` partitions the filtered rows and calculates aggregates within each group:
+
+```sql
+SELECT
+    category,
+    COUNT(*) AS completed_order_lines,
+    SUM(quantity) AS units_sold,
+    ROUND(
+        SUM(quantity * unit_price * (1 - COALESCE(discount_rate, 0))),
+        2
+    ) AS net_revenue
+FROM orders
+WHERE status = 'Completed'
+GROUP BY category
+ORDER BY net_revenue DESC;
+```
+
+The input grain is one order line. The output grain is one category. Every selected column must therefore be either:
+
+- part of the grouping key; or
+- calculated with an aggregate function.
+
+Some database engines reject a query that selects an ungrouped, unaggregated column. SQLite may allow it in some cases and return an arbitrary value, which makes portability and interpretation unsafe. Write to the stricter rule.
+
+### Group by more than one dimension
+
+```sql
+SELECT
+    region,
+    sales_channel,
+    COUNT(*) AS order_lines,
+    SUM(quantity) AS units
+FROM orders
+WHERE status = 'Completed'
+GROUP BY region, sales_channel
+ORDER BY region, sales_channel;
+```
+
+The output grain is now one row per region–channel combination. Adding grouping columns increases detail; removing them produces a coarser summary.
+
+## Filter groups with `HAVING`
+
+`WHERE` acts on rows before grouping. `HAVING` acts on groups after aggregation:
+
+```sql
+SELECT
+    category,
+    COUNT(*) AS completed_order_lines,
+    ROUND(SUM(quantity * unit_price), 2) AS gross_revenue
+FROM orders
+WHERE status = 'Completed'
+GROUP BY category
+HAVING COUNT(*) >= 3
+ORDER BY gross_revenue DESC;
+```
+
+The logical roles are:
+
+```text
+FROM     identify the source
+WHERE    filter source rows
+GROUP BY form groups
+HAVING   filter groups
+SELECT   produce columns and aggregates
+ORDER BY sort the final result
+```
+
+The database optimizer may execute operations differently, but this logical order is the clearest way to reason about a query.
+
+::: {.callout-warning}
+## Do not use `HAVING` as a general substitute for `WHERE`
+
+Filter individual rows in `WHERE` whenever possible. This preserves the intended meaning and can reduce the number of rows that must be grouped.
+:::
+
+## Calculate several measures with conditional aggregation
+
+A `CASE` expression can classify rows inside an aggregate:
+
+```sql
+SELECT
+    region,
+    COUNT(*) AS all_order_lines,
+    SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END) AS completed_lines,
+    SUM(CASE WHEN status = 'Returned' THEN 1 ELSE 0 END) AS returned_lines,
+    SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled_lines
+FROM orders
+GROUP BY region
+ORDER BY region;
+```
+
+Conditional aggregation is especially useful for rates:
+
+```sql
+SELECT
+    region,
+    COUNT(*) AS all_order_lines,
+    ROUND(
+        100.0 * SUM(CASE WHEN status = 'Returned' THEN 1 ELSE 0 END)
+        / COUNT(*),
+        1
+    ) AS return_rate_percent
+FROM orders
+GROUP BY region
+ORDER BY return_rate_percent DESC;
+```
+
+`100.0` forces decimal arithmetic in systems where integer division would otherwise truncate the result.
+
+## Avoid common aggregation mistakes
+
+| Mistake | Why it fails | Better practice |
+|---|---|---|
+| Counting rows without checking grain | Rows may be line items rather than orders | State the input grain; use `COUNT(DISTINCT order_id)` when appropriate |
+| Writing `column = NULL` | Comparisons with unknown are unknown | Use `IS NULL` or `IS NOT NULL` |
+| Mixing `AND` and `OR` without parentheses | Operator precedence may change the population | Group related predicates explicitly |
+| Selecting an ungrouped detail column | The result is invalid or nondeterministic | Group it, aggregate it, or remove it |
+| Filtering an aggregate in `WHERE` | Aggregates do not yet exist logically | Use `HAVING` |
+| Replacing every missing value with zero | Zero may change the business meaning | Apply `COALESCE` only under an explicit rule |
+| Averaging pre-aggregated averages | Groups may have different sizes | Return to the lowest valid grain or use a weighted calculation |
+| Rounding before aggregation | Repeated rounding can accumulate error | Aggregate first and round for presentation |
+
+## Validate an aggregate query
+
+Summary tables should be tested, not merely inspected. The chapter script applies three useful checks.
+
+### Reconcile grouped counts
+
+The sum of category-level completed order counts must equal the independently calculated total number of completed rows:
+
+```sql
+SELECT COUNT(*)
+FROM orders
+WHERE status = 'Completed';
+```
+
+### Reconcile grouped revenue
+
+The sum of unrounded category revenue must match the ungrouped completed-order total within a small floating-point tolerance.
+
+### Check partition completeness
+
+Within each region:
+
+```text
+completed + returned + cancelled = all order lines
+```
+
+These invariants detect missing status categories, unintended filters, duplicated rows, and mismatched grains.
+
+## Python execution pattern
+
+Python's built-in `sqlite3` module can execute the same SQL and retrieve the results without requiring a separate database server:
+
+```{python}
+#| eval: false
+import sqlite3
+
+connection = sqlite3.connect("data/processed/03-retail.db")
+connection.row_factory = sqlite3.Row
+
+query = """
+SELECT
+    category,
+    COUNT(*) AS completed_order_lines,
+    SUM(quantity) AS units_sold
+FROM orders
+WHERE status = ?
+GROUP BY category
+ORDER BY units_sold DESC;
+"""
+
+rows = connection.execute(query, ("Completed",)).fetchall()
+connection.close()
+```
+
+The placeholder `?` keeps the value separate from the SQL statement. Parameterization avoids quoting errors and is essential when a value originates outside the program. Never build SQL by concatenating untrusted text.
+
+## Practice exercises
+
+Use `data/processed/03-retail.db` after running the chapter script.
+
+1. Return completed online orders from January 2026 with at least two units.
+2. Count all rows, rows with a known discount, and rows with a missing discount.
+3. Calculate completed net revenue by region and category.
+4. Return only region–category groups with at least two completed order lines.
+5. Calculate the percentage of order lines that were completed in each sales channel.
+6. Explain why `AVG(unit_price)` is not the average realized price per unit after discounts.
+7. Add a validation query proving that all status-specific counts reconcile to the table total.
+
+::: {.callout-tip collapse="true"}
+## Selected solutions
+
+```sql
+-- Exercise 1
+SELECT order_id, order_date, region, category, quantity
+FROM orders
+WHERE status = 'Completed'
+  AND sales_channel = 'Online'
+  AND order_date >= '2026-01-01'
+  AND order_date <  '2026-02-01'
+  AND quantity >= 2;
+
+-- Exercise 3
+SELECT
+    region,
+    category,
+    ROUND(
+        SUM(quantity * unit_price * (1 - COALESCE(discount_rate, 0))),
+        2
+    ) AS net_revenue
+FROM orders
+WHERE status = 'Completed'
+GROUP BY region, category
+ORDER BY region, net_revenue DESC;
+
+-- Exercise 5
+SELECT
+    sales_channel,
+    COUNT(*) AS all_order_lines,
+    ROUND(
+        100.0 * SUM(CASE WHEN status = 'Completed' THEN 1 ELSE 0 END)
+        / COUNT(*),
+        1
+    ) AS completed_percent
+FROM orders
+GROUP BY sales_channel
+ORDER BY completed_percent DESC;
+```
+:::
+
+## Chapter checklist
+
+Before continuing, confirm that you can:
+
+- explain when filtering occurs relative to grouping;
+- choose between `WHERE` and `HAVING`;
+- use parentheses to express compound logic safely;
+- test for missing values correctly;
+- distinguish `COUNT(*)`, `COUNT(column)`, and `COUNT(DISTINCT column)`;
+- state both the input and output grain of a summary query;
+- build a group-level rate with conditional aggregation; and
+- reconcile grouped results with an independent total.
+
+## Summary
+
+In this chapter, you filtered rows with explicit predicates, handled `NULL` with three-valued logic, summarized data with aggregate functions, changed result grain with `GROUP BY`, filtered aggregates with `HAVING`, and produced multiple measures through conditional aggregation. You also treated validation as part of the query—not an optional step after it.
+
+The central principle is simple: **filter the intended rows, group at the intended grain, define every measure precisely, and reconcile the result.**
+
+## Looking ahead
+
+Chapter 04 introduces joins and relational thinking. You will combine tables without accidentally multiplying rows, losing unmatched records, or changing the meaning of an aggregate.

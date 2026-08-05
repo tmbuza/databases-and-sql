@@ -1,7 +1,284 @@
-# Storage Formats and Partitioning {#sec-storage-partitioning}
+---
+title: "Storage Formats and Partitioning"
+---
+
+# Storage Formats and Partitioning {#sec-storage-formats-partitioning}
+
+::: {.cdi-message}
+- **ID:** DSDP-012
+- **Type:** Guide chapter
+- **Audience:** Data analysts, analytics engineers, and data engineers
+- **Theme:** Choosing physical layouts that make trusted data efficient to store and query
+:::
+
+The logical contents of a dataset and its physical layout are separate design decisions. Chapter 11 produced trusted order records. This chapter asks how those records should be encoded, compressed, partitioned, and exposed so that downstream systems can read the required data without scanning everything.
+
+The practical workflow writes the same deterministic dataset as CSV, JSON Lines, Parquet, and date-partitioned Parquet. It then records file sizes and read times, verifies round-trip row counts, and demonstrates partition pruning for a one-month query.
 
 ## Learning objectives
 
-- Compare CSV, JSON, Parquet, database tables, and object storage.
-- Select partition keys that support common access patterns.
-- Avoid small-file and schema-evolution problems.
+After completing this chapter, you will be able to:
+
+1. distinguish row-oriented text formats from columnar analytical formats;
+2. explain how schema, compression, and column projection affect storage and reads;
+3. design partitions around common filters rather than arbitrary columns;
+4. recognize small-file, over-partitioning, and schema-evolution risks;
+5. use manifests and validation checks to make stored datasets auditable; and
+6. choose a format and layout from workload, interoperability, and lifecycle requirements.
+
+## Logical data versus physical layout
+
+A table describes fields and records. A physical dataset additionally decides:
+
+- how values are encoded;
+- whether types are embedded or inferred;
+- whether records or columns are stored together;
+- which compression codec is used;
+- how records are divided among files and directories; and
+- which metadata lets a query engine skip irrelevant data.
+
+Two datasets can contain identical rows while behaving very differently under the same query. The physical plan should therefore follow the access pattern.
+
+## The chapter case study
+
+The supporting program generates 60,000 synthetic orders spanning 2025. It uses a fixed random seed, writes each format, reads it back, and benchmarks a June query.
+
+Run it from the repository root:
+
+```bash
+bash scripts/bash/12-run-storage-benchmark.sh
+```
+
+The command creates:
+
+```text
+data/processed/12-orders.csv
+data/processed/12-orders.jsonl
+data/processed/12-orders.parquet
+data/processed/12-orders-partitioned/order_year=2025/order_month=.../*.parquet
+results/12-storage-benchmark.csv
+results/12-partition-pruning.csv
+results/12-storage-manifest.json
+results/figures/12-storage-format-comparison.png
+```
+
+The ZIP includes the scripts, benchmark tables, manifest, plot, compact samples, and the complete generated datasets so the benchmark can be inspected without rerunning it.
+
+## Comparing common formats
+
+| Format | Organization | Schema | Strength | Main limitation |
+|---|---|---|---|---|
+| CSV | Row-oriented text | External or inferred | Universal exchange and inspection | Weak typing; inefficient analytical scans |
+| JSON Lines | Row-oriented text | Self-describing field names, types still contextual | Nested/event records and streaming | Repeated keys increase size; inconsistent records are possible |
+| Parquet | Columnar binary | Embedded | Projection, compression, predicate-aware analytics | Requires compatible libraries; poor for manual inspection |
+| Database table | Engine-managed pages | Enforced by database | Transactions, indexes, concurrent access | Less portable; operational ownership required |
+
+No format is universally best. CSV remains useful at system boundaries, JSON Lines fits event-shaped records, and Parquet is usually the better analytical storage layer.
+
+### Text formats
+
+CSV is a convention rather than a complete data contract. Readers must agree on delimiter, quoting, encoding, null representation, date interpretation, and types. Leading zeros and time zones are easily lost when inference differs.
+
+JSON Lines stores one JSON object per line. It supports nested structures and can be processed incrementally, but every object repeats field names. Schema variation is technically possible even when consumers expect a stable table.
+
+Text remains valuable for exchange and debugging. It should still be accompanied by a declared schema and validation at ingestion.
+
+### Columnar storage
+
+Parquet groups values by column and stores metadata for row groups. This supports three important analytical optimizations:
+
+- **projection:** reading only requested columns;
+- **compression:** similar adjacent values often compress effectively; and
+- **data skipping:** statistics can let an engine avoid row groups that cannot satisfy a filter.
+
+If a query needs three columns from a table containing forty, a columnar reader can avoid decoding most of the dataset. This benefit depends on the engine, file metadata, row-group layout, and filter expression; a file extension alone does not guarantee fast queries.
+
+## Compression is a compute–storage trade-off
+
+Compression reduces bytes stored and transferred but consumes CPU during writing and reading. Common Parquet codecs include Snappy, gzip, Brotli, and Zstandard. The case study uses Snappy because it provides fast, broadly supported compression.
+
+Choose a codec by measuring the real workload:
+
+| Priority | Typical choice |
+|---|---|
+| Fast interactive reads and broad compatibility | Snappy |
+| Stronger compression with balanced performance | Zstandard |
+| Maximum interoperability with older stacks | Snappy or gzip after compatibility testing |
+| Archival size reduction | A stronger codec, benchmarked against restore time |
+
+The benchmark repeats each read and reports the median. Its values describe this generated dataset and runtime—not a universal ranking.
+
+## Partitioning
+
+Partitioning divides a logical dataset into physical groups based on one or more fields. The case study uses Hive-style paths:
+
+```text
+12-orders-partitioned/
+└── order_year=2025/
+    ├── order_month=1/
+    ├── order_month=2/
+    └── ...
+```
+
+A query for June can select `order_year=2025/order_month=06` instead of opening all twelve monthly partitions. The fraction of files considered is:
+
+$$
+\text{scan fraction} = \frac{\text{selected partition files}}{\text{all partition files}}
+$$
+
+Partitioning helps when filters align with partition keys and each partition contains enough data to form reasonably sized files.
+
+### Choose keys from access patterns
+
+A good partition field is frequently filtered, stable, and neither too coarse nor too granular.
+
+| Candidate | Assessment |
+|---|---|
+| `order_year`, `order_month` | Useful for time-bounded reporting and retention |
+| `region` | Useful when queries and access policies are region-specific |
+| `status` | Usually poor: values change and distributions may be skewed |
+| `customer_id` | Usually poor: high cardinality produces tiny partitions |
+| `order_id` | Incorrect: effectively one partition per record |
+
+Start with the coarsest granularity that provides meaningful pruning. Daily partitions are not automatically better than monthly partitions.
+
+## The small-file problem
+
+Over-partitioning creates many small files. Each file carries metadata, listing, opening, scheduling, and footer-reading overhead. Thousands of tiny files may be slower than a smaller number of larger files even when fewer bytes are selected.
+
+Common controls include:
+
+- buffering records before writing;
+- setting target file sizes;
+- compacting small files after ingestion;
+- limiting partition cardinality;
+- avoiding one file per pipeline run when runs are frequent; and
+- monitoring file count and size distribution, not only dataset bytes.
+
+Partitioning is a pruning strategy, not a substitute for file-size management.
+
+## Schema and type fidelity
+
+The script uses an explicit Arrow schema before writing Parquet. This prevents an all-null batch or an ambiguous Python object column from changing the physical type.
+
+```python
+ORDER_SCHEMA = pa.schema([
+    pa.field("order_id", pa.string(), nullable=False),
+    pa.field("order_timestamp", pa.timestamp("ns"), nullable=False),
+    pa.field("quantity", pa.int32(), nullable=False),
+    pa.field("unit_price", pa.float64(), nullable=False),
+])
+```
+
+Production schemas should define every field, its type, nullability, meaning, and evolution policy. Decimal financial values may be preferable to binary floating point when exact arithmetic is required.
+
+## Schema evolution
+
+Stored data outlives individual pipeline runs. Changes must be classified deliberately:
+
+- adding a nullable field is often backward-compatible;
+- removing or renaming a field can break existing readers;
+- narrowing a numeric type risks overflow or truncation;
+- changing units or semantics is breaking even if the physical type is unchanged; and
+- changing a partition key requires a migration or dual-read strategy.
+
+A safe workflow versions the contract, tests old and new readers, backfills when required, and records which schema produced every file.
+
+## Manifests and validation
+
+Directory listings are not sufficient evidence of a complete publication. The generated manifest records:
+
+- dataset and schema versions;
+- creation time and generator;
+- deterministic seed and expected row count;
+- partition columns;
+- compression codec;
+- files with byte sizes and SHA-256 digests; and
+- round-trip validation results.
+
+Consumers can use an atomic pointer or catalog update to expose a completed manifest only after all data files and validations succeed. This prevents readers from observing a partially written dataset.
+
+The case study validates that every representation has the expected row count and that the partitioned dataset covers the same logical records. In production, also compare key uniqueness, null counts, aggregates, min/max timestamps, and content hashes where practical.
+
+## Reading only what is needed
+
+The benchmark evaluates three Parquet access patterns:
+
+1. full-file read;
+2. projected read of selected analytical columns; and
+3. a June read from the matching partition directory.
+
+Projection reduces columns decoded. Partition pruning reduces files considered. They solve different problems and can be combined.
+
+```python
+projected = pd.read_parquet(
+    parquet_path,
+    columns=["order_id", "order_timestamp", "net_amount", "region"],
+)
+
+june = pd.read_parquet(
+    partition_root / "order_year=2025" / "order_month=06"
+)
+```
+
+The figure compares bytes and median full-read time across the three physical representations.
+
+```{python}
+#| echo: false
+#| eval: false
+#| fig-cap: "Storage size and median full-read time for equivalent Chapter 12 datasets."
+#| out-width: "95%"
+from IPython.display import Image, display
+display(Image(filename="results/figures/12-storage-format-comparison.png"))
+```
+
+Interpret the chart as an experiment, not a guarantee. Results change with row count, value distribution, cache state, filesystem, codec, library versions, and hardware.
+
+## Publication pattern
+
+A reliable batch publication can use the following order:
+
+1. write data to a run-specific staging location;
+2. validate schema, counts, keys, partitions, and aggregates;
+3. generate the manifest and checksums;
+4. compact files when thresholds require it;
+5. move or register the completed version atomically; and
+6. retain or remove the previous version according to recovery policy.
+
+Retries should write the same logical version or a new isolated run path. They must not append duplicate records into already published partitions.
+
+## Operational checklist
+
+Before publishing a physical dataset, confirm that:
+
+- the format matches the exchange or analytical workload;
+- schema and null behavior are explicit;
+- compression is supported by every required reader;
+- partition keys align with common filters;
+- partition cardinality and skew are bounded;
+- target file sizes and compaction rules are defined;
+- timestamps, time zones, decimals, and identifiers round-trip correctly;
+- the manifest records versions, files, sizes, and checksums;
+- a reader cannot observe incomplete output; and
+- retention and deletion operate correctly at the chosen partition granularity.
+
+## Exercises
+
+1. Increase the dataset to 500,000 rows and compare Snappy with Zstandard compression.
+2. Change monthly partitions to daily partitions. Report file count, median file size, and June query time.
+3. Add a region partition beneath the month. Identify skew and decide whether pruning justifies the extra files.
+4. Add a nullable `promotion_code` field and document a backward-compatible schema-evolution plan.
+5. Extend the manifest with minimum and maximum timestamps for every partition.
+6. Write a validation that reconstructs the full partitioned dataset and compares business-key and revenue aggregates with the source.
+
+## Key takeaways
+
+- Physical layout is part of pipeline design because it controls cost, interoperability, and query performance.
+- CSV and JSON Lines are useful exchange formats, while Parquet is optimized for analytical projection and compression.
+- Partition keys should follow stable, frequent filters and avoid excessive cardinality.
+- Over-partitioning replaces scan cost with metadata and small-file overhead.
+- Projection, row-group skipping, and partition pruning are distinct optimizations.
+- Explicit schemas, manifests, checksums, and round-trip validation make publication auditable.
+- Format and partition choices should be benchmarked with representative data and queries.
+
+The next chapter adds orchestration and scheduling so these storage workflows run in the correct order, at the correct time, with observable failure and retry behavior.

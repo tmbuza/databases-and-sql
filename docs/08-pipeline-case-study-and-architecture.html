@@ -325,8 +325,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
-  <li><a href="#case-study-flow" id="toc-case-study-flow" class="nav-link" data-scroll-target="#case-study-flow">Case-study flow</a></li>
+  <li><a href="#sec-pipeline-case-study-and-architecture" id="toc-sec-pipeline-case-study-and-architecture" class="nav-link active" data-scroll-target="#sec-pipeline-case-study-and-architecture">Pipeline Case Study and Architecture</a>
+  <ul class="collapse">
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#case-study-daily-retail-operations" id="toc-case-study-daily-retail-operations" class="nav-link" data-scroll-target="#case-study-daily-retail-operations">Case study: daily retail operations</a></li>
+  <li><a href="#requirements-and-service-expectations" id="toc-requirements-and-service-expectations" class="nav-link" data-scroll-target="#requirements-and-service-expectations">Requirements and service expectations</a></li>
+  <li><a href="#reference-architecture" id="toc-reference-architecture" class="nav-link" data-scroll-target="#reference-architecture">Reference architecture</a></li>
+  <li><a href="#data-flow-and-contracts" id="toc-data-flow-and-contracts" class="nav-link" data-scroll-target="#data-flow-and-contracts">Data flow and contracts</a>
+  <ul class="collapse">
+  <li><a href="#source-contracts" id="toc-source-contracts" class="nav-link" data-scroll-target="#source-contracts">Source contracts</a></li>
+  <li><a href="#incremental-extraction" id="toc-incremental-extraction" class="nav-link" data-scroll-target="#incremental-extraction">Incremental extraction</a></li>
+  <li><a href="#idempotent-loading" id="toc-idempotent-loading" class="nav-link" data-scroll-target="#idempotent-loading">Idempotent loading</a></li>
+  </ul></li>
+  <li><a href="#pipeline-stages" id="toc-pipeline-stages" class="nav-link" data-scroll-target="#pipeline-stages">Pipeline stages</a></li>
+  <li><a href="#failure-boundaries-and-recovery" id="toc-failure-boundaries-and-recovery" class="nav-link" data-scroll-target="#failure-boundaries-and-recovery">Failure boundaries and recovery</a></li>
+  <li><a href="#operational-metadata" id="toc-operational-metadata" class="nav-link" data-scroll-target="#operational-metadata">Operational metadata</a></li>
+  <li><a href="#simulating-the-architecture" id="toc-simulating-the-architecture" class="nav-link" data-scroll-target="#simulating-the-architecture">Simulating the architecture</a></li>
+  <li><a href="#evaluating-the-system" id="toc-evaluating-the-system" class="nav-link" data-scroll-target="#evaluating-the-system">Evaluating the system</a></li>
+  <li><a href="#architecture-decisions-and-trade-offs" id="toc-architecture-decisions-and-trade-offs" class="nav-link" data-scroll-target="#architecture-decisions-and-trade-offs">Architecture decisions and trade-offs</a>
+  <ul class="collapse">
+  <li><a href="#batch-versus-streaming" id="toc-batch-versus-streaming" class="nav-link" data-scroll-target="#batch-versus-streaming">Batch versus streaming</a></li>
+  <li><a href="#full-refresh-versus-incremental-processing" id="toc-full-refresh-versus-incremental-processing" class="nav-link" data-scroll-target="#full-refresh-versus-incremental-processing">Full refresh versus incremental processing</a></li>
+  <li><a href="#database-transformations-versus-python" id="toc-database-transformations-versus-python" class="nav-link" data-scroll-target="#database-transformations-versus-python">Database transformations versus Python</a></li>
+  </ul></li>
+  <li><a href="#practical-review-checklist" id="toc-practical-review-checklist" class="nav-link" data-scroll-target="#practical-review-checklist">Practical review checklist</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
+  <li><a href="#what-comes-next" id="toc-what-comes-next" class="nav-link" data-scroll-target="#what-comes-next">What comes next</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -335,7 +360,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-from-scripts-to-data-pipelines.html">From Queries to Pipelines</a></li><li class="breadcrumb-item"><a href="./08-pipeline-case-study-and-architecture.html"><span class="chapter-title">Pipeline Case Study and Architecture</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-pipeline-case-study" class="quarto-section-identifier"><span class="chapter-title">Pipeline Case Study and Architecture</span></span></h1>
+<h1 class="title"><span class="chapter-title">Pipeline Case Study and Architecture</span></h1>
 </div>
 
 
@@ -358,42 +383,413 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="sec-pipeline-case-study-and-architecture" class="level1">
+<h1>Pipeline Case Study and Architecture</h1>
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DBSQL-008</li>
+<li><strong>Type:</strong> Case study and architecture</li>
+<li><strong>Audience:</strong> Data analysts, analytics engineers, and aspiring data engineers</li>
+<li><strong>Theme:</strong> Designing a reliable, observable, and restartable data pipeline</li>
+</ul>
+</div>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
-<ul>
-<li>Define the continuous case study and its trusted output.</li>
-<li>Map sources, processing stages, storage layers, and consumers.</li>
-<li>Establish data contracts and ownership boundaries.</li>
-</ul>
+<p>By the end of this chapter, you will be able to:</p>
+<ol type="1">
+<li>translate a reporting requirement into a layered data-pipeline architecture;</li>
+<li>distinguish source, landing, staging, warehouse, and serving responsibilities;</li>
+<li>define contracts, quality gates, checkpoints, and operational metadata;</li>
+<li>explain why idempotency and incremental processing matter; and</li>
+<li>evaluate pipeline performance with latency, throughput, quality, and reliability measures.</li>
+</ol>
 </section>
-<section id="case-study-flow" class="level2">
-<h2 class="anchored" data-anchor-id="case-study-flow">Case-study flow</h2>
+<section id="case-study-daily-retail-operations" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-daily-retail-operations">Case study: daily retail operations</h2>
+<p>Imagine a retailer that receives orders from an operational PostgreSQL database, product updates from a supplier CSV file, and store metadata from a small REST API. Managers need a trustworthy daily dashboard showing revenue, order volume, average order value, and fulfilment performance by store and product category.</p>
+<p>The first implementation could be one script that queries each source, joins the data, and writes a report. That is useful for proving the logic, but it hides important production questions:</p>
+<ul>
+<li>What data was processed, and when?</li>
+<li>What happens if the API succeeds but the database extraction fails?</li>
+<li>Can a failed run restart without duplicating rows?</li>
+<li>How are late-arriving orders handled?</li>
+<li>How does the team know that a supplier changed a column name?</li>
+<li>Can dashboard users trace a number back to its source?</li>
+</ul>
+<p>The case study therefore treats the pipeline as a system, not merely a sequence of SQL statements.</p>
+</section>
+<section id="requirements-and-service-expectations" class="level2">
+<h2 class="anchored" data-anchor-id="requirements-and-service-expectations">Requirements and service expectations</h2>
+<p>The business requirement is translated into explicit operating targets.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 40%">
+<col style="width: 30%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th style="text-align: right;">Working target</th>
+<th>Design implication</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Dashboard freshness</td>
+<td style="text-align: right;">Available by 06:00 daily</td>
+<td>Scheduled batch with a completion deadline</td>
+</tr>
+<tr class="even">
+<td>Historical correction</td>
+<td style="text-align: right;">Reprocess any date</td>
+<td>Partitioned data and parameterized backfills</td>
+</tr>
+<tr class="odd">
+<td>Duplicate tolerance</td>
+<td style="text-align: right;">Zero duplicated order keys</td>
+<td>Idempotent merge on the business key</td>
+</tr>
+<tr class="even">
+<td>Data completeness</td>
+<td style="text-align: right;">At least 99.5% of expected orders</td>
+<td>Volume and reconciliation checks</td>
+</tr>
+<tr class="odd">
+<td>Recovery objective</td>
+<td style="text-align: right;">Resume within 30 minutes</td>
+<td>Durable checkpoints and bounded retries</td>
+</tr>
+<tr class="even">
+<td>Auditability</td>
+<td style="text-align: right;">Every published row traceable</td>
+<td>Run IDs, timestamps, source metadata, and logs</td>
+</tr>
+</tbody>
+</table>
+<p>Targets make architectural trade-offs testable. A pipeline is not reliable simply because it completed once.</p>
+</section>
+<section id="reference-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="reference-architecture">Reference architecture</h2>
 <div class="cell" data-layout-align="default">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  A["Raw source"] --&gt; B["Extract"]</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  B --&gt; C["Validate and transform"]</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  C --&gt; D["Trusted dataset"]</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  D --&gt; E["Analytics consumer"]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    A["Operational sources"] --&gt; B["Landing zone"]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    B --&gt; C["Validated staging"]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    C --&gt; D["Warehouse models"]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    D --&gt; E["Serving layer"]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    F["Orchestrator and metadata"] -. controls and observes .-&gt; B</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    F -. controls and observes .-&gt; C</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    F -. controls and observes .-&gt; D</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    F -. controls and observes .-&gt; E</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <p></p><figure class="figure"><p></p>
 <div>
-<pre class="mermaid mermaid-js">flowchart LR
-  A["Raw source"] --&gt; B["Extract"]
-  B --&gt; C["Validate and transform"]
-  C --&gt; D["Trusted dataset"]
-  D --&gt; E["Analytics consumer"]
+<pre class="mermaid mermaid-js">flowchart TD
+    A["Operational sources"] --&gt; B["Landing zone"]
+    B --&gt; C["Validated staging"]
+    C --&gt; D["Warehouse models"]
+    D --&gt; E["Serving layer"]
+    F["Orchestrator and metadata"] -. controls and observes .-&gt; B
+    F -. controls and observes .-&gt; C
+    F -. controls and observes .-&gt; D
+    F -. controls and observes .-&gt; E
 </pre>
 </div>
 <p></p></figure><p></p>
 </div>
 </div>
 </div>
+<p>Each layer has one primary responsibility:</p>
+<ul>
+<li><strong>Operational sources</strong> own business transactions and reference data. The analytical pipeline should minimize its impact on these systems.</li>
+<li><strong>Landing</strong> preserves extracted data with minimal transformation. It provides replayability and an evidence trail.</li>
+<li><strong>Validated staging</strong> standardizes types, names, timestamps, and keys while quarantining invalid records.</li>
+<li><strong>Warehouse models</strong> express stable business entities and metrics using relational transformations.</li>
+<li><strong>Serving</strong> publishes tables optimized for dashboards, applications, or downstream analysis.</li>
+<li><strong>Orchestration and metadata</strong> coordinate dependencies and record run state, quality results, lineage, and timing.</li>
+</ul>
+<p>Separating layers prevents source-specific extraction details from leaking into every analytical query.</p>
+</section>
+<section id="data-flow-and-contracts" class="level2">
+<h2 class="anchored" data-anchor-id="data-flow-and-contracts">Data flow and contracts</h2>
+<section id="source-contracts" class="level3">
+<h3 class="anchored" data-anchor-id="source-contracts">Source contracts</h3>
+<p>A source contract records the assumptions the pipeline makes about incoming data. For <code>orders</code>, the contract might require:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>order_id</code></td>
+<td>string</td>
+<td>Non-null and unique within the source</td>
+</tr>
+<tr class="even">
+<td><code>store_id</code></td>
+<td>string</td>
+<td>Non-null; must resolve to a known store</td>
+</tr>
+<tr class="odd">
+<td><code>ordered_at</code></td>
+<td>timestamp</td>
+<td>Valid UTC timestamp</td>
+</tr>
+<tr class="even">
+<td><code>quantity</code></td>
+<td>integer</td>
+<td>Greater than zero</td>
+</tr>
+<tr class="odd">
+<td><code>unit_price</code></td>
+<td>decimal</td>
+<td>Greater than or equal to zero</td>
+</tr>
+<tr class="even">
+<td><code>updated_at</code></td>
+<td>timestamp</td>
+<td>Used as the incremental cursor</td>
+</tr>
+</tbody>
+</table>
+<p>Contracts should be versioned. An added nullable field may be compatible, while renaming <code>order_id</code> is a breaking change that should stop publication.</p>
+</section>
+<section id="incremental-extraction" class="level3">
+<h3 class="anchored" data-anchor-id="incremental-extraction">Incremental extraction</h3>
+<p>Extracting every historical row each day is simple but becomes expensive. The case study uses a high-water mark based on <code>updated_at</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> updated_at <span class="op">&gt;</span> <span class="ch">:previous_watermark</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> updated_at <span class="op">&lt;=</span> <span class="ch">:current_watermark</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The upper bound is fixed at the start of the run. This creates a reproducible interval and prevents an extraction from chasing continuously arriving records. A small look-back window can capture delayed commits; the loading step must then deduplicate by <code>order_id</code> and retain the newest <code>updated_at</code> value.</p>
+</section>
+<section id="idempotent-loading" class="level3">
+<h3 class="anchored" data-anchor-id="idempotent-loading">Idempotent loading</h3>
+<p>An idempotent task produces the same target state when repeated with the same input. The warehouse load uses an upsert rather than an unconditional append:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">INSERT</span> <span class="kw">INTO</span> fact_orders <span class="kw">AS</span> target (</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    order_id, store_key, product_key, ordered_at, quantity, unit_price, run_id</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    order_id, store_key, product_key, ordered_at, quantity, unit_price, <span class="ch">:run_id</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> stg_orders</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">ON</span> CONFLICT (order_id) DO <span class="kw">UPDATE</span> <span class="kw">SET</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    store_key <span class="op">=</span> EXCLUDED.store_key,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    product_key <span class="op">=</span> EXCLUDED.product_key,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    ordered_at <span class="op">=</span> EXCLUDED.ordered_at,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    quantity <span class="op">=</span> EXCLUDED.quantity,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    unit_price <span class="op">=</span> EXCLUDED.unit_price,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    run_id <span class="op">=</span> EXCLUDED.run_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The database constraint on <code>order_id</code> is part of the correctness mechanism—not merely a performance detail.</p>
+</section>
+</section>
+<section id="pipeline-stages" class="level2">
+<h2 class="anchored" data-anchor-id="pipeline-stages">Pipeline stages</h2>
+<p>The end-to-end run is divided into independently observable stages.</p>
+<ol type="1">
+<li><strong>Initialize the run.</strong> Create a unique <code>run_id</code>, capture configuration, and select the watermark interval.</li>
+<li><strong>Extract sources.</strong> Read orders, products, and stores into immutable landing partitions.</li>
+<li><strong>Validate inputs.</strong> Check schema, required values, uniqueness, ranges, and referential coverage.</li>
+<li><strong>Transform staging data.</strong> Normalize timestamps, currencies, codes, and data types.</li>
+<li><strong>Load warehouse tables.</strong> Merge dimensions before facts inside controlled transactions.</li>
+<li><strong>Build serving models.</strong> Aggregate daily store and category measures.</li>
+<li><strong>Reconcile and publish.</strong> Compare counts and totals, then atomically expose the new partition.</li>
+<li><strong>Close the run.</strong> Persist status, row counts, quality outcomes, timings, and the new watermark.</li>
+</ol>
+<p>Publication occurs only after mandatory checks pass. This prevents a technically successful transformation from exposing incomplete data.</p>
+</section>
+<section id="failure-boundaries-and-recovery" class="level2">
+<h2 class="anchored" data-anchor-id="failure-boundaries-and-recovery">Failure boundaries and recovery</h2>
+<p>Retries are appropriate for transient failures such as network timeouts, rate limits, and temporary database unavailability. They are inappropriate for deterministic defects such as a missing required column or invalid SQL.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Failure</th>
+<th>Classification</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>API timeout</td>
+<td>Transient</td>
+<td>Retry with exponential backoff and jitter</td>
+</tr>
+<tr class="even">
+<td>Database authentication rejected</td>
+<td>Configuration</td>
+<td>Stop and alert; do not repeatedly retry</td>
+</tr>
+<tr class="odd">
+<td>Required column missing</td>
+<td>Contract</td>
+<td>Quarantine input, stop publication, alert owner</td>
+</tr>
+<tr class="even">
+<td>Invalid records below threshold</td>
+<td>Data quality</td>
+<td>Quarantine rows and continue with recorded warning</td>
+</tr>
+<tr class="odd">
+<td>Reconciliation mismatch</td>
+<td>Correctness</td>
+<td>Fail before publication and preserve diagnostics</td>
+</tr>
+<tr class="even">
+<td>Dashboard refresh failure</td>
+<td>Downstream</td>
+<td>Preserve warehouse commit and retry refresh separately</td>
+</tr>
+</tbody>
+</table>
+<p>Durable checkpoints allow recovery to begin at the earliest safe stage. A checkpoint is valid only when the output is complete, validated, and addressable by <code>run_id</code> or partition.</p>
+</section>
+<section id="operational-metadata" class="level2">
+<h2 class="anchored" data-anchor-id="operational-metadata">Operational metadata</h2>
+<p>A minimal <code>pipeline_runs</code> table can answer whether a run is active, successful, failed, or superseded.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> pipeline_runs (</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    run_id UUID <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    pipeline_name TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    interval_start TIMESTAMPTZ <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    interval_end TIMESTAMPTZ <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    started_at TIMESTAMPTZ <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    finished_at TIMESTAMPTZ,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    status TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    input_rows BIGINT <span class="kw">DEFAULT</span> <span class="dv">0</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    published_rows BIGINT <span class="kw">DEFAULT</span> <span class="dv">0</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    rejected_rows BIGINT <span class="kw">DEFAULT</span> <span class="dv">0</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    error_message TEXT</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Task-level metadata should also capture attempt number, duration, input and output locations, query or code version, and quality-check results. Logs explain individual events; metadata explains the run as a whole.</p>
+</section>
+<section id="simulating-the-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="simulating-the-architecture">Simulating the architecture</h2>
+<p>The companion script <code>scripts/python/08-simulate-pipeline-architecture.py</code> models 30 daily runs across five stages. It introduces realistic variation in record volume, processing rates, and transient failures. Failed transient attempts are retried up to two times.</p>
+<p>Run it from the repository root:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/08-run-pipeline-case-study.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The simulation writes:</p>
+<ul>
+<li><code>results/08-pipeline-run-summary.csv</code>, one row per run;</li>
+<li><code>results/08-pipeline-stage-summary.csv</code>, aggregate stage measures;</li>
+<li><code>results/08-pipeline-case-study.json</code>, headline indicators; and</li>
+<li><code>results/figures/08-pipeline-architecture-performance.png</code>, the performance plot.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="results/figures/08-pipeline-architecture-performance.png" class="img-fluid figure-img" alt="Three-panel pipeline performance plot showing daily duration, accepted versus rejected records, and stage latency and retry rate."></p>
+<figcaption>Simulated pipeline latency, quality, and stage performance.</figcaption>
+</figure>
+</div>
+<p>The plot links architecture to observable outcomes. End-to-end duration identifies freshness risk; accepted and rejected volumes expose quality changes; stage latency and retry rate identify the component responsible for instability.</p>
+</section>
+<section id="evaluating-the-system" class="level2">
+<h2 class="anchored" data-anchor-id="evaluating-the-system">Evaluating the system</h2>
+<p>The most useful measures answer different questions:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Measure</th>
+<th>Question answered</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Freshness</td>
+<td>How old is the newest published data?</td>
+</tr>
+<tr class="even">
+<td>End-to-end duration</td>
+<td>Can the pipeline meet its delivery deadline?</td>
+</tr>
+<tr class="odd">
+<td>Throughput</td>
+<td>How many records are processed per unit time?</td>
+</tr>
+<tr class="even">
+<td>Acceptance rate</td>
+<td>What proportion of records passed validation?</td>
+</tr>
+<tr class="odd">
+<td>Reconciliation difference</td>
+<td>Do source and target totals agree?</td>
+</tr>
+<tr class="even">
+<td>Retry rate</td>
+<td>Which dependencies are intermittently unstable?</td>
+</tr>
+<tr class="odd">
+<td>Success rate</td>
+<td>How often does the complete pipeline publish valid data?</td>
+</tr>
+</tbody>
+</table>
+<p>No single measure proves reliability. For example, a fast run that silently drops 10% of orders is worse than a slower run that fails visibly before publication.</p>
+</section>
+<section id="architecture-decisions-and-trade-offs" class="level2">
+<h2 class="anchored" data-anchor-id="architecture-decisions-and-trade-offs">Architecture decisions and trade-offs</h2>
+<section id="batch-versus-streaming" class="level3">
+<h3 class="anchored" data-anchor-id="batch-versus-streaming">Batch versus streaming</h3>
+<p>The daily dashboard does not require second-level freshness, so batch processing is the simplest design that meets the requirement. Streaming would add state management, event-time semantics, and continuous operations without a corresponding business benefit. If fraud decisions later require events within seconds, that workload should receive a separate streaming path.</p>
+</section>
+<section id="full-refresh-versus-incremental-processing" class="level3">
+<h3 class="anchored" data-anchor-id="full-refresh-versus-incremental-processing">Full refresh versus incremental processing</h3>
+<p>Full refreshes are easier to reason about and remain useful for small dimensions and recovery. Incremental extraction reduces routine cost for the growing orders table. The design deliberately supports both incremental daily runs and partition-based backfills.</p>
+</section>
+<section id="database-transformations-versus-python" class="level3">
+<h3 class="anchored" data-anchor-id="database-transformations-versus-python">Database transformations versus Python</h3>
+<p>Set-based joins, filters, aggregations, and constraints remain in SQL, close to warehouse data. Python coordinates extraction, API interaction, contract validation, and operational control. The boundary is based on responsibility rather than language preference.</p>
+</section>
+</section>
+<section id="practical-review-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="practical-review-checklist">Practical review checklist</h2>
+<p>Before approving a pipeline design, confirm that:</p>
+<ul>
+<li>every source and published dataset has an owner and a contract;</li>
+<li>incremental boundaries are explicit and reproducible;</li>
+<li>writes are idempotent and protected by database constraints;</li>
+<li>raw inputs or equivalent replay points are retained;</li>
+<li>mandatory quality and reconciliation checks block publication;</li>
+<li>retries are bounded and limited to transient failures;</li>
+<li>checkpoints represent complete, validated outputs;</li>
+<li>backfills cannot overwrite unrelated partitions;</li>
+<li>secrets are external to code and logs;</li>
+<li>run and task metadata support diagnosis and audit; and</li>
+<li>freshness, volume, quality, duration, and failure alerts have owners.</li>
+</ul>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<ul>
+<li>A production pipeline is a coordinated data system with contracts, state, recovery, and observability.</li>
+<li>Layered storage separates replayable source data from validated, modeled, and published data.</li>
+<li>Fixed incremental intervals, durable checkpoints, and idempotent writes make reruns safe.</li>
+<li>Data quality gates and reconciliation protect users from plausible but incorrect outputs.</li>
+<li>Architecture should be driven by service expectations; daily batch is preferable when it satisfies the actual freshness requirement.</li>
+<li>Metrics must cover timeliness, correctness, volume, and component reliability—not only whether a job exited successfully.</li>
+</ul>
+</section>
+<section id="what-comes-next" class="level2">
+<h2 class="anchored" data-anchor-id="what-comes-next">What comes next</h2>
+<p>This chapter established the continuous case study and its reference architecture. The next chapter examines data sources and ingestion in greater depth, including source-system constraints, file and API ingestion, schema evolution, and safe landing patterns.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

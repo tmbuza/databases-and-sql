@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -70,6 +105,10 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+<meta name="mermaid-theme" content="forest">
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 <link rel="stylesheet" href="assets/css/cdi.css">
@@ -287,7 +326,22 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
-  <li><a href="#supporting-example" id="toc-supporting-example" class="nav-link" data-scroll-target="#supporting-example">Supporting example</a></li>
+  <li><a href="#a-working-script-is-not-yet-a-pipeline" id="toc-a-working-script-is-not-yet-a-pipeline" class="nav-link" data-scroll-target="#a-working-script-is-not-yet-a-pipeline">A working script is not yet a pipeline</a></li>
+  <li><a href="#the-pipeline-boundary" id="toc-the-pipeline-boundary" class="nav-link" data-scroll-target="#the-pipeline-boundary">The pipeline boundary</a></li>
+  <li><a href="#separate-configuration-from-logic" id="toc-separate-configuration-from-logic" class="nav-link" data-scroll-target="#separate-configuration-from-logic">Separate configuration from logic</a></li>
+  <li><a href="#extract-read-without-silently-changing-meaning" id="toc-extract-read-without-silently-changing-meaning" class="nav-link" data-scroll-target="#extract-read-without-silently-changing-meaning">Extract: read without silently changing meaning</a></li>
+  <li><a href="#validate-enforce-the-data-contract" id="toc-validate-enforce-the-data-contract" class="nav-link" data-scroll-target="#validate-enforce-the-data-contract">Validate: enforce the data contract</a></li>
+  <li><a href="#transform-keep-business-logic-explicit" id="toc-transform-keep-business-logic-explicit" class="nav-link" data-scroll-target="#transform-keep-business-logic-explicit">Transform: keep business logic explicit</a></li>
+  <li><a href="#load-publish-safely" id="toc-load-publish-safely" class="nav-link" data-scroll-target="#load-publish-safely">Load: publish safely</a></li>
+  <li><a href="#idempotency-make-reruns-safe" id="toc-idempotency-make-reruns-safe" class="nav-link" data-scroll-target="#idempotency-make-reruns-safe">Idempotency: make reruns safe</a></li>
+  <li><a href="#observability-leave-evidence-behind" id="toc-observability-leave-evidence-behind" class="nav-link" data-scroll-target="#observability-leave-evidence-behind">Observability: leave evidence behind</a></li>
+  <li><a href="#handle-failures-as-pipeline-outcomes" id="toc-handle-failures-as-pipeline-outcomes" class="nav-link" data-scroll-target="#handle-failures-as-pipeline-outcomes">Handle failures as pipeline outcomes</a></li>
+  <li><a href="#run-the-complete-example" id="toc-run-the-complete-example" class="nav-link" data-scroll-target="#run-the-complete-example">Run the complete example</a></li>
+  <li><a href="#test-each-layer" id="toc-test-each-layer" class="nav-link" data-scroll-target="#test-each-layer">Test each layer</a></li>
+  <li><a href="#when-does-a-pipeline-need-orchestration" id="toc-when-does-a-pipeline-need-orchestration" class="nav-link" data-scroll-target="#when-does-a-pipeline-need-orchestration">When does a pipeline need orchestration?</a></li>
+  <li><a href="#design-checklist" id="toc-design-checklist" class="nav-link" data-scroll-target="#design-checklist">Design checklist</a></li>
+  <li><a href="#chapter-summary" id="toc-chapter-summary" class="nav-link" data-scroll-target="#chapter-summary">Chapter summary</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
   </ul>
 </nav>
     </div>
@@ -296,7 +350,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-from-scripts-to-data-pipelines.html">From Queries to Pipelines</a></li><li class="breadcrumb-item"><a href="./07-from-scripts-to-data-pipelines.html"><span class="chapter-title">From Scripts to Data Pipelines</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-from-scripts-to-pipelines" class="quarto-section-identifier"><span class="chapter-title">From Scripts to Data Pipelines</span></span></h1>
+<h1 class="title"><span id="sec-from-scripts-to-data-pipelines" class="quarto-section-identifier"><span class="chapter-title">From Scripts to Data Pipelines</span></span></h1>
 </div>
 
 
@@ -319,17 +373,357 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-007</li>
+<li><strong>Type:</strong> Applied chapter</li>
+<li><strong>Audience:</strong> Data analysts, data scientists, and aspiring data engineers</li>
+<li><strong>Theme:</strong> Turning a working data script into a reliable, observable, and repeatable pipeline</li>
+</ul>
+</div>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
+<ol type="1">
+<li>distinguish a one-off script from an operational data pipeline;</li>
+<li>decompose data work into explicit extract, validate, transform, load, and report stages;</li>
+<li>define contracts at pipeline boundaries;</li>
+<li>make a pipeline idempotent and safe to rerun;</li>
+<li>record run metadata, row counts, quality checks, and failures;</li>
+<li>execute and inspect a small Python pipeline from the command line; and</li>
+<li>identify the point at which scheduling and orchestration become necessary.</li>
+</ol>
+</section>
+<section id="a-working-script-is-not-yet-a-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="a-working-script-is-not-yet-a-pipeline">A working script is not yet a pipeline</h2>
+<p>A script is a sequence of instructions. A data pipeline is a managed flow of data with explicit inputs, outputs, expectations, and operational evidence.</p>
+<p>An exploratory script may be perfectly useful while its author is present. It often assumes that a file exists, column names have not changed, values are valid, and overwriting an output is harmless. A pipeline must make those assumptions visible and test them every time it runs.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concern</th>
+<th>One-off script</th>
+<th>Reliable pipeline</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Input</td>
+<td>Implicit filename</td>
+<td>Declared source and schema</td>
+</tr>
+<tr class="even">
+<td>Processing</td>
+<td>One continuous block</td>
+<td>Named, testable stages</td>
+</tr>
+<tr class="odd">
+<td>Failure</td>
+<td>Traceback inspected manually</td>
+<td>Clear failure state and diagnostics</td>
+</tr>
+<tr class="even">
+<td>Output</td>
+<td>Written wherever convenient</td>
+<td>Stable destination and contract</td>
+</tr>
+<tr class="odd">
+<td>Reruns</td>
+<td>May duplicate or corrupt data</td>
+<td>Idempotent for the same input</td>
+</tr>
+<tr class="even">
+<td>Evidence</td>
+<td>Console messages</td>
+<td>Structured run metadata and metrics</td>
+</tr>
+<tr class="odd">
+<td>Operation</td>
+<td>Started manually</td>
+<td>Ready for scheduling and orchestration</td>
+</tr>
+</tbody>
+</table>
+<p>The transformation logic can be identical in both forms. The difference is the operational structure around it.</p>
+</section>
+<section id="the-pipeline-boundary" class="level2">
+<h2 class="anchored" data-anchor-id="the-pipeline-boundary">The pipeline boundary</h2>
+<p>This chapter uses a small order-processing pipeline. A CSV source contains order records. The pipeline validates the schema and business rules, derives revenue, writes a curated table, and records a run report.</p>
+<p>The logical flow is:</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    A[Extract CSV] --&gt; B[Validate contract]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    B --&gt; C[Transform records]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    C --&gt; D[Load curated CSV]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    D --&gt; E[Record metrics]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A[Extract CSV] --&gt; B[Validate contract]
+    B --&gt; C[Transform records]
+    C --&gt; D[Load curated CSV]
+    D --&gt; E[Record metrics]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>Each arrow is a boundary. At every boundary, ask:</p>
 <ul>
-<li>Distinguish a one-off script from an operational data pipeline.</li>
-<li>Identify stages, contracts, dependencies, and failure boundaries.</li>
-<li>Describe how reproducibility and idempotency change pipeline design.</li>
+<li>What data enters?</li>
+<li>What guarantees must hold?</li>
+<li>What artifact leaves?</li>
+<li>What evidence proves the stage completed?</li>
+<li>What happens if the stage is attempted again?</li>
+</ul>
+<p>These questions turn hidden assumptions into a pipeline contract.</p>
+</section>
+<section id="separate-configuration-from-logic" class="level2">
+<h2 class="anchored" data-anchor-id="separate-configuration-from-logic">Separate configuration from logic</h2>
+<p>Hard-coded paths make a script difficult to run in another environment. The companion implementation accepts paths and a run date as command-line arguments:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/python/07-build-reliable-pipeline.py <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--input</span> data/raw/07-orders.csv <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output</span> data/processed/07-orders-curated.csv <span class="dt">\</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--report</span> results/07-pipeline-run-report.json <span class="dt">\</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--figure</span> results/figures/07-pipeline-stage-row-counts.png <span class="dt">\</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--run-date</span> 2026-08-05</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Configuration states <em>what changes between runs</em>. Functions contain <em>how each stage works</em>. This separation makes local execution, testing, automation, and later orchestration much simpler.</p>
+</section>
+<section id="extract-read-without-silently-changing-meaning" class="level2">
+<h2 class="anchored" data-anchor-id="extract-read-without-silently-changing-meaning">Extract: read without silently changing meaning</h2>
+<p>Extraction brings source data into the pipeline boundary. At this stage, preserve the source representation and fail clearly when the source is missing.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> extract(input_path: Path) <span class="op">-&gt;</span> pd.DataFrame:</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> input_path.exists():</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">FileNotFoundError</span>(<span class="ss">f"Input file not found: </span><span class="sc">{</span>input_path<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.read_csv(input_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Extraction is not limited to files. Later chapters extend the same boundary to databases, APIs, object storage, and event streams. Regardless of the source, extraction should not disguise missing data or connectivity failures as an empty successful run.</p>
+</section>
+<section id="validate-enforce-the-data-contract" class="level2">
+<h2 class="anchored" data-anchor-id="validate-enforce-the-data-contract">Validate: enforce the data contract</h2>
+<p>A data contract describes the minimum conditions under which downstream logic is meaningful. For the order data, the required columns are:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>REQUIRED_COLUMNS <span class="op">=</span> {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"order_id"</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"order_date"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"customer_id"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"product"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"quantity"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"unit_price"</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Schema presence is only the first layer. The example also checks that identifiers are populated, order identifiers are unique, dates parse successfully, quantities are positive integers, and prices are non-negative.</p>
+<p>Validation should fail before loading invalid output. This is preferable to allowing a malformed record to become a trusted table and discovering it later in a dashboard or model.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Do not confuse dropping records with validation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Silently removing invalid rows may make a run appear successful while hiding a source-system problem. Reject invalid input unless the pipeline has an explicit quarantine policy, an agreed threshold, and a traceable reason for every excluded record.</p>
+</div>
+</div>
+</section>
+<section id="transform-keep-business-logic-explicit" class="level2">
+<h2 class="anchored" data-anchor-id="transform-keep-business-logic-explicit">Transform: keep business logic explicit</h2>
+<p>Transformation converts valid source records into the target model. The example standardizes data types and derives revenue:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>orders[<span class="st">"order_date"</span>] <span class="op">=</span> pd.to_datetime(orders[<span class="st">"order_date"</span>]).dt.date</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>orders[<span class="st">"quantity"</span>] <span class="op">=</span> orders[<span class="st">"quantity"</span>].astype(<span class="st">"int64"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>orders[<span class="st">"unit_price"</span>] <span class="op">=</span> orders[<span class="st">"unit_price"</span>].astype(<span class="st">"float64"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>orders[<span class="st">"revenue"</span>] <span class="op">=</span> orders[<span class="st">"quantity"</span>] <span class="op">*</span> orders[<span class="st">"unit_price"</span>]</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>orders[<span class="st">"pipeline_run_date"</span>] <span class="op">=</span> run_date.isoformat()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Good transformation code is deterministic: the same validated input and configuration produce the same business values. A processing timestamp may differ between runs, but it should be metadata rather than part of the business calculation.</p>
+</section>
+<section id="load-publish-safely" class="level2">
+<h2 class="anchored" data-anchor-id="load-publish-safely">Load: publish safely</h2>
+<p>The load stage writes curated data to its destination. A direct write can leave a partial file if execution stops halfway through. The example writes to a temporary file in the destination directory and then replaces the target:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>temporary_path <span class="op">=</span> output_path.with_suffix(output_path.suffix <span class="op">+</span> <span class="st">".tmp"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>orders.to_csv(temporary_path, index<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>temporary_path.replace(output_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Replacement gives this file-based pipeline an important property: readers see either the previous complete output or the new complete output. They do not see a half-written table.</p>
+<p>Database loads use the same principle with transactions, staging tables, merges, or partition replacement.</p>
+</section>
+<section id="idempotency-make-reruns-safe" class="level2">
+<h2 class="anchored" data-anchor-id="idempotency-make-reruns-safe">Idempotency: make reruns safe</h2>
+<p>An idempotent pipeline produces the intended state even when the same logical run is repeated. This matters because failures, network timeouts, deployment retries, and backfills all cause reruns.</p>
+<p>In this chapter, idempotency comes from:</p>
+<ul>
+<li>deterministic transformations;</li>
+<li>one row per unique <code>order_id</code>;</li>
+<li>replacement of the named output rather than blind appending; and</li>
+<li>a stable logical <code>run_date</code> supplied as configuration.</li>
+</ul>
+<p>Appending every run would duplicate the orders. Replacing the complete curated snapshot makes the file safe to regenerate.</p>
+<p>Idempotency depends on the load model. Common strategies include:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Load model</th>
+<th>Idempotent strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Full snapshot</td>
+<td>Replace the target atomically</td>
+</tr>
+<tr class="even">
+<td>Incremental table</td>
+<td>Merge using a stable business key</td>
+</tr>
+<tr class="odd">
+<td>Date partition</td>
+<td>Replace the affected partition</td>
+</tr>
+<tr class="even">
+<td>Event stream</td>
+<td>Deduplicate using an event identifier</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="observability-leave-evidence-behind" class="level2">
+<h2 class="anchored" data-anchor-id="observability-leave-evidence-behind">Observability: leave evidence behind</h2>
+<p>Console output is helpful to a person watching a run, but it is not enough for unattended execution. The example writes a JSON report containing:</p>
+<ul>
+<li>a unique run identifier;</li>
+<li>logical run date;</li>
+<li>start and finish timestamps in UTC;</li>
+<li>status and duration;</li>
+<li>input and output paths;</li>
+<li>source and output row counts;</li>
+<li>duplicate and invalid-row counts;</li>
+<li>total revenue; and</li>
+<li>a checksum of the input file.</li>
+</ul>
+<p>The checksum ties the report to the exact input bytes. If two runs use different source content under the same filename, their checksums reveal the difference.</p>
+<p>The generated stage-count figure provides a compact visual check.</p>
+<div id="fig-pipeline-stage-row-counts" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Bar chart comparing row counts at extract, validation, and load stages.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pipeline-stage-row-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="results/figures/07-pipeline-stage-row-counts.png" class="img-fluid figure-img" alt="Bar chart comparing row counts at extract, validation, and load stages.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pipeline-stage-row-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8.1: Rows observed at the extract, validation, and load stages. A successful run preserves all valid source records.
+</figcaption>
+</figure>
+</div>
+<p>The bars are expected to remain equal because this pipeline rejects invalid input rather than filtering it. A lower load count would therefore signal either a defect or an unapproved change in policy.</p>
+</section>
+<section id="handle-failures-as-pipeline-outcomes" class="level2">
+<h2 class="anchored" data-anchor-id="handle-failures-as-pipeline-outcomes">Handle failures as pipeline outcomes</h2>
+<p>A failed run is not the absence of a result; it is an operational outcome that must be recorded. The companion script catches the exception at the pipeline boundary, writes a failed report with the error type and message, and exits with a non-zero status.</p>
+<p>This behavior supports both humans and automation:</p>
+<ul>
+<li>a developer can inspect the report;</li>
+<li>a shell or CI job can detect the exit code;</li>
+<li>a scheduler can mark the task as failed; and</li>
+<li>an alerting system can use the structured error details.</li>
+</ul>
+<p>The individual stage functions do not suppress exceptions. They add clear validation messages and allow the pipeline boundary to decide how the run is reported.</p>
+</section>
+<section id="run-the-complete-example" class="level2">
+<h2 class="anchored" data-anchor-id="run-the-complete-example">Run the complete example</h2>
+<p>The Bash wrapper creates a deterministic sample input and executes the pipeline:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/07-run-pipeline.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Expected terminal output resembles:</p>
+<pre class="text"><code>[PASS] Pipeline completed
+[PASS] Curated data: data/processed/07-orders-curated.csv
+[PASS] Run report: results/07-pipeline-run-report.json
+[PASS] Figure: results/figures/07-pipeline-stage-row-counts.png</code></pre>
+<p>After running it, inspect the artifacts:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">column</span> <span class="at">-s,</span> <span class="at">-t</span> <span class="op">&lt;</span> data/processed/07-orders-curated.csv</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> json.tool results/07-pipeline-run-report.json</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Run the wrapper a second time. The curated table still contains five orders rather than ten. That simple test demonstrates the chosen idempotent load behavior.</p>
+</section>
+<section id="test-each-layer" class="level2">
+<h2 class="anchored" data-anchor-id="test-each-layer">Test each layer</h2>
+<p>Pipeline testing should mirror the pipeline structure:</p>
+<ol type="1">
+<li><strong>Unit tests</strong> exercise validation and transformation rules with small in-memory tables.</li>
+<li><strong>Contract tests</strong> verify source columns, types, constraints, and target shape.</li>
+<li><strong>Integration tests</strong> execute multiple stages using temporary input and output locations.</li>
+<li><strong>End-to-end tests</strong> run the command as an operator or scheduler would run it.</li>
+</ol>
+<p>Useful assertions for this example include:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> curated[<span class="st">"order_id"</span>].is_unique</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> (curated[<span class="st">"revenue"</span>] <span class="op">&gt;=</span> <span class="dv">0</span>).<span class="bu">all</span>()</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(curated) <span class="op">==</span> report[<span class="st">"metrics"</span>][<span class="st">"output_rows"</span>]</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> report[<span class="st">"status"</span>] <span class="op">==</span> <span class="st">"success"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Tests should cover failure paths too: a missing column, duplicate identifier, invalid date, negative quantity, and unwritable destination.</p>
+</section>
+<section id="when-does-a-pipeline-need-orchestration" class="level2">
+<h2 class="anchored" data-anchor-id="when-does-a-pipeline-need-orchestration">When does a pipeline need orchestration?</h2>
+<p>This pipeline is executable and observable, but it still has only one command and one source. A simple scheduled shell command may be sufficient at this scale.</p>
+<p>Orchestration becomes valuable when the workflow needs several dependent tasks, retries with policies, parallel execution, backfills, centralized run history, credentials, or coordination across systems. Orchestration does not repair unclear boundaries or non-idempotent logic. Those foundations must be established first.</p>
+<p>The progression is therefore:</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    A[Working script] --&gt; B[Structured pipeline]</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    B --&gt; C[Scheduled pipeline]</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    C --&gt; D[Orchestrated workflow]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+    A[Working script] --&gt; B[Structured pipeline]
+    B --&gt; C[Scheduled pipeline]
+    C --&gt; D[Orchestrated workflow]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>This chapter establishes the structured-pipeline layer. Later chapters add production sources, storage choices, orchestration, monitoring, recovery, and backfills.</p>
+</section>
+<section id="design-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="design-checklist">Design checklist</h2>
+<p>Before treating a script as a pipeline, confirm that:</p>
+<ul>
+<li>inputs, outputs, and configuration are explicit;</li>
+<li>stages have clear responsibilities;</li>
+<li>schema and business rules are validated;</li>
+<li>failures stop publication of invalid data;</li>
+<li>rerunning the same logical work is safe;</li>
+<li>output publication avoids partial state;</li>
+<li>row counts and relevant quality metrics are recorded;</li>
+<li>run timestamps and a run identifier are available;</li>
+<li>the process returns a meaningful exit status; and</li>
+<li>the command can run without editing source code.</li>
 </ul>
 </section>
-<section id="supporting-example" class="level2">
-<h2 class="anchored" data-anchor-id="supporting-example">Supporting example</h2>
-<p>Run <code>bash scripts/bash/07-run-starter-pipeline.sh</code> to execute the starter extract-transform-load workflow.</p>
+<section id="chapter-summary" class="level2">
+<h2 class="anchored" data-anchor-id="chapter-summary">Chapter summary</h2>
+<p>A pipeline is more than transformation code. It is a repeatable data movement process surrounded by contracts, validation, safe publication, idempotency, and operational evidence. By separating extract, validate, transform, load, and report responsibilities, the example becomes easier to test locally and ready to be scheduled later.</p>
+<p>The next chapter develops these ideas into a continuous case study and pipeline architecture, showing how components and responsibilities fit together across a larger system.</p>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">Exercises</h2>
+<ol type="1">
+<li>Add a <code>country</code> column and reject values outside an allowed set.</li>
+<li>Add a quality metric for the number of distinct customers.</li>
+<li>Change the load model from a full snapshot to an incremental merge keyed by <code>order_id</code>.</li>
+<li>Introduce one duplicate order and confirm that the run fails without replacing the previous curated output.</li>
+<li>Write tests for one successful run and three validation failures.</li>
+<li>Explain which run-report fields you would use in an alert and which belong in a monitoring dashboard.</li>
+</ol>
 
 
 </section>

@@ -171,7 +171,7 @@ GROUP BY c.customer_id, c.customer_name
 ORDER BY c.customer_id;
 ```
 
-The `LEFT JOIN` retains customers even when they have no orders. Joins are developed fully in @sec-joins-relational-thinking; here, the query simply verifies that the two-table design behaves as intended.
+The `LEFT JOIN` retains customers even when they have no orders. Joins are developed fully in @sec-joins-and-relational-thinking; here, the query simply verifies that the two-table design behaves as intended.
 
 ![Customer and order counts in the generated SQLite database.](results/figures/01-relational-table-profile.png){#fig-01-relational-table-profile fig-alt="Two horizontal bar charts showing the number of orders per customer and one overall bar comparing customer and order row counts."}
 

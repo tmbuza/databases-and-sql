@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -286,7 +321,26 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#sec-data-sources-and-ingestion" id="toc-sec-data-sources-and-ingestion" class="nav-link active" data-scroll-target="#sec-data-sources-and-ingestion">Data Sources and Ingestion</a>
+  <ul class="collapse">
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#ingestion-is-a-boundary-not-a-copy-command" id="toc-ingestion-is-a-boundary-not-a-copy-command" class="nav-link" data-scroll-target="#ingestion-is-a-boundary-not-a-copy-command">Ingestion is a boundary, not a copy command</a></li>
+  <li><a href="#batch-micro-batch-and-streaming" id="toc-batch-micro-batch-and-streaming" class="nav-link" data-scroll-target="#batch-micro-batch-and-streaming">Batch, micro-batch, and streaming</a></li>
+  <li><a href="#the-raw-landing-principle" id="toc-the-raw-landing-principle" class="nav-link" data-scroll-target="#the-raw-landing-principle">The raw landing principle</a></li>
+  <li><a href="#a-reproducible-multi-source-ingestion" id="toc-a-reproducible-multi-source-ingestion" class="nav-link" data-scroll-target="#a-reproducible-multi-source-ingestion">A reproducible multi-source ingestion</a>
+  <ul class="collapse">
+  <li><a href="#file-ingestion" id="toc-file-ingestion" class="nav-link" data-scroll-target="#file-ingestion">File ingestion</a></li>
+  <li><a href="#api-style-ingestion" id="toc-api-style-ingestion" class="nav-link" data-scroll-target="#api-style-ingestion">API-style ingestion</a></li>
+  <li><a href="#database-ingestion" id="toc-database-ingestion" class="nav-link" data-scroll-target="#database-ingestion">Database ingestion</a></li>
+  </ul></li>
+  <li><a href="#boundary-validation" id="toc-boundary-validation" class="nav-link" data-scroll-target="#boundary-validation">Boundary validation</a></li>
+  <li><a href="#idempotency-and-replay" id="toc-idempotency-and-replay" class="nav-link" data-scroll-target="#idempotency-and-replay">Idempotency and replay</a></li>
+  <li><a href="#failure-handling" id="toc-failure-handling" class="nav-link" data-scroll-target="#failure-handling">Failure handling</a></li>
+  <li><a href="#design-checklist" id="toc-design-checklist" class="nav-link" data-scroll-target="#design-checklist">Design checklist</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
+  <li><a href="#what-comes-next" id="toc-what-comes-next" class="nav-link" data-scroll-target="#what-comes-next">What comes next</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -295,7 +349,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-from-scripts-to-data-pipelines.html">From Queries to Pipelines</a></li><li class="breadcrumb-item"><a href="./09-data-sources-and-ingestion.html"><span class="chapter-title">Data Sources and Ingestion</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-data-sources-ingestion" class="quarto-section-identifier"><span class="chapter-title">Data Sources and Ingestion</span></span></h1>
+<h1 class="title"><span class="chapter-title">Data Sources and Ingestion</span></h1>
 </div>
 
 
@@ -318,15 +372,221 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="sec-data-sources-and-ingestion" class="level1">
+<h1>Data Sources and Ingestion</h1>
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-009</li>
+<li><strong>Type:</strong> Guide chapter</li>
+<li><strong>Audience:</strong> Data analysts, data scientists, and beginning data engineers</li>
+<li><strong>Theme:</strong> Designing observable, repeatable ingestion across files, APIs, and databases</li>
+</ul>
+</div>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
+<ol type="1">
+<li>distinguish sources, ingestion methods, and storage destinations;</li>
+<li>choose between batch, micro-batch, and streaming ingestion;</li>
+<li>ingest tabular files, API-style JSON, and relational data with Python;</li>
+<li>preserve raw data while attaching operational metadata;</li>
+<li>validate schema, row counts, uniqueness, and freshness at the ingestion boundary; and</li>
+<li>make reruns safe through deterministic naming and idempotent writes.</li>
+</ol>
+</section>
+<section id="ingestion-is-a-boundary-not-a-copy-command" class="level2">
+<h2 class="anchored" data-anchor-id="ingestion-is-a-boundary-not-a-copy-command">Ingestion is a boundary, not a copy command</h2>
+<p>Ingestion moves data from a source system into a controlled data environment. A reliable ingestion step also records <em>what</em> arrived, <em>when</em> it arrived, <em>where</em> it came from, and whether it satisfies the minimum contract required by downstream work.</p>
+<p>A source is the system that owns or publishes the data. A transport is the mechanism used to retrieve it. A landing zone is the first controlled destination. These concepts should remain separate: the same source may be reached through an API today and a scheduled export tomorrow.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Source</th>
+<th>Common transport</th>
+<th>Typical risk</th>
+<th>Useful boundary check</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CSV or spreadsheet export</td>
+<td>File transfer or object storage</td>
+<td>Delimiter, encoding, partial upload</td>
+<td>Header, size, checksum, row count</td>
+</tr>
+<tr class="even">
+<td>REST API</td>
+<td>HTTPS and JSON</td>
+<td>Pagination, rate limits, schema drift</td>
+<td>Status, page count, required keys</td>
+</tr>
+<tr class="odd">
+<td>Relational database</td>
+<td>SQL connection</td>
+<td>Mutable rows, load on source</td>
+<td>Watermark, query bounds, key uniqueness</td>
+</tr>
+<tr class="even">
+<td>Event stream</td>
+<td>Broker or log</td>
+<td>Duplicates, ordering, late events</td>
+<td>Event ID, event time, offset</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="batch-micro-batch-and-streaming" class="level2">
+<h2 class="anchored" data-anchor-id="batch-micro-batch-and-streaming">Batch, micro-batch, and streaming</h2>
+<p>The ingestion mode should follow the business latency requirement rather than fashion.</p>
 <ul>
-<li>Compare batch, micro-batch, and streaming ingestion.</li>
-<li>Inspect schemas, freshness, volume, and access constraints.</li>
-<li>Land immutable raw data with useful ingestion metadata.</li>
+<li><strong>Batch</strong> processes a bounded collection on a schedule. It is easier to test, replay, and audit.</li>
+<li><strong>Micro-batch</strong> processes small bounded collections frequently, often every few minutes.</li>
+<li><strong>Streaming</strong> processes an unbounded event flow and requires explicit handling of event time, late arrival, ordering, and delivery semantics.</li>
 </ul>
+<p>If a daily decision is acceptable, a daily batch is usually the clearest design. Streaming is justified when the value of the data declines quickly enough to offset its operational complexity.</p>
+</section>
+<section id="the-raw-landing-principle" class="level2">
+<h2 class="anchored" data-anchor-id="the-raw-landing-principle">The raw landing principle</h2>
+<p>The first controlled copy should preserve source fidelity. Avoid silently cleaning names, converting units, dropping records, or filling missing values during extraction. Those are transformations and should be visible in a later stage.</p>
+<p>Add metadata without rewriting source meaning. Common fields include:</p>
+<ul>
+<li><code>ingested_at_utc</code>: when the pipeline accepted the record;</li>
+<li><code>source_system</code>: stable source identifier;</li>
+<li><code>source_object</code>: endpoint, table, or filename;</li>
+<li><code>batch_id</code>: identifier shared by one bounded ingestion run; and</li>
+<li><code>source_record_id</code>: stable key used for deduplication.</li>
+</ul>
+<p>The raw layer is therefore immutable in intent: corrections normally arrive as new batches, while the original evidence remains available for replay and audit.</p>
+</section>
+<section id="a-reproducible-multi-source-ingestion" class="level2">
+<h2 class="anchored" data-anchor-id="a-reproducible-multi-source-ingestion">A reproducible multi-source ingestion</h2>
+<p>The companion script creates three small source fixtures and ingests them into a common raw landing area:</p>
+<ol type="1">
+<li>customer records from CSV;</li>
+<li>support events from API-style paginated JSON; and</li>
+<li>orders from SQLite.</li>
+</ol>
+<p>Run it from the repository root:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/python/09-ingest-data-sources.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The example is offline and deterministic. In production, replace fixture creation with the real retrieval client while retaining the same boundary checks, metadata, and audit contract.</p>
+<section id="file-ingestion" class="level3">
+<h3 class="anchored" data-anchor-id="file-ingestion">File ingestion</h3>
+<p>A file should be treated as an object with identity, not merely as rows. Record its path, byte size, and cryptographic checksum before parsing. A checksum detects a changed file even when its name is unchanged.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>customers <span class="op">=</span> pd.read_csv(csv_path, dtype<span class="op">=</span>{<span class="st">"customer_id"</span>: <span class="st">"string"</span>})</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>require_columns(customers, {<span class="st">"customer_id"</span>, <span class="st">"segment"</span>, <span class="st">"country"</span>}, <span class="st">"customers"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>require_unique(customers, <span class="st">"customer_id"</span>, <span class="st">"customers"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Explicit identifier types prevent values such as leading zeros from being lost.</p>
+</section>
+<section id="api-style-ingestion" class="level3">
+<h3 class="anchored" data-anchor-id="api-style-ingestion">API-style ingestion</h3>
+<p>Real APIs commonly paginate. The stopping rule must be explicit: follow a server-provided next token or stop only after a terminal page. Persist the request window or cursor so that a retry retrieves the same logical slice.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>records <span class="op">=</span> [item <span class="cf">for</span> page <span class="kw">in</span> pages <span class="cf">for</span> item <span class="kw">in</span> page[<span class="st">"items"</span>]]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>events <span class="op">=</span> pd.json_normalize(records)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>require_columns(events, {<span class="st">"event_id"</span>, <span class="st">"customer_id"</span>, <span class="st">"occurred_at"</span>}, <span class="st">"events"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Production clients should also use timeouts, bounded retries with backoff, rate-limit handling, and safe secret management. Never log access tokens.</p>
+</section>
+<section id="database-ingestion" class="level3">
+<h3 class="anchored" data-anchor-id="database-ingestion">Database ingestion</h3>
+<p>Avoid unbounded <code>SELECT *</code> extraction from operational systems. Select required columns and constrain incremental reads with a watermark such as <code>updated_at</code> plus a deterministic tie-breaker key.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, customer_id, amount, status, updated_at</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> updated_at <span class="op">&gt;</span> ?</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> updated_at, order_id</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Store the new watermark only after the landed batch and its audit record are committed successfully. Advancing it earlier can create a permanent gap.</p>
+</section>
+</section>
+<section id="boundary-validation" class="level2">
+<h2 class="anchored" data-anchor-id="boundary-validation">Boundary validation</h2>
+<p>Validation at ingestion should answer four immediate questions.</p>
+<ol type="1">
+<li><strong>Structure:</strong> Are required columns present and parseable?</li>
+<li><strong>Identity:</strong> Are record keys non-null and unique within the declared grain?</li>
+<li><strong>Volume:</strong> Is the row count plausible relative to an expected range or recent history?</li>
+<li><strong>Freshness:</strong> Is the newest source timestamp recent enough for the use case?</li>
+</ol>
+<p>The example fails fast on missing columns, null keys, duplicates, empty inputs, and invalid timestamps. It writes one audit row per source with the batch ID, checksum, row count, status, and timing.</p>
+<figure class="figure">
+  <img src="results/figures/09-ingestion-audit.png" alt="Bars compare ingested row counts for customers, events, and orders, with annotations showing validation status." class="figure-img">
+  <figcaption>Ingestion audit summary generated by the companion script.</figcaption>
+</figure>
+<p>The machine-readable companion is <code>results/09-ingestion-audit.csv</code>. Operational dashboards should track these metrics across many runs rather than interpret a single batch in isolation.</p>
+</section>
+<section id="idempotency-and-replay" class="level2">
+<h2 class="anchored" data-anchor-id="idempotency-and-replay">Idempotency and replay</h2>
+<p>An idempotent ingestion produces the same controlled result when the same batch is retried. Useful practices include:</p>
+<ul>
+<li>derive a batch ID from the source identity and extraction window;</li>
+<li>land each batch at a deterministic path;</li>
+<li>write to a temporary object and publish atomically;</li>
+<li>reject or safely replace an already-complete batch;</li>
+<li>deduplicate with stable source keys; and</li>
+<li>update checkpoints only after successful publication.</li>
+</ul>
+<p>The companion script uses deterministic source fixtures and overwrites deterministic demonstration outputs. A production object store commonly uses partitioned paths such as:</p>
+<pre class="text"><code>data/raw/orders/ingestion_date=2026-08-06/batch_id=&lt;id&gt;/orders.csv</code></pre>
+<p>Partition values support discovery and pruning, but the manifest or catalog remains the authoritative record of completed batches.</p>
+</section>
+<section id="failure-handling" class="level2">
+<h2 class="anchored" data-anchor-id="failure-handling">Failure handling</h2>
+<p>Do not publish a partially downloaded or partially validated batch as successful. A robust control flow is:</p>
+<ol type="1">
+<li>retrieve into a temporary location;</li>
+<li>calculate source and retrieval metadata;</li>
+<li>parse and validate the bounded batch;</li>
+<li>publish the landed object atomically;</li>
+<li>record the successful audit entry; and</li>
+<li>advance the source checkpoint.</li>
+</ol>
+<p>Failures should retain enough context for diagnosis—source, batch, attempt, exception class, and stage—without exposing credentials or sensitive row values.</p>
+</section>
+<section id="design-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="design-checklist">Design checklist</h2>
+<p>Before implementing an ingestion connector, document:</p>
+<ul>
+<li>source owner and access method;</li>
+<li>expected schema and record grain;</li>
+<li>extraction window and latency target;</li>
+<li>pagination or incremental cursor rules;</li>
+<li>key, duplicate, volume, and freshness checks;</li>
+<li>raw destination and partition strategy;</li>
+<li>retry, timeout, and rate-limit behavior;</li>
+<li>secret and sensitive-data controls;</li>
+<li>checkpoint commit rule; and</li>
+<li>replay and backfill procedure.</li>
+</ul>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">Exercises</h2>
+<ol type="1">
+<li>Add a fourth source containing product data in JSON Lines format and extend the audit output.</li>
+<li>Introduce a duplicate <code>event_id</code>. Confirm that the run fails before publishing the event landing file.</li>
+<li>Replace the full order query with a stored watermark and run two incremental batches.</li>
+<li>Add minimum and maximum expected row counts for each source.</li>
+<li>Design a quarantine path for structurally valid rows that violate a business rule.</li>
+</ol>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<ul>
+<li>Reliable ingestion establishes an observable contract at the boundary of the data platform.</li>
+<li>Preserve source fidelity in the raw layer and separate extraction from transformation.</li>
+<li>Choose the simplest ingestion mode that meets the required decision latency.</li>
+<li>Validate structure, identity, volume, and freshness before publishing a batch.</li>
+<li>Deterministic batch identity, atomic publication, and checkpoint discipline make retries and replay safe.</li>
+</ul>
+</section>
+<section id="what-comes-next" class="level2">
+<h2 class="anchored" data-anchor-id="what-comes-next">What comes next</h2>
+<p>This chapter established how data enters the platform. The next chapter develops extraction patterns for external APIs, including pagination, retries, rate limits, incremental windows, and resilient client design.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

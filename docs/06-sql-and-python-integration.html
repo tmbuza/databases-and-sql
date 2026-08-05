@@ -322,7 +322,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
-  <li><a href="#supporting-example" id="toc-supporting-example" class="nav-link" data-scroll-target="#supporting-example">Supporting example</a></li>
+  <li><a href="#why-combine-sql-and-python" id="toc-why-combine-sql-and-python" class="nav-link" data-scroll-target="#why-combine-sql-and-python">Why combine SQL and Python?</a></li>
+  <li><a href="#chapter-case-study" id="toc-chapter-case-study" class="nav-link" data-scroll-target="#chapter-case-study">Chapter case study</a></li>
+  <li><a href="#the-python-database-workflow" id="toc-the-python-database-workflow" class="nav-link" data-scroll-target="#the-python-database-workflow">The Python database workflow</a></li>
+  <li><a href="#connecting-safely" id="toc-connecting-safely" class="nav-link" data-scroll-target="#connecting-safely">Connecting safely</a></li>
+  <li><a href="#creating-a-schema-from-python" id="toc-creating-a-schema-from-python" class="nav-link" data-scroll-target="#creating-a-schema-from-python">Creating a schema from Python</a></li>
+  <li><a href="#sending-values-safely-with-parameters" id="toc-sending-values-safely-with-parameters" class="nav-link" data-scroll-target="#sending-values-safely-with-parameters">Sending values safely with parameters</a>
+  <ul class="collapse">
+  <li><a href="#parameterizing-a-reporting-period" id="toc-parameterizing-a-reporting-period" class="nav-link" data-scroll-target="#parameterizing-a-reporting-period">Parameterizing a reporting period</a></li>
+  </ul></li>
+  <li><a href="#reading-sql-results-into-pandas" id="toc-reading-sql-results-into-pandas" class="nav-link" data-scroll-target="#reading-sql-results-into-pandas">Reading SQL results into pandas</a></li>
+  <li><a href="#transactions-and-atomic-writes" id="toc-transactions-and-atomic-writes" class="nav-link" data-scroll-target="#transactions-and-atomic-writes">Transactions and atomic writes</a>
+  <ul class="collapse">
+  <li><a href="#commit-and-rollback" id="toc-commit-and-rollback" class="nav-link" data-scroll-target="#commit-and-rollback">Commit and rollback</a></li>
+  </ul></li>
+  <li><a href="#bulk-inserts" id="toc-bulk-inserts" class="nav-link" data-scroll-target="#bulk-inserts">Bulk inserts</a></li>
+  <li><a href="#validate-at-the-boundary" id="toc-validate-at-the-boundary" class="nav-link" data-scroll-target="#validate-at-the-boundary">Validate at the boundary</a></li>
+  <li><a href="#keep-sql-readable" id="toc-keep-sql-readable" class="nav-link" data-scroll-target="#keep-sql-readable">Keep SQL readable</a></li>
+  <li><a href="#a-reproducible-chapter-workflow" id="toc-a-reproducible-chapter-workflow" class="nav-link" data-scroll-target="#a-reproducible-chapter-workflow">A reproducible chapter workflow</a></li>
+  <li><a href="#interpreting-the-result" id="toc-interpreting-the-result" class="nav-link" data-scroll-target="#interpreting-the-result">Interpreting the result</a></li>
+  <li><a href="#reconciliation" id="toc-reconciliation" class="nav-link" data-scroll-target="#reconciliation">Reconciliation</a></li>
+  <li><a href="#common-failure-modes" id="toc-common-failure-modes" class="nav-link" data-scroll-target="#common-failure-modes">Common failure modes</a>
+  <ul class="collapse">
+  <li><a href="#loading-too-much-data" id="toc-loading-too-much-data" class="nav-link" data-scroll-target="#loading-too-much-data">Loading too much data</a></li>
+  <li><a href="#building-sql-with-string-interpolation" id="toc-building-sql-with-string-interpolation" class="nav-link" data-scroll-target="#building-sql-with-string-interpolation">Building SQL with string interpolation</a></li>
+  <li><a href="#leaving-connections-open" id="toc-leaving-connections-open" class="nav-link" data-scroll-target="#leaving-connections-open">Leaving connections open</a></li>
+  <li><a href="#treating-successful-execution-as-valid-data" id="toc-treating-successful-execution-as-valid-data" class="nav-link" data-scroll-target="#treating-successful-execution-as-valid-data">Treating successful execution as valid data</a></li>
+  <li><a href="#committing-partial-business-operations" id="toc-committing-partial-business-operations" class="nav-link" data-scroll-target="#committing-partial-business-operations">Committing partial business operations</a></li>
+  <li><a href="#hiding-every-operation-behind-one-abstraction" id="toc-hiding-every-operation-behind-one-abstraction" class="nav-link" data-scroll-target="#hiding-every-operation-behind-one-abstraction">Hiding every operation behind one abstraction</a></li>
+  </ul></li>
+  <li><a href="#extending-to-server-databases" id="toc-extending-to-server-databases" class="nav-link" data-scroll-target="#extending-to-server-databases">Extending to server databases</a></li>
+  <li><a href="#practice-exercises" id="toc-practice-exercises" class="nav-link" data-scroll-target="#practice-exercises">Practice exercises</a>
+  <ul class="collapse">
+  <li><a href="#exercise-1-add-a-region-dimension" id="toc-exercise-1-add-a-region-dimension" class="nav-link" data-scroll-target="#exercise-1-add-a-region-dimension">Exercise 1: Add a region dimension</a></li>
+  <li><a href="#exercise-2-test-an-empty-period" id="toc-exercise-2-test-an-empty-period" class="nav-link" data-scroll-target="#exercise-2-test-an-empty-period">Exercise 2: Test an empty period</a></li>
+  <li><a href="#exercise-3-verify-rollback" id="toc-exercise-3-verify-rollback" class="nav-link" data-scroll-target="#exercise-3-verify-rollback">Exercise 3: Verify rollback</a></li>
+  <li><a href="#exercise-4-add-a-query-plan-check" id="toc-exercise-4-add-a-query-plan-check" class="nav-link" data-scroll-target="#exercise-4-add-a-query-plan-check">Exercise 4: Add a query plan check</a></li>
+  <li><a href="#exercise-5-add-another-external-query" id="toc-exercise-5-add-another-external-query" class="nav-link" data-scroll-target="#exercise-5-add-another-external-query">Exercise 5: Add another external query</a></li>
+  </ul></li>
+  <li><a href="#chapter-checklist" id="toc-chapter-checklist" class="nav-link" data-scroll-target="#chapter-checklist">Chapter checklist</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
   </ul>
 </nav>
     </div>
@@ -354,18 +393,499 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-006</li>
+<li><strong>Type:</strong> Applied guide chapter</li>
+<li><strong>Audience:</strong> Data analysts, data scientists, and aspiring data engineers</li>
+<li><strong>Theme:</strong> Combining SQL’s relational operations with Python’s automation and analytical ecosystem</li>
+</ul>
+</div>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
+<ol type="1">
+<li>explain the boundary between database work and Python work;</li>
+<li>open and close database connections safely;</li>
+<li>send parameterized SQL statements from Python;</li>
+<li>load query results into pandas without duplicating SQL logic;</li>
+<li>use transactions to keep multi-step writes consistent;</li>
+<li>validate query outputs before downstream analysis; and</li>
+<li>organize database code into a small, repeatable workflow.</li>
+</ol>
+</section>
+<section id="why-combine-sql-and-python" class="level2">
+<h2 class="anchored" data-anchor-id="why-combine-sql-and-python">Why combine SQL and Python?</h2>
+<p>SQL and Python solve different parts of the same data problem. SQL is designed to filter, join, aggregate, and update relational data close to where it is stored. Python is well suited to orchestration, validation, statistical analysis, visualization, and integration with files, APIs, and machine-learning libraries.</p>
+<p>A reliable workflow does not move every row into Python and then recreate database operations with dataframe code. Instead, it assigns work deliberately:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Preferred layer</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Filter rows and columns</td>
+<td>SQL</td>
+<td>Reduces data transferred from the database</td>
+</tr>
+<tr class="even">
+<td>Join relational tables</td>
+<td>SQL</td>
+<td>Uses database keys and query optimization</td>
+</tr>
+<tr class="odd">
+<td>Aggregate large tables</td>
+<td>SQL</td>
+<td>Computes close to storage</td>
+</tr>
+<tr class="even">
+<td>Control parameters and dates</td>
+<td>Python</td>
+<td>Supports reusable automation</td>
+</tr>
+<tr class="odd">
+<td>Validate returned data</td>
+<td>Python</td>
+<td>Expressive checks and clear failures</td>
+</tr>
+<tr class="even">
+<td>Plot and model results</td>
+<td>Python</td>
+<td>Rich analytical ecosystem</td>
+</tr>
+<tr class="odd">
+<td>Protect multi-step writes</td>
+<td>Database transaction</td>
+<td>Preserves consistency</td>
+</tr>
+</tbody>
+</table>
+<p>The key principle is simple: <strong>use SQL to shape relational data and Python to control, validate, and extend the workflow</strong>.</p>
+</section>
+<section id="chapter-case-study" class="level2">
+<h2 class="anchored" data-anchor-id="chapter-case-study">Chapter case study</h2>
+<p>This chapter uses a small retail database with two tables:</p>
 <ul>
-<li>Connect Python to a relational database safely.</li>
-<li>Parameterize queries instead of interpolating values into SQL strings.</li>
-<li>Move query results into a reproducible transformation workflow.</li>
+<li><code>customers</code>: one row per customer; and</li>
+<li><code>orders</code>: one row per order, linked to <code>customers</code> by <code>customer_id</code>.</li>
+</ul>
+<p>The workflow answers a practical question:</p>
+<blockquote class="blockquote">
+<p>Which customer segments generated the most completed-order revenue during a selected period?</p>
+</blockquote>
+<p>The complete example is implemented in <code>scripts/python/06-sql-python-integration.py</code>. It reads deterministic records from <code>data/raw/06-customers.csv</code> and <code>data/raw/06-orders.csv</code>, creates a local SQLite database with <code>queries/06-create-retail-schema.sql</code>, executes <code>queries/06-segment-revenue.sql</code>, validates the result, writes a CSV summary, and generates a plot.</p>
+<p>SQLite is used because it requires no separate database server. The same workflow structure applies to PostgreSQL, MySQL, SQL Server, and other database systems, although their drivers and connection settings differ.</p>
+</section>
+<section id="the-python-database-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="the-python-database-workflow">The Python database workflow</h2>
+<p>A database-enabled Python program usually follows six stages:</p>
+<ol type="1">
+<li>obtain connection settings;</li>
+<li>connect to the database;</li>
+<li>begin a transaction when writes must be atomic;</li>
+<li>execute parameterized SQL;</li>
+<li>validate and use the returned data; and</li>
+<li>commit or roll back, then close the connection.</li>
+</ol>
+<p>Keeping these stages visible makes failures easier to diagnose. A connection failure is different from an invalid query, and both are different from a valid query that returns unexpected data.</p>
+</section>
+<section id="connecting-safely" class="level2">
+<h2 class="anchored" data-anchor-id="connecting-safely">Connecting safely</h2>
+<p>Python’s standard-library <code>sqlite3</code> module implements the Python Database API specification. A context manager provides a clear connection boundary:</p>
+<div id="cd551545" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sqlite3</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>database_path <span class="op">=</span> Path(<span class="st">"data/processed/06-retail.db"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>database_path.parent.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> sqlite3.<span class="ex">connect</span>(database_path) <span class="im">as</span> connection:</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    connection.execute(<span class="st">"PRAGMA foreign_keys = ON"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    customer_count <span class="op">=</span> connection.execute(</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">"SELECT COUNT(*) FROM customers"</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    ).fetchone()[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The <code>with</code> block gives the connection a limited lifetime and coordinates transaction handling. Explicitly enabling foreign-key enforcement is important in SQLite because foreign-key constraints are not automatically enforced by every connection.</p>
+<p>For a server database, connection credentials should come from environment variables or a managed secret store—not from source code committed to Git.</p>
+<div id="02048143" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>database_url <span class="op">=</span> os.environ[<span class="st">"DATABASE_URL"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Avoid printing complete connection URLs because they may contain usernames, passwords, hostnames, or access tokens.</p>
+</section>
+<section id="creating-a-schema-from-python" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-schema-from-python">Creating a schema from Python</h2>
+<p>Schema definitions can be executed from Python while remaining ordinary SQL:</p>
+<div id="2e97c178" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>connection.executescript(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"""</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">    CREATE TABLE IF NOT EXISTS customers (</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="st">        customer_id INTEGER PRIMARY KEY,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">        customer_name TEXT NOT NULL,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="st">        segment TEXT NOT NULL</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="st">            CHECK (segment IN ('Consumer', 'Corporate', 'Home Office'))</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="st">    );</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="st">    CREATE TABLE IF NOT EXISTS orders (</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="st">        order_id INTEGER PRIMARY KEY,</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="st">        customer_id INTEGER NOT NULL,</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="st">        order_date TEXT NOT NULL,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="st">        status TEXT NOT NULL</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="st">            CHECK (status IN ('completed', 'pending', 'cancelled')),</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="st">        order_total REAL NOT NULL CHECK (order_total &gt;= 0),</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="st">        FOREIGN KEY (customer_id) REFERENCES customers(customer_id)</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="st">    );</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="st">    """</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><code>IF NOT EXISTS</code> prevents this teaching example from failing when rerun. In a production system, schema evolution should normally be managed with versioned migrations so every structural change is explicit and reviewable.</p>
+</section>
+<section id="sending-values-safely-with-parameters" class="level2">
+<h2 class="anchored" data-anchor-id="sending-values-safely-with-parameters">Sending values safely with parameters</h2>
+<p>Never construct a query by inserting untrusted values into an SQL string:</p>
+<div id="80f3f1c3" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Unsafe: do not use</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> <span class="ss">f"SELECT * FROM orders WHERE status = '</span><span class="sc">{</span>status<span class="sc">}</span><span class="ss">'"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>String interpolation mixes SQL syntax with data. It can create quoting bugs and SQL-injection vulnerabilities. Use the parameter style required by the database driver:</p>
+<div id="46ef7e14" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> <span class="st">"SELECT * FROM orders WHERE status = ?"</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> connection.execute(query, (status,)).fetchall()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>SQLite uses <code>?</code> placeholders. Other drivers may use <code>%s</code>, <code>:name</code>, or another documented style. Parameters represent <strong>values</strong>, not SQL identifiers. A table name or sort direction should be selected from a controlled allowlist rather than accepted directly from user input.</p>
+<section id="parameterizing-a-reporting-period" class="level3">
+<h3 class="anchored" data-anchor-id="parameterizing-a-reporting-period">Parameterizing a reporting period</h3>
+<p>The case-study query accepts start and end dates:</p>
+<pre class="{sql}"><code>SELECT
+    c.segment,
+    COUNT(*) AS completed_orders,
+    ROUND(SUM(o.order_total), 2) AS revenue,
+    ROUND(AVG(o.order_total), 2) AS average_order_value
+FROM orders AS o
+JOIN customers AS c
+  ON o.customer_id = c.customer_id
+WHERE o.status = 'completed'
+  AND o.order_date &gt;= :start_date
+  AND o.order_date &lt; :end_date
+GROUP BY c.segment
+ORDER BY revenue DESC;</code></pre>
+<p>The query uses a half-open interval: <code>start_date &lt;= order_date &lt; end_date</code>. This convention composes cleanly across adjacent reporting windows and avoids ambiguity at the upper boundary.</p>
+</section>
+</section>
+<section id="reading-sql-results-into-pandas" class="level2">
+<h2 class="anchored" data-anchor-id="reading-sql-results-into-pandas">Reading SQL results into pandas</h2>
+<p><code>pandas.read_sql_query()</code> turns a relational result into a dataframe:</p>
+<div id="004b0e45" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> pd.read_sql_query(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    query,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    connection,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    params<span class="op">=</span>{</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"start_date"</span>: <span class="st">"2026-01-01"</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"end_date"</span>: <span class="st">"2026-04-01"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The database still performs the join, filter, and aggregation. Python receives only the small summary needed for validation and plotting.</p>
+<p>This is preferable to loading entire tables and joining them in pandas when:</p>
+<ul>
+<li>the database tables are large;</li>
+<li>indexes can accelerate the filter;</li>
+<li>database permissions restrict accessible columns or rows; or</li>
+<li>several applications need the same relational logic.</li>
+</ul>
+<p>Pandas is appropriate after the query boundary when the result is small enough for memory and the next operation belongs to the analytical layer.</p>
+</section>
+<section id="transactions-and-atomic-writes" class="level2">
+<h2 class="anchored" data-anchor-id="transactions-and-atomic-writes">Transactions and atomic writes</h2>
+<p>A transaction treats a related group of database statements as one unit. Either all statements succeed, or none of their effects remain.</p>
+<p>Consider recording an order and its audit event. If the order is inserted but the audit insert fails, committing only the first statement would leave incomplete history. A transaction prevents that partial state.</p>
+<div id="6c6ce41f" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> connection:</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        connection.execute(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>            <span class="st">"""</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="st">            INSERT INTO orders</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="st">                (order_id, customer_id, order_date, status, order_total)</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="st">            VALUES (?, ?, ?, ?, ?)</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="st">            """</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>            order_record,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        connection.execute(</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">"""</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="st">            INSERT INTO order_events (order_id, event_type)</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="st">            VALUES (?, ?)</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="st">            """</span>,</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>            (order_record[<span class="dv">0</span>], <span class="st">"created"</span>),</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> sqlite3.IntegrityError <span class="im">as</span> error:</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">RuntimeError</span>(<span class="st">"Order write was rolled back"</span>) <span class="im">from</span> error</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The transaction boundary should match a business operation, not an arbitrary number of statements.</p>
+<section id="commit-and-rollback" class="level3">
+<h3 class="anchored" data-anchor-id="commit-and-rollback">Commit and rollback</h3>
+<ul>
+<li><strong>Commit</strong> makes all successful changes in the transaction durable.</li>
+<li><strong>Rollback</strong> discards changes made since the transaction began.</li>
+</ul>
+<p>Rollback is not merely error cleanup. It is part of the correctness model: downstream users should never observe half of an operation that was intended to be indivisible.</p>
+</section>
+</section>
+<section id="bulk-inserts" class="level2">
+<h2 class="anchored" data-anchor-id="bulk-inserts">Bulk inserts</h2>
+<p>Use <code>executemany()</code> for repeated inserts instead of issuing one separately managed transaction per row:</p>
+<div id="09eaf7e8" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>connection.executemany(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"""</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="st">    INSERT INTO customers (customer_id, customer_name, segment)</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="st">    VALUES (?, ?, ?)</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="st">    """</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    customer_records,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>For very large loads, database-specific bulk-loading tools are usually faster. Regardless of method, validate row counts, required fields, key uniqueness, and rejected records.</p>
+</section>
+<section id="validate-at-the-boundary" class="level2">
+<h2 class="anchored" data-anchor-id="validate-at-the-boundary">Validate at the boundary</h2>
+<p>A query can execute successfully and still return unsuitable data. Python should validate the contract expected by later steps.</p>
+<div id="0aaa529a" class="cell" data-execution_count="9">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>required_columns <span class="op">=</span> {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"segment"</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"completed_orders"</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"revenue"</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"average_order_value"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>missing_columns <span class="op">=</span> required_columns.difference(summary.columns)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> missing_columns:</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="ss">f"Missing columns: </span><span class="sc">{</span><span class="bu">sorted</span>(missing_columns)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> summary.empty:</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"The reporting query returned no rows"</span>)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> summary[<span class="st">"revenue"</span>].lt(<span class="dv">0</span>).<span class="bu">any</span>():</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Revenue cannot be negative"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Useful checks include:</p>
+<ul>
+<li>required columns are present;</li>
+<li>the result is not unexpectedly empty;</li>
+<li>identifiers are unique where required;</li>
+<li>numeric ranges are credible;</li>
+<li>dates are inside the requested window; and</li>
+<li>totals reconcile with a trusted control query.</li>
+</ul>
+<p>Failing early with a precise message is safer than generating an attractive but incorrect chart.</p>
+</section>
+<section id="keep-sql-readable" class="level2">
+<h2 class="anchored" data-anchor-id="keep-sql-readable">Keep SQL readable</h2>
+<p>Long SQL strings embedded throughout Python modules become hard to test and maintain. Use one of three patterns depending on project size:</p>
+<ol type="1">
+<li>short, single-purpose SQL constants in the Python module;</li>
+<li>query functions that accept explicit parameters; or</li>
+<li>separate <code>.sql</code> files for long, shared, or independently reviewed queries.</li>
+</ol>
+<p>The chapter stores the query separately and wraps its execution in a function:</p>
+<div id="8da3aa73" class="cell" data-execution_count="10">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>query_path <span class="op">=</span> Path(<span class="st">"queries/06-segment-revenue.sql"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> load_segment_revenue(connection, start_date, end_date):</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pd.read_sql_query(</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        query_path.read_text(encoding<span class="op">=</span><span class="st">"utf-8"</span>),</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        connection,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        params<span class="op">=</span>{<span class="st">"start_date"</span>: start_date, <span class="st">"end_date"</span>: end_date},</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The function creates a narrow interface: callers provide dates and receive a dataframe. Connection management remains visible to the orchestration layer.</p>
+</section>
+<section id="a-reproducible-chapter-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="a-reproducible-chapter-workflow">A reproducible chapter workflow</h2>
+<p>Run the complete example from the repository root:</p>
+<pre class="{bash}"><code>bash scripts/bash/06-run-sql-python-integration.sh</code></pre>
+<p>The wrapper uses the repository’s <code>.venv</code> when available and otherwise uses <code>python3</code>. The Python script creates:</p>
+<ul>
+<li><code>data/processed/06-retail.db</code> — local SQLite database;</li>
+<li><code>results/06-segment-revenue.csv</code> — query result;</li>
+<li><code>results/06-sql-python-summary.json</code> — validation and run metadata; and</li>
+<li><code>results/figures/06-segment-revenue.png</code> — revenue comparison plot.</li>
+</ul>
+<p>The complete reproducible inputs are also retained:</p>
+<ul>
+<li><code>data/raw/06-customers.csv</code> and <code>data/raw/06-orders.csv</code> — source records;</li>
+<li><code>queries/06-create-retail-schema.sql</code> — schema and index definition; and</li>
+<li><code>queries/06-segment-revenue.sql</code> — parameterized reporting query.</li>
+</ul>
+<p>The database is a reproducible generated artifact. The script removes and rebuilds only its chapter-specific database, which prevents old rows from changing the demonstration result.</p>
+</section>
+<section id="interpreting-the-result" class="level2">
+<h2 class="anchored" data-anchor-id="interpreting-the-result">Interpreting the result</h2>
+<div id="fig-segment-revenue" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-segment-revenue-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="results/figures/06-segment-revenue.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-segment-revenue-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.1: Completed-order revenue by customer segment.
+</figcaption>
+</figure>
+</div>
+<p>Figure <a href="#fig-segment-revenue" class="quarto-xref">Figure&nbsp;<span>7.1</span></a> is based on the aggregated query result, not on entire raw tables loaded into Python. The labels show both revenue and completed-order counts, keeping the graphic connected to the relational calculation.</p>
+<p>The plot answers the reporting question, but the workflow also produces machine-readable outputs. The CSV can be inspected or reused, while the JSON summary records the reporting window, database row counts, and reconciliation status.</p>
+</section>
+<section id="reconciliation" class="level2">
+<h2 class="anchored" data-anchor-id="reconciliation">Reconciliation</h2>
+<p>An important validation is to compare the dataframe’s total revenue with a separate control query:</p>
+<div id="a1eaa741" class="cell" data-execution_count="11">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>control_total <span class="op">=</span> connection.execute(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"""</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT ROUND(SUM(order_total), 2)</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM orders</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="st">    WHERE status = 'completed'</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="st">      AND order_date &gt;= ?</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="st">      AND order_date &lt; ?</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="st">    """</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    (start_date, end_date),</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>).fetchone()[<span class="dv">0</span>]</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>reported_total <span class="op">=</span> <span class="bu">round</span>(<span class="bu">float</span>(summary[<span class="st">"revenue"</span>].<span class="bu">sum</span>()), <span class="dv">2</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> reported_total <span class="op">!=</span> control_total:</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"Segment totals do not reconcile"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>This check guards against accidental row loss or multiplication during joins. In real pipelines, reconciliations often compare source counts, target counts, monetary totals, or hashes across stages.</p>
+</section>
+<section id="common-failure-modes" class="level2">
+<h2 class="anchored" data-anchor-id="common-failure-modes">Common failure modes</h2>
+<section id="loading-too-much-data" class="level3">
+<h3 class="anchored" data-anchor-id="loading-too-much-data">Loading too much data</h3>
+<p><strong>Symptom:</strong> Python uses excessive memory or takes a long time before analysis begins.</p>
+<p><strong>Correction:</strong> select only required columns, filter early, aggregate in SQL, or read results in chunks.</p>
+</section>
+<section id="building-sql-with-string-interpolation" class="level3">
+<h3 class="anchored" data-anchor-id="building-sql-with-string-interpolation">Building SQL with string interpolation</h3>
+<p><strong>Symptom:</strong> queries break on quotes or expose the application to SQL injection.</p>
+<p><strong>Correction:</strong> use driver-supported parameters for values and allowlists for identifiers.</p>
+</section>
+<section id="leaving-connections-open" class="level3">
+<h3 class="anchored" data-anchor-id="leaving-connections-open">Leaving connections open</h3>
+<p><strong>Symptom:</strong> the application exhausts database connections or retains locks.</p>
+<p><strong>Correction:</strong> use context managers and keep connection lifetimes deliberate.</p>
+</section>
+<section id="treating-successful-execution-as-valid-data" class="level3">
+<h3 class="anchored" data-anchor-id="treating-successful-execution-as-valid-data">Treating successful execution as valid data</h3>
+<p><strong>Symptom:</strong> downstream outputs are empty, duplicated, incomplete, or implausible even though no SQL error occurred.</p>
+<p><strong>Correction:</strong> validate schema, cardinality, ranges, and reconciliations immediately after querying.</p>
+</section>
+<section id="committing-partial-business-operations" class="level3">
+<h3 class="anchored" data-anchor-id="committing-partial-business-operations">Committing partial business operations</h3>
+<p><strong>Symptom:</strong> related tables disagree after one statement fails.</p>
+<p><strong>Correction:</strong> place related writes inside one transaction and verify rollback behavior.</p>
+</section>
+<section id="hiding-every-operation-behind-one-abstraction" class="level3">
+<h3 class="anchored" data-anchor-id="hiding-every-operation-behind-one-abstraction">Hiding every operation behind one abstraction</h3>
+<p><strong>Symptom:</strong> developers cannot see when connections begin, which query runs, or where transactions commit.</p>
+<p><strong>Correction:</strong> use small functions with explicit parameters and return types. Abstraction should clarify boundaries, not erase them.</p>
+</section>
+</section>
+<section id="extending-to-server-databases" class="level2">
+<h2 class="anchored" data-anchor-id="extending-to-server-databases">Extending to server databases</h2>
+<p>The case study uses SQLite, but a server database adds operational concerns:</p>
+<ul>
+<li>install the appropriate driver;</li>
+<li>obtain credentials securely;</li>
+<li>configure encrypted connections;</li>
+<li>use connection pooling for long-running applications;</li>
+<li>set connection and statement timeouts;</li>
+<li>understand the database’s transaction isolation behavior; and</li>
+<li>log query names and durations without logging sensitive parameter values.</li>
+</ul>
+<p>Libraries such as SQLAlchemy can provide a consistent connection and transaction interface across database systems. Even with an abstraction layer, understanding SQL, transactions, and driver parameters remains essential.</p>
+</section>
+<section id="practice-exercises" class="level2">
+<h2 class="anchored" data-anchor-id="practice-exercises">Practice exercises</h2>
+<section id="exercise-1-add-a-region-dimension" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-1-add-a-region-dimension">Exercise 1: Add a region dimension</h3>
+<p>Add a <code>region</code> column to <code>customers</code>, update the sample records, and change the report to group by both <code>region</code> and <code>segment</code>.</p>
+</section>
+<section id="exercise-2-test-an-empty-period" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-2-test-an-empty-period">Exercise 2: Test an empty period</h3>
+<p>Run the reporting function for a date range with no completed orders. Decide whether an empty dataframe should be accepted, warned about, or treated as an error for this workflow.</p>
+</section>
+<section id="exercise-3-verify-rollback" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-3-verify-rollback">Exercise 3: Verify rollback</h3>
+<p>Inside one transaction, insert a valid order followed by an invalid order with a nonexistent <code>customer_id</code>. Confirm that neither row remains after the integrity error.</p>
+</section>
+<section id="exercise-4-add-a-query-plan-check" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-4-add-a-query-plan-check">Exercise 4: Add a query plan check</h3>
+<p>Create an index on <code>orders(order_date, status)</code> and use SQLite’s <code>EXPLAIN QUERY PLAN</code> to examine whether the reporting query can use it.</p>
+</section>
+<section id="exercise-5-add-another-external-query" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-5-add-another-external-query">Exercise 5: Add another external query</h3>
+<p>Create <code>queries/06-customer-order-counts.sql</code>, load it with <code>Path.read_text()</code>, and produce a second validated report grouped by customer.</p>
+</section>
+</section>
+<section id="chapter-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="chapter-checklist">Chapter checklist</h2>
+<p>Before considering a Python–SQL workflow complete, confirm that:</p>
+<ul class="task-list">
+<li><label><input type="checkbox">connection settings are not hard-coded secrets;</label></li>
+<li><label><input type="checkbox">connections have a clear lifetime;</label></li>
+<li><label><input type="checkbox">SQL values use parameters;</label></li>
+<li><label><input type="checkbox">database operations occur at the appropriate layer;</label></li>
+<li><label><input type="checkbox">related writes share a transaction;</label></li>
+<li><label><input type="checkbox">query outputs are validated;</label></li>
+<li><label><input type="checkbox">important totals reconcile;</label></li>
+<li><label><input type="checkbox">generated files have stable repository paths; and</label></li>
+<li><label><input type="checkbox">the workflow can be rerun from a clean checkout.</label></li>
 </ul>
 </section>
-<section id="supporting-example" class="level2">
-<h2 class="anchored" data-anchor-id="supporting-example">Supporting example</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/06-run-sql-python-example.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>The example uses Python’s standard <code>sqlite3</code> module, builds the case-study database, runs a parameterized query, and writes a CSV result.</p>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<p>SQL and Python are complementary. SQL expresses relational work close to the data, while Python coordinates parameters, checks contracts, and connects query results to the wider analytical ecosystem.</p>
+<p>The most important habits are to parameterize values, manage connection and transaction boundaries explicitly, validate returned data, and keep the SQL–Python interface small. These habits turn an exploratory query into a reproducible component that can later become part of a data pipeline.</p>
 
 
 </section>

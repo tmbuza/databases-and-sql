@@ -1,11 +1,295 @@
-# Transformation and Data Quality {#sec-transformation-quality}
+---
+title: "Transformation and Data Quality"
+---
+
+# Transformation and Data Quality {#sec-transformation-data-quality}
+
+::: {.cdi-message}
+- **ID:** DSDP-011
+- **Type:** Guide chapter
+- **Audience:** Data analysts, analytics engineers, and data engineers
+- **Theme:** Turning raw records into trustworthy, analysis-ready data
+:::
+
+Ingestion makes data available. Transformation makes it usable, and data-quality controls make it trustworthy. A pipeline is therefore incomplete when it merely copies records from a source into storage. It must also make assumptions explicit, preserve lineage, identify invalid records, and produce evidence that the resulting dataset satisfies its contract.
+
+This chapter builds a small but production-shaped transformation workflow. The example starts with deliberately imperfect order data, standardizes it, validates row-level rules, quarantines rejected records, and publishes both a clean dataset and a quality report.
 
 ## Learning objectives
 
-- Separate structural cleaning from business-rule transformations.
-- Encode schema, completeness, uniqueness, and validity checks.
-- Quarantine invalid records without silently losing evidence.
+After completing this chapter, you will be able to:
 
-## Supporting example
+1. separate raw, staged, validated, and published transformation states;
+2. express transformations as deterministic and testable functions;
+3. define schema, completeness, validity, uniqueness, and consistency checks;
+4. quarantine invalid records without silently discarding evidence;
+5. calculate quality metrics and enforce release thresholds; and
+6. distinguish data-quality failures from pipeline execution failures.
 
-The starter pipeline in `src/data_pipelines/pipeline.py` validates required fields, standardizes values, and rejects invalid rows.
+## From raw records to a trusted dataset
+
+A useful transformation pipeline creates explicit boundaries between states.
+
+```{mermaid}
+flowchart TD
+    A["Raw orders<br/>immutable input"] --> B["Staged orders<br/>normalized fields"]
+    B --> C{"Row rules<br/>and contracts"}
+    C -->|valid| D["Published orders<br/>analysis-ready"]
+    C -->|invalid| E["Quarantine<br/>reason retained"]
+    D --> F["Quality report<br/>metrics and decision"]
+    E --> F
+```
+
+The boundaries serve different purposes:
+
+| State | Purpose | Typical operations |
+|---|---|---|
+| Raw | Preserve source evidence | Append, checksum, timestamp, source metadata |
+| Staged | Normalize representation | Rename columns, parse dates, standardize text and types |
+| Validated | Evaluate contracts | Required-field, domain, range, uniqueness, and consistency checks |
+| Published | Serve downstream users | Select stable columns, calculate derived fields, partition and document |
+| Quarantined | Preserve rejected records | Retain original values, failure reasons, run identifier, and remediation status |
+
+The raw layer should be treated as immutable. Corrections belong in transformation logic or in a new source delivery—not in an undocumented edit to historical input.
+
+## The chapter case study
+
+The practical dataset represents orders received from a transactional system. It intentionally includes:
+
+- inconsistent customer identifiers and status capitalization;
+- malformed timestamps;
+- missing product identifiers;
+- zero or negative quantities;
+- negative unit prices;
+- duplicate order identifiers; and
+- a row whose reported total disagrees with quantity multiplied by unit price.
+
+The supporting program is:
+
+```text
+scripts/python/11-transform-and-validate-orders.py
+```
+
+Run it from the repository root:
+
+```bash
+bash scripts/bash/11-run-transformation-and-quality.sh
+```
+
+The command creates the following artifacts:
+
+```text
+data/processed/11-orders-clean.csv
+data/processed/11-orders-quarantine.csv
+results/11-data-quality-metrics.csv
+results/11-data-quality-summary.json
+results/figures/11-data-quality-dashboard.png
+```
+
+## Design transformations as pure steps
+
+A transformation is easier to test when its output depends only on its declared input. Instead of one large function that reads files, mutates global state, transforms records, and writes results, separate orchestration from data logic:
+
+```python
+raw = load_orders(input_path)
+staged = stage_orders(raw)
+evaluated = evaluate_rules(staged)
+clean, quarantine = split_by_validity(evaluated)
+metrics = calculate_quality_metrics(evaluated)
+publish(clean, quarantine, metrics)
+```
+
+This structure provides three advantages:
+
+- each function can be tested with a small in-memory table;
+- failures can be located at a specific boundary; and
+- rerunning the pipeline with the same input produces the same logical output.
+
+### Normalize before validating
+
+Validation should evaluate canonical representations. For example, whitespace around `customer_id` is a representation problem, whereas a missing identifier after trimming is a completeness problem. The staging function therefore:
+
+- strips surrounding whitespace;
+- converts status values to lowercase;
+- parses timestamps with invalid values converted to missing values;
+- converts numeric fields with non-numeric values coerced to missing; and
+- calculates `expected_total` from quantity and unit price.
+
+Normalization must not conceal meaning. A negative price should not be converted to its absolute value because that changes the source claim. It should fail a rule and enter quarantine.
+
+## Define the data contract
+
+A data contract records the assumptions downstream consumers are allowed to make. For the order dataset, the contract is:
+
+| Field | Type after staging | Rule |
+|---|---|---|
+| `order_id` | string | Required and unique |
+| `customer_id` | string | Required after trimming |
+| `product_id` | string | Required after trimming |
+| `order_timestamp` | datetime | Must parse successfully |
+| `quantity` | numeric | Integer-like and greater than zero |
+| `unit_price` | numeric | Greater than or equal to zero |
+| `status` | string | One of `pending`, `paid`, `shipped`, `cancelled` |
+| `reported_total` | numeric | Must equal `quantity × unit_price` within tolerance |
+
+Contracts should be versioned with pipeline code. A new allowed status or a revised interpretation of totals is a contract change, not an incidental implementation detail.
+
+## Row-level validation and quarantine
+
+The example evaluates each rule as a Boolean column and then combines failed rule names into `quality_issues`. A record is valid only if every rule passes.
+
+```python
+checks = {
+    "missing_order_id": orders["order_id"].isna(),
+    "duplicate_order_id": orders["order_id"].duplicated(keep=False),
+    "missing_customer_id": orders["customer_id"].isna(),
+    "invalid_timestamp": orders["order_timestamp"].isna(),
+    "nonpositive_quantity": orders["quantity"].isna() | (orders["quantity"] <= 0),
+}
+```
+
+Quarantine is preferable to silent deletion because it retains evidence needed to answer:
+
+- Which records failed?
+- Which rules failed for each record?
+- Did the source deteriorate or did a new value expose an incomplete contract?
+- Can the records be corrected and replayed?
+
+The quarantine dataset in this chapter retains `quality_issues` as a pipe-separated list. In a larger system, a separate long-form violations table—one row per record and rule—can support more detailed monitoring.
+
+## Dataset-level quality dimensions
+
+Row rules feed several dataset-level dimensions.
+
+### Completeness
+
+Completeness measures whether required values are present:
+
+$$
+\text{completeness} = 1 - \frac{\text{missing required values}}{\text{required value opportunities}}
+$$
+
+### Validity
+
+Validity measures whether values satisfy their declared domains, types, ranges, and relationships:
+
+$$
+\text{validity} = \frac{\text{rows passing all validity rules}}{\text{rows evaluated}}
+$$
+
+### Uniqueness
+
+For a required key, uniqueness can be expressed as the share of records not involved in duplication:
+
+$$
+\text{uniqueness} = 1 - \frac{\text{rows with duplicated keys}}{\text{rows evaluated}}
+$$
+
+### Consistency
+
+Consistency evaluates relationships between fields. Here, a row is consistent when the reported total agrees with the calculated total within one cent.
+
+### Acceptance rate
+
+The final acceptance rate is:
+
+$$
+\text{acceptance rate} = \frac{\text{published rows}}{\text{input rows}}
+$$
+
+This is operationally useful but should not replace dimension-specific measures. The same acceptance rate can result from very different underlying problems.
+
+## Quality gates
+
+A quality gate converts metrics into a release decision. The example requires:
+
+- at least 70% of input rows to pass all rules;
+- 100% completeness in the published dataset; and
+- 100% uniqueness of the published order key.
+
+The intentionally imperfect demonstration input passes because invalid rows are quarantined before publication and enough valid rows remain. In production, thresholds should be tied to consumer risk. A financial settlement table may require zero rejected rows, while an exploratory feed may tolerate a small, monitored rejection rate.
+
+Quality gates should distinguish three outcomes:
+
+| Outcome | Meaning | Response |
+|---|---|---|
+| Pass | Dataset satisfies the release contract | Publish and record metrics |
+| Warn | Dataset is usable but degradation requires attention | Publish with alert and investigation |
+| Fail | Consumer risk exceeds tolerance | Stop publication, retain evidence, alert owner |
+
+## Failure semantics
+
+Not every quality problem should crash the pipeline, and not every successful program run should publish data.
+
+- **Execution failure:** the file cannot be read, required columns are absent, or output cannot be written. The job should fail.
+- **Record-quality failure:** individual rows violate known rules. They may be quarantined while valid rows continue.
+- **Dataset-quality failure:** aggregate metrics breach a release threshold. Outputs may be retained for diagnosis, but publication should fail.
+- **Contract drift:** new source fields or values are structurally valid but not recognized by the current contract. The owner must decide whether to reject them or revise the contract.
+
+The chapter script exits with a nonzero status when a dataset-level gate fails, allowing an orchestrator or CI workflow to block downstream publication.
+
+## Inspecting the outputs
+
+The clean output contains only contract-compliant records and adds lineage fields:
+
+- `transformation_run_id` identifies the run;
+- `transformed_at_utc` records when transformation occurred; and
+- `expected_total` makes the derived calculation explicit.
+
+The JSON summary records counts, thresholds, metrics, and the release decision. The dashboard visualizes metric values against the thresholds used by the gate.
+
+```{python}
+#| echo: false
+#| eval: false
+#| fig-cap: "Data-quality metrics and release thresholds produced by the Chapter 11 workflow."
+#| out-width: "90%"
+from IPython.display import Image, display
+display(Image(filename="results/figures/11-data-quality-dashboard.png"))
+```
+
+## Testing strategy
+
+Transformation tests should cover both expected behavior and failure boundaries.
+
+1. **Unit tests:** verify trimming, status normalization, timestamp parsing, and total calculation.
+2. **Rule tests:** provide one invalid example for each rule and confirm its failure reason.
+3. **Schema tests:** confirm required columns and output types.
+4. **Idempotency tests:** run the logical transformation twice on identical input and compare business columns.
+5. **Integration tests:** execute the command and verify clean, quarantine, metrics, and figure outputs.
+6. **Regression tests:** retain representative edge cases so corrected defects cannot silently return.
+
+Run identifiers and processing timestamps are expected to vary, so idempotency comparisons should exclude operational metadata or derive it from a fixed run context during tests.
+
+## Operational checklist
+
+Before publishing a transformed dataset, confirm that:
+
+- raw input remains reproducible and unchanged;
+- the contract and threshold versions are recorded;
+- transformations are deterministic for business fields;
+- rejected records retain their original identifiers and failure reasons;
+- metrics use stable denominators and definitions;
+- the quality decision is machine-readable;
+- sensitive values are not exposed in logs or dashboards;
+- downstream publication occurs only after the gate passes; and
+- reruns do not duplicate published data.
+
+## Exercises
+
+1. Add a rule requiring `cancelled` orders to have a zero reported total. Decide whether the rule expresses validity or cross-field consistency.
+2. Convert the violation output to long form with one row per `order_id` and failed rule.
+3. Add a warning band when acceptance is between 70% and 85%, while keeping failure below 70%.
+4. Parameterize the script to accept an external CSV input and an output directory.
+5. Write tests for a duplicated order, an unknown status, a malformed date, and a rounding difference of less than one cent.
+
+## Key takeaways
+
+- Transformation and quality validation are one controlled workflow, not unrelated cleanup steps.
+- Raw input should remain immutable while staged and published states have explicit contracts.
+- Normalize representation before evaluating semantic rules.
+- Quarantine preserves invalid records and failure reasons without contaminating published data.
+- Dimension-specific metrics explain quality better than a single pass rate.
+- A machine-readable quality gate determines whether downstream publication is allowed.
+- Trust comes from reproducible evidence: code, contracts, metrics, lineage, and retained failures.
+
+The next chapter builds on these trusted outputs by examining storage formats and partitioning strategies for efficient, maintainable data access.

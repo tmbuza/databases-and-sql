@@ -1,0 +1,6 @@
+order_id,order_date,customer_id,product,quantity,unit_price
+ORD-1001,2026-08-01,CUST-101,Database Design Workbook,2,24.50
+ORD-1002,2026-08-01,CUST-102,SQL Practice Cards,1,18.00
+ORD-1003,2026-08-02,CUST-101,Pipeline Field Guide,3,31.25
+ORD-1004,2026-08-03,CUST-103,Data Quality Checklist,4,12.75
+ORD-1005,2026-08-04,CUST-104,ETL Patterns Poster,2,16.50

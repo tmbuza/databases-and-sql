@@ -1,0 +1,62 @@
+[
+  {
+    "cursor": null,
+    "response": {
+      "items": [
+        {
+          "event_id": "E101",
+          "customer_id": "C001",
+          "event_type": "ticket_opened",
+          "updated_at": "2026-08-05T02:15:00Z"
+        },
+        {
+          "event_id": "E102",
+          "customer_id": "C003",
+          "event_type": "chat_started",
+          "updated_at": "2026-08-05T06:40:00Z"
+        }
+      ],
+      "next_cursor": "CURSOR-2"
+    }
+  },
+  {
+    "cursor": "CURSOR-2",
+    "response": {
+      "items": [
+        {
+          "event_id": "E103",
+          "customer_id": "C002",
+          "event_type": "ticket_updated",
+          "updated_at": "2026-08-05T10:05:00Z"
+        },
+        {
+          "event_id": "E104",
+          "customer_id": "C005",
+          "event_type": "chat_closed",
+          "updated_at": "2026-08-05T13:30:00Z"
+        }
+      ],
+      "next_cursor": "CURSOR-3"
+    }
+  },
+  {
+    "cursor": "CURSOR-3",
+    "response": {
+      "items": [
+        {
+          "event_id": "E104",
+          "customer_id": "C005",
+          "event_type": "chat_closed",
+          "updated_at": "2026-08-05T13:30:00Z"
+        },
+        {
+          "event_id": "E105",
+          "customer_id": "C004",
+          "event_type": "ticket_resolved",
+          "updated_at": "2026-08-05T21:10:00Z"
+        }
+      ],
+      "next_cursor": null
+    }
+  }
+]

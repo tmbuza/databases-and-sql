@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -71,6 +106,35 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="assets/css/cdi.css">
 </head>
@@ -286,7 +350,31 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#sec-storage-formats-partitioning" id="toc-sec-storage-formats-partitioning" class="nav-link active" data-scroll-target="#sec-storage-formats-partitioning">Storage Formats and Partitioning</a>
+  <ul class="collapse">
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#logical-data-versus-physical-layout" id="toc-logical-data-versus-physical-layout" class="nav-link" data-scroll-target="#logical-data-versus-physical-layout">Logical data versus physical layout</a></li>
+  <li><a href="#the-chapter-case-study" id="toc-the-chapter-case-study" class="nav-link" data-scroll-target="#the-chapter-case-study">The chapter case study</a></li>
+  <li><a href="#comparing-common-formats" id="toc-comparing-common-formats" class="nav-link" data-scroll-target="#comparing-common-formats">Comparing common formats</a>
+  <ul class="collapse">
+  <li><a href="#text-formats" id="toc-text-formats" class="nav-link" data-scroll-target="#text-formats">Text formats</a></li>
+  <li><a href="#columnar-storage" id="toc-columnar-storage" class="nav-link" data-scroll-target="#columnar-storage">Columnar storage</a></li>
+  </ul></li>
+  <li><a href="#compression-is-a-computestorage-trade-off" id="toc-compression-is-a-computestorage-trade-off" class="nav-link" data-scroll-target="#compression-is-a-computestorage-trade-off">Compression is a compute–storage trade-off</a></li>
+  <li><a href="#partitioning" id="toc-partitioning" class="nav-link" data-scroll-target="#partitioning">Partitioning</a>
+  <ul class="collapse">
+  <li><a href="#choose-keys-from-access-patterns" id="toc-choose-keys-from-access-patterns" class="nav-link" data-scroll-target="#choose-keys-from-access-patterns">Choose keys from access patterns</a></li>
+  </ul></li>
+  <li><a href="#the-small-file-problem" id="toc-the-small-file-problem" class="nav-link" data-scroll-target="#the-small-file-problem">The small-file problem</a></li>
+  <li><a href="#schema-and-type-fidelity" id="toc-schema-and-type-fidelity" class="nav-link" data-scroll-target="#schema-and-type-fidelity">Schema and type fidelity</a></li>
+  <li><a href="#schema-evolution" id="toc-schema-evolution" class="nav-link" data-scroll-target="#schema-evolution">Schema evolution</a></li>
+  <li><a href="#manifests-and-validation" id="toc-manifests-and-validation" class="nav-link" data-scroll-target="#manifests-and-validation">Manifests and validation</a></li>
+  <li><a href="#reading-only-what-is-needed" id="toc-reading-only-what-is-needed" class="nav-link" data-scroll-target="#reading-only-what-is-needed">Reading only what is needed</a></li>
+  <li><a href="#publication-pattern" id="toc-publication-pattern" class="nav-link" data-scroll-target="#publication-pattern">Publication pattern</a></li>
+  <li><a href="#operational-checklist" id="toc-operational-checklist" class="nav-link" data-scroll-target="#operational-checklist">Operational checklist</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -295,7 +383,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-from-scripts-to-data-pipelines.html">From Queries to Pipelines</a></li><li class="breadcrumb-item"><a href="./12-storage-formats-and-partitioning.html"><span class="chapter-title">Storage Formats and Partitioning</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-storage-partitioning" class="quarto-section-identifier"><span class="chapter-title">Storage Formats and Partitioning</span></span></h1>
+<h1 class="title"><span class="chapter-title">Storage Formats and Partitioning</span></h1>
 </div>
 
 
@@ -318,15 +406,343 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="sec-storage-formats-partitioning" class="level1">
+<h1>Storage Formats and Partitioning</h1>
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-012</li>
+<li><strong>Type:</strong> Guide chapter</li>
+<li><strong>Audience:</strong> Data analysts, analytics engineers, and data engineers</li>
+<li><strong>Theme:</strong> Choosing physical layouts that make trusted data efficient to store and query</li>
+</ul>
+</div>
+<p>The logical contents of a dataset and its physical layout are separate design decisions. Chapter 11 produced trusted order records. This chapter asks how those records should be encoded, compressed, partitioned, and exposed so that downstream systems can read the required data without scanning everything.</p>
+<p>The practical workflow writes the same deterministic dataset as CSV, JSON Lines, Parquet, and date-partitioned Parquet. It then records file sizes and read times, verifies round-trip row counts, and demonstrates partition pruning for a one-month query.</p>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>After completing this chapter, you will be able to:</p>
+<ol type="1">
+<li>distinguish row-oriented text formats from columnar analytical formats;</li>
+<li>explain how schema, compression, and column projection affect storage and reads;</li>
+<li>design partitions around common filters rather than arbitrary columns;</li>
+<li>recognize small-file, over-partitioning, and schema-evolution risks;</li>
+<li>use manifests and validation checks to make stored datasets auditable; and</li>
+<li>choose a format and layout from workload, interoperability, and lifecycle requirements.</li>
+</ol>
+</section>
+<section id="logical-data-versus-physical-layout" class="level2">
+<h2 class="anchored" data-anchor-id="logical-data-versus-physical-layout">Logical data versus physical layout</h2>
+<p>A table describes fields and records. A physical dataset additionally decides:</p>
 <ul>
-<li>Compare CSV, JSON, Parquet, database tables, and object storage.</li>
-<li>Select partition keys that support common access patterns.</li>
-<li>Avoid small-file and schema-evolution problems.</li>
+<li>how values are encoded;</li>
+<li>whether types are embedded or inferred;</li>
+<li>whether records or columns are stored together;</li>
+<li>which compression codec is used;</li>
+<li>how records are divided among files and directories; and</li>
+<li>which metadata lets a query engine skip irrelevant data.</li>
 </ul>
+<p>Two datasets can contain identical rows while behaving very differently under the same query. The physical plan should therefore follow the access pattern.</p>
+</section>
+<section id="the-chapter-case-study" class="level2">
+<h2 class="anchored" data-anchor-id="the-chapter-case-study">The chapter case study</h2>
+<p>The supporting program generates 60,000 synthetic orders spanning 2025. It uses a fixed random seed, writes each format, reads it back, and benchmarks a June query.</p>
+<p>Run it from the repository root:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/12-run-storage-benchmark.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The command creates:</p>
+<pre class="text"><code>data/processed/12-orders.csv
+data/processed/12-orders.jsonl
+data/processed/12-orders.parquet
+data/processed/12-orders-partitioned/order_year=2025/order_month=.../*.parquet
+results/12-storage-benchmark.csv
+results/12-partition-pruning.csv
+results/12-storage-manifest.json
+results/figures/12-storage-format-comparison.png</code></pre>
+<p>The ZIP includes the scripts, benchmark tables, manifest, plot, compact samples, and the complete generated datasets so the benchmark can be inspected without rerunning it.</p>
+</section>
+<section id="comparing-common-formats" class="level2">
+<h2 class="anchored" data-anchor-id="comparing-common-formats">Comparing common formats</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Format</th>
+<th>Organization</th>
+<th>Schema</th>
+<th>Strength</th>
+<th>Main limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CSV</td>
+<td>Row-oriented text</td>
+<td>External or inferred</td>
+<td>Universal exchange and inspection</td>
+<td>Weak typing; inefficient analytical scans</td>
+</tr>
+<tr class="even">
+<td>JSON Lines</td>
+<td>Row-oriented text</td>
+<td>Self-describing field names, types still contextual</td>
+<td>Nested/event records and streaming</td>
+<td>Repeated keys increase size; inconsistent records are possible</td>
+</tr>
+<tr class="odd">
+<td>Parquet</td>
+<td>Columnar binary</td>
+<td>Embedded</td>
+<td>Projection, compression, predicate-aware analytics</td>
+<td>Requires compatible libraries; poor for manual inspection</td>
+</tr>
+<tr class="even">
+<td>Database table</td>
+<td>Engine-managed pages</td>
+<td>Enforced by database</td>
+<td>Transactions, indexes, concurrent access</td>
+<td>Less portable; operational ownership required</td>
+</tr>
+</tbody>
+</table>
+<p>No format is universally best. CSV remains useful at system boundaries, JSON Lines fits event-shaped records, and Parquet is usually the better analytical storage layer.</p>
+<section id="text-formats" class="level3">
+<h3 class="anchored" data-anchor-id="text-formats">Text formats</h3>
+<p>CSV is a convention rather than a complete data contract. Readers must agree on delimiter, quoting, encoding, null representation, date interpretation, and types. Leading zeros and time zones are easily lost when inference differs.</p>
+<p>JSON Lines stores one JSON object per line. It supports nested structures and can be processed incrementally, but every object repeats field names. Schema variation is technically possible even when consumers expect a stable table.</p>
+<p>Text remains valuable for exchange and debugging. It should still be accompanied by a declared schema and validation at ingestion.</p>
+</section>
+<section id="columnar-storage" class="level3">
+<h3 class="anchored" data-anchor-id="columnar-storage">Columnar storage</h3>
+<p>Parquet groups values by column and stores metadata for row groups. This supports three important analytical optimizations:</p>
+<ul>
+<li><strong>projection:</strong> reading only requested columns;</li>
+<li><strong>compression:</strong> similar adjacent values often compress effectively; and</li>
+<li><strong>data skipping:</strong> statistics can let an engine avoid row groups that cannot satisfy a filter.</li>
+</ul>
+<p>If a query needs three columns from a table containing forty, a columnar reader can avoid decoding most of the dataset. This benefit depends on the engine, file metadata, row-group layout, and filter expression; a file extension alone does not guarantee fast queries.</p>
+</section>
+</section>
+<section id="compression-is-a-computestorage-trade-off" class="level2">
+<h2 class="anchored" data-anchor-id="compression-is-a-computestorage-trade-off">Compression is a compute–storage trade-off</h2>
+<p>Compression reduces bytes stored and transferred but consumes CPU during writing and reading. Common Parquet codecs include Snappy, gzip, Brotli, and Zstandard. The case study uses Snappy because it provides fast, broadly supported compression.</p>
+<p>Choose a codec by measuring the real workload:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Priority</th>
+<th>Typical choice</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Fast interactive reads and broad compatibility</td>
+<td>Snappy</td>
+</tr>
+<tr class="even">
+<td>Stronger compression with balanced performance</td>
+<td>Zstandard</td>
+</tr>
+<tr class="odd">
+<td>Maximum interoperability with older stacks</td>
+<td>Snappy or gzip after compatibility testing</td>
+</tr>
+<tr class="even">
+<td>Archival size reduction</td>
+<td>A stronger codec, benchmarked against restore time</td>
+</tr>
+</tbody>
+</table>
+<p>The benchmark repeats each read and reports the median. Its values describe this generated dataset and runtime—not a universal ranking.</p>
+</section>
+<section id="partitioning" class="level2">
+<h2 class="anchored" data-anchor-id="partitioning">Partitioning</h2>
+<p>Partitioning divides a logical dataset into physical groups based on one or more fields. The case study uses Hive-style paths:</p>
+<pre class="text"><code>12-orders-partitioned/
+└── order_year=2025/
+    ├── order_month=1/
+    ├── order_month=2/
+    └── ...</code></pre>
+<p>A query for June can select <code>order_year=2025/order_month=06</code> instead of opening all twelve monthly partitions. The fraction of files considered is:</p>
+<p><span class="math display">\[
+\text{scan fraction} = \frac{\text{selected partition files}}{\text{all partition files}}
+\]</span></p>
+<p>Partitioning helps when filters align with partition keys and each partition contains enough data to form reasonably sized files.</p>
+<section id="choose-keys-from-access-patterns" class="level3">
+<h3 class="anchored" data-anchor-id="choose-keys-from-access-patterns">Choose keys from access patterns</h3>
+<p>A good partition field is frequently filtered, stable, and neither too coarse nor too granular.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Candidate</th>
+<th>Assessment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>order_year</code>, <code>order_month</code></td>
+<td>Useful for time-bounded reporting and retention</td>
+</tr>
+<tr class="even">
+<td><code>region</code></td>
+<td>Useful when queries and access policies are region-specific</td>
+</tr>
+<tr class="odd">
+<td><code>status</code></td>
+<td>Usually poor: values change and distributions may be skewed</td>
+</tr>
+<tr class="even">
+<td><code>customer_id</code></td>
+<td>Usually poor: high cardinality produces tiny partitions</td>
+</tr>
+<tr class="odd">
+<td><code>order_id</code></td>
+<td>Incorrect: effectively one partition per record</td>
+</tr>
+</tbody>
+</table>
+<p>Start with the coarsest granularity that provides meaningful pruning. Daily partitions are not automatically better than monthly partitions.</p>
+</section>
+</section>
+<section id="the-small-file-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-small-file-problem">The small-file problem</h2>
+<p>Over-partitioning creates many small files. Each file carries metadata, listing, opening, scheduling, and footer-reading overhead. Thousands of tiny files may be slower than a smaller number of larger files even when fewer bytes are selected.</p>
+<p>Common controls include:</p>
+<ul>
+<li>buffering records before writing;</li>
+<li>setting target file sizes;</li>
+<li>compacting small files after ingestion;</li>
+<li>limiting partition cardinality;</li>
+<li>avoiding one file per pipeline run when runs are frequent; and</li>
+<li>monitoring file count and size distribution, not only dataset bytes.</li>
+</ul>
+<p>Partitioning is a pruning strategy, not a substitute for file-size management.</p>
+</section>
+<section id="schema-and-type-fidelity" class="level2">
+<h2 class="anchored" data-anchor-id="schema-and-type-fidelity">Schema and type fidelity</h2>
+<p>The script uses an explicit Arrow schema before writing Parquet. This prevents an all-null batch or an ambiguous Python object column from changing the physical type.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ORDER_SCHEMA <span class="op">=</span> pa.schema([</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    pa.field(<span class="st">"order_id"</span>, pa.string(), nullable<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    pa.field(<span class="st">"order_timestamp"</span>, pa.timestamp(<span class="st">"ns"</span>), nullable<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    pa.field(<span class="st">"quantity"</span>, pa.int32(), nullable<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    pa.field(<span class="st">"unit_price"</span>, pa.float64(), nullable<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Production schemas should define every field, its type, nullability, meaning, and evolution policy. Decimal financial values may be preferable to binary floating point when exact arithmetic is required.</p>
+</section>
+<section id="schema-evolution" class="level2">
+<h2 class="anchored" data-anchor-id="schema-evolution">Schema evolution</h2>
+<p>Stored data outlives individual pipeline runs. Changes must be classified deliberately:</p>
+<ul>
+<li>adding a nullable field is often backward-compatible;</li>
+<li>removing or renaming a field can break existing readers;</li>
+<li>narrowing a numeric type risks overflow or truncation;</li>
+<li>changing units or semantics is breaking even if the physical type is unchanged; and</li>
+<li>changing a partition key requires a migration or dual-read strategy.</li>
+</ul>
+<p>A safe workflow versions the contract, tests old and new readers, backfills when required, and records which schema produced every file.</p>
+</section>
+<section id="manifests-and-validation" class="level2">
+<h2 class="anchored" data-anchor-id="manifests-and-validation">Manifests and validation</h2>
+<p>Directory listings are not sufficient evidence of a complete publication. The generated manifest records:</p>
+<ul>
+<li>dataset and schema versions;</li>
+<li>creation time and generator;</li>
+<li>deterministic seed and expected row count;</li>
+<li>partition columns;</li>
+<li>compression codec;</li>
+<li>files with byte sizes and SHA-256 digests; and</li>
+<li>round-trip validation results.</li>
+</ul>
+<p>Consumers can use an atomic pointer or catalog update to expose a completed manifest only after all data files and validations succeed. This prevents readers from observing a partially written dataset.</p>
+<p>The case study validates that every representation has the expected row count and that the partitioned dataset covers the same logical records. In production, also compare key uniqueness, null counts, aggregates, min/max timestamps, and content hashes where practical.</p>
+</section>
+<section id="reading-only-what-is-needed" class="level2">
+<h2 class="anchored" data-anchor-id="reading-only-what-is-needed">Reading only what is needed</h2>
+<p>The benchmark evaluates three Parquet access patterns:</p>
+<ol type="1">
+<li>full-file read;</li>
+<li>projected read of selected analytical columns; and</li>
+<li>a June read from the matching partition directory.</li>
+</ol>
+<p>Projection reduces columns decoded. Partition pruning reduces files considered. They solve different problems and can be combined.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>projected <span class="op">=</span> pd.read_parquet(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    parquet_path,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    columns<span class="op">=</span>[<span class="st">"order_id"</span>, <span class="st">"order_timestamp"</span>, <span class="st">"net_amount"</span>, <span class="st">"region"</span>],</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>june <span class="op">=</span> pd.read_parquet(</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    partition_root <span class="op">/</span> <span class="st">"order_year=2025"</span> <span class="op">/</span> <span class="st">"order_month=06"</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The figure compares bytes and median full-read time across the three physical representations.</p>
+<p>Interpret the chart as an experiment, not a guarantee. Results change with row count, value distribution, cache state, filesystem, codec, library versions, and hardware.</p>
+</section>
+<section id="publication-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="publication-pattern">Publication pattern</h2>
+<p>A reliable batch publication can use the following order:</p>
+<ol type="1">
+<li>write data to a run-specific staging location;</li>
+<li>validate schema, counts, keys, partitions, and aggregates;</li>
+<li>generate the manifest and checksums;</li>
+<li>compact files when thresholds require it;</li>
+<li>move or register the completed version atomically; and</li>
+<li>retain or remove the previous version according to recovery policy.</li>
+</ol>
+<p>Retries should write the same logical version or a new isolated run path. They must not append duplicate records into already published partitions.</p>
+</section>
+<section id="operational-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="operational-checklist">Operational checklist</h2>
+<p>Before publishing a physical dataset, confirm that:</p>
+<ul>
+<li>the format matches the exchange or analytical workload;</li>
+<li>schema and null behavior are explicit;</li>
+<li>compression is supported by every required reader;</li>
+<li>partition keys align with common filters;</li>
+<li>partition cardinality and skew are bounded;</li>
+<li>target file sizes and compaction rules are defined;</li>
+<li>timestamps, time zones, decimals, and identifiers round-trip correctly;</li>
+<li>the manifest records versions, files, sizes, and checksums;</li>
+<li>a reader cannot observe incomplete output; and</li>
+<li>retention and deletion operate correctly at the chosen partition granularity.</li>
+</ul>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">Exercises</h2>
+<ol type="1">
+<li>Increase the dataset to 500,000 rows and compare Snappy with Zstandard compression.</li>
+<li>Change monthly partitions to daily partitions. Report file count, median file size, and June query time.</li>
+<li>Add a region partition beneath the month. Identify skew and decide whether pruning justifies the extra files.</li>
+<li>Add a nullable <code>promotion_code</code> field and document a backward-compatible schema-evolution plan.</li>
+<li>Extend the manifest with minimum and maximum timestamps for every partition.</li>
+<li>Write a validation that reconstructs the full partitioned dataset and compares business-key and revenue aggregates with the source.</li>
+</ol>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<ul>
+<li>Physical layout is part of pipeline design because it controls cost, interoperability, and query performance.</li>
+<li>CSV and JSON Lines are useful exchange formats, while Parquet is optimized for analytical projection and compression.</li>
+<li>Partition keys should follow stable, frequent filters and avoid excessive cardinality.</li>
+<li>Over-partitioning replaces scan cost with metadata and small-file overhead.</li>
+<li>Projection, row-group skipping, and partition pruning are distinct optimizations.</li>
+<li>Explicit schemas, manifests, checksums, and round-trip validation make publication auditable.</li>
+<li>Format and partition choices should be benchmarked with representative data and queries.</li>
+</ul>
+<p>The next chapter adds orchestration and scheduling so these storage workflows run in the correct order, at the correct time, with observable failure and retry behavior.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

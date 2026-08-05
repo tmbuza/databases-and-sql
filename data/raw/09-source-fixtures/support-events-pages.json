@@ -1,0 +1,38 @@
+[
+  {
+    "page": 1,
+    "next": "page-2",
+    "items": [
+      {
+        "event_id": "E001",
+        "customer_id": "C001",
+        "channel": "email",
+        "occurred_at": "2026-08-05T08:10:00Z"
+      },
+      {
+        "event_id": "E002",
+        "customer_id": "C003",
+        "channel": "chat",
+        "occurred_at": "2026-08-05T09:20:00Z"
+      }
+    ]
+  },
+  {
+    "page": 2,
+    "next": null,
+    "items": [
+      {
+        "event_id": "E003",
+        "customer_id": "C002",
+        "channel": "phone",
+        "occurred_at": "2026-08-05T11:45:00Z"
+      },
+      {
+        "event_id": "E004",
+        "customer_id": "C005",
+        "channel": "chat",
+        "occurred_at": "2026-08-05T14:05:00Z"
+      }
+    ]
+  }
+]

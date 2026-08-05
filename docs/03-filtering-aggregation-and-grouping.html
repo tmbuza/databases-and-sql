@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -287,7 +322,39 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
-  <li><a href="#supporting-example" id="toc-supporting-example" class="nav-link" data-scroll-target="#supporting-example">Supporting example</a></li>
+  <li><a href="#chapter-workflow" id="toc-chapter-workflow" class="nav-link" data-scroll-target="#chapter-workflow">Chapter workflow</a></li>
+  <li><a href="#the-analytical-table" id="toc-the-analytical-table" class="nav-link" data-scroll-target="#the-analytical-table">The analytical table</a></li>
+  <li><a href="#filter-rows-with-where" id="toc-filter-rows-with-where" class="nav-link" data-scroll-target="#filter-rows-with-where">Filter rows with <code>WHERE</code></a>
+  <ul class="collapse">
+  <li><a href="#combine-predicates-deliberately" id="toc-combine-predicates-deliberately" class="nav-link" data-scroll-target="#combine-predicates-deliberately">Combine predicates deliberately</a></li>
+  <li><a href="#use-in-for-a-known-set" id="toc-use-in-for-a-known-set" class="nav-link" data-scroll-target="#use-in-for-a-known-set">Use <code>IN</code> for a known set</a></li>
+  <li><a href="#use-between-for-inclusive-ranges" id="toc-use-between-for-inclusive-ranges" class="nav-link" data-scroll-target="#use-between-for-inclusive-ranges">Use <code>BETWEEN</code> for inclusive ranges</a></li>
+  <li><a href="#match-text-patterns-with-like" id="toc-match-text-patterns-with-like" class="nav-link" data-scroll-target="#match-text-patterns-with-like">Match text patterns with <code>LIKE</code></a></li>
+  </ul></li>
+  <li><a href="#treat-null-as-unknown" id="toc-treat-null-as-unknown" class="nav-link" data-scroll-target="#treat-null-as-unknown">Treat <code>NULL</code> as unknown</a></li>
+  <li><a href="#summarize-rows-with-aggregate-functions" id="toc-summarize-rows-with-aggregate-functions" class="nav-link" data-scroll-target="#summarize-rows-with-aggregate-functions">Summarize rows with aggregate functions</a>
+  <ul class="collapse">
+  <li><a href="#understand-the-different-counts" id="toc-understand-the-different-counts" class="nav-link" data-scroll-target="#understand-the-different-counts">Understand the different counts</a></li>
+  <li><a href="#aggregate-meaningful-measures" id="toc-aggregate-meaningful-measures" class="nav-link" data-scroll-target="#aggregate-meaningful-measures">Aggregate meaningful measures</a></li>
+  </ul></li>
+  <li><a href="#define-output-grain-with-group-by" id="toc-define-output-grain-with-group-by" class="nav-link" data-scroll-target="#define-output-grain-with-group-by">Define output grain with <code>GROUP BY</code></a>
+  <ul class="collapse">
+  <li><a href="#group-by-more-than-one-dimension" id="toc-group-by-more-than-one-dimension" class="nav-link" data-scroll-target="#group-by-more-than-one-dimension">Group by more than one dimension</a></li>
+  </ul></li>
+  <li><a href="#filter-groups-with-having" id="toc-filter-groups-with-having" class="nav-link" data-scroll-target="#filter-groups-with-having">Filter groups with <code>HAVING</code></a></li>
+  <li><a href="#calculate-several-measures-with-conditional-aggregation" id="toc-calculate-several-measures-with-conditional-aggregation" class="nav-link" data-scroll-target="#calculate-several-measures-with-conditional-aggregation">Calculate several measures with conditional aggregation</a></li>
+  <li><a href="#avoid-common-aggregation-mistakes" id="toc-avoid-common-aggregation-mistakes" class="nav-link" data-scroll-target="#avoid-common-aggregation-mistakes">Avoid common aggregation mistakes</a></li>
+  <li><a href="#validate-an-aggregate-query" id="toc-validate-an-aggregate-query" class="nav-link" data-scroll-target="#validate-an-aggregate-query">Validate an aggregate query</a>
+  <ul class="collapse">
+  <li><a href="#reconcile-grouped-counts" id="toc-reconcile-grouped-counts" class="nav-link" data-scroll-target="#reconcile-grouped-counts">Reconcile grouped counts</a></li>
+  <li><a href="#reconcile-grouped-revenue" id="toc-reconcile-grouped-revenue" class="nav-link" data-scroll-target="#reconcile-grouped-revenue">Reconcile grouped revenue</a></li>
+  <li><a href="#check-partition-completeness" id="toc-check-partition-completeness" class="nav-link" data-scroll-target="#check-partition-completeness">Check partition completeness</a></li>
+  </ul></li>
+  <li><a href="#python-execution-pattern" id="toc-python-execution-pattern" class="nav-link" data-scroll-target="#python-execution-pattern">Python execution pattern</a></li>
+  <li><a href="#practice-exercises" id="toc-practice-exercises" class="nav-link" data-scroll-target="#practice-exercises">Practice exercises</a></li>
+  <li><a href="#chapter-checklist" id="toc-chapter-checklist" class="nav-link" data-scroll-target="#chapter-checklist">Chapter checklist</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#looking-ahead" id="toc-looking-ahead" class="nav-link" data-scroll-target="#looking-ahead">Looking ahead</a></li>
   </ul>
 </nav>
     </div>
@@ -296,7 +363,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-relational-databases-and-tables.html">Databases and SQL Foundations</a></li><li class="breadcrumb-item"><a href="./03-filtering-aggregation-and-grouping.html"><span class="chapter-title">Filtering, Aggregation, and Grouping</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-aggregation-grouping" class="quarto-section-identifier"><span class="chapter-title">Filtering, Aggregation, and Grouping</span></span></h1>
+<h1 class="title"><span id="sec-filtering-aggregation-and-grouping" class="quarto-section-identifier"><span class="chapter-title">Filtering, Aggregation, and Grouping</span></span></h1>
 </div>
 
 
@@ -319,17 +386,584 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DBSQL-03</li>
+<li><strong>Type:</strong> Core</li>
+<li><strong>Audience:</strong> Data analysts, data scientists, and learners building SQL foundations</li>
+<li><strong>Theme:</strong> Turn rows into trustworthy answers by filtering deliberately and aggregating at the correct grain</li>
+</ul>
+</div>
+<p>Chapter 02 introduced the structure of a SQL query and the discipline of selecting explicit columns. This chapter moves from retrieving rows to answering analytical questions. You will restrict data with <code>WHERE</code>, summarize values with aggregate functions, define groups with <code>GROUP BY</code>, filter those groups with <code>HAVING</code>, and use conditional aggregation to calculate several measures in one query.</p>
+<p>The examples use a small SQLite retail database created by the accompanying Python script. The same reasoning applies to PostgreSQL, MySQL, DuckDB, SQL Server, and other relational database systems, although date functions and a few syntax details vary.</p>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
 <ul>
-<li>Filter records with compound conditions.</li>
-<li>Summarize data with counts, totals, averages, minima, and maxima.</li>
-<li>Use <code>GROUP BY</code> and <code>HAVING</code> to answer questions at the correct grain.</li>
+<li>translate analytical conditions into correct <code>WHERE</code> predicates;</li>
+<li>combine conditions safely with <code>AND</code>, <code>OR</code>, <code>NOT</code>, and parentheses;</li>
+<li>handle ranges, lists, patterns, and missing values;</li>
+<li>explain how <code>NULL</code> changes comparisons and aggregates;</li>
+<li>use <code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>, and <code>MAX</code> appropriately;</li>
+<li>choose a grouping grain that matches the analytical question;</li>
+<li>distinguish row filtering with <code>WHERE</code> from group filtering with <code>HAVING</code>;</li>
+<li>create multiple metrics with conditional aggregation; and</li>
+<li>validate summary results against totals and known invariants.</li>
 </ul>
 </section>
-<section id="supporting-example" class="level2">
-<h2 class="anchored" data-anchor-id="supporting-example">Supporting example</h2>
-<p>The file <code>scripts/sql/03-aggregation-and-grouping.sql</code> calculates order counts and revenue by customer.</p>
+<section id="chapter-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="chapter-workflow">Chapter workflow</h2>
+<p>Run the chapter workflow from the repository root:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/03-run-filtering-aggregation.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Or run the Python program directly:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/python/03-filtering-aggregation-and-grouping.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The program creates:</p>
+<pre class="text"><code>data/processed/03-retail.db
+results/03-category-summary.csv
+results/03-region-status-summary.csv
+results/03-validation-summary.txt
+results/figures/03-net-revenue-by-category.png</code></pre>
+<p>The database and result files are reproducible outputs. The script is the source of truth.</p>
+</section>
+<section id="the-analytical-table" class="level2">
+<h2 class="anchored" data-anchor-id="the-analytical-table">The analytical table</h2>
+<p>The <code>orders</code> table contains one row per order line. This is the table’s <strong>grain</strong>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>order_id</code></td>
+<td>Order identifier</td>
+</tr>
+<tr class="even">
+<td><code>order_date</code></td>
+<td>Date recorded as ISO text (<code>YYYY-MM-DD</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>region</code></td>
+<td>Sales region</td>
+</tr>
+<tr class="even">
+<td><code>category</code></td>
+<td>Product category</td>
+</tr>
+<tr class="odd">
+<td><code>sales_channel</code></td>
+<td><code>Online</code>, <code>Retail</code>, or <code>Partner</code></td>
+</tr>
+<tr class="even">
+<td><code>status</code></td>
+<td><code>Completed</code>, <code>Returned</code>, or <code>Cancelled</code></td>
+</tr>
+<tr class="odd">
+<td><code>quantity</code></td>
+<td>Number of units</td>
+</tr>
+<tr class="even">
+<td><code>unit_price</code></td>
+<td>Price per unit</td>
+</tr>
+<tr class="odd">
+<td><code>discount_rate</code></td>
+<td>Proportion discounted; may be <code>NULL</code></td>
+</tr>
+</tbody>
+</table>
+<p>Because each row is already an order line, <code>COUNT(*)</code> counts order lines. It does not automatically count unique customers, shipments, or products. Every aggregation must be interpreted at the source table’s grain.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ask what one row represents
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Before writing <code>GROUP BY</code>, state the input grain and the desired output grain. Many plausible-looking SQL errors are grain errors rather than syntax errors.</p>
+</div>
+</div>
+</section>
+<section id="filter-rows-with-where" class="level2">
+<h2 class="anchored" data-anchor-id="filter-rows-with-where">Filter rows with <code>WHERE</code></h2>
+<p><code>WHERE</code> removes rows before grouping and aggregation. A simple comparison uses a column, an operator, and a value:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    order_id,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    order_date,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    region,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">category</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    quantity,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    unit_price</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Common comparison operators are:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Operator</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>=</code></td>
+<td>equal to</td>
+</tr>
+<tr class="even">
+<td><code>&lt;&gt;</code> or <code>!=</code></td>
+<td>not equal to</td>
+</tr>
+<tr class="odd">
+<td><code>&gt;</code></td>
+<td>greater than</td>
+</tr>
+<tr class="even">
+<td><code>&gt;=</code></td>
+<td>greater than or equal to</td>
+</tr>
+<tr class="odd">
+<td><code>&lt;</code></td>
+<td>less than</td>
+</tr>
+<tr class="even">
+<td><code>&lt;=</code></td>
+<td>less than or equal to</td>
+</tr>
+</tbody>
+</table>
+<p>Text literals use single quotes. Numeric literals do not:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, <span class="kw">category</span>, quantity</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> quantity <span class="op">&gt;=</span> <span class="dv">4</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="combine-predicates-deliberately" class="level3">
+<h3 class="anchored" data-anchor-id="combine-predicates-deliberately">Combine predicates deliberately</h3>
+<p>Use <code>AND</code> when every condition must be true:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, region, <span class="kw">category</span>, quantity</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> region <span class="op">=</span> <span class="st">'East'</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> quantity <span class="op">&gt;=</span> <span class="dv">2</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Use <code>OR</code> when at least one condition may be true:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, region, status</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> region <span class="op">=</span> <span class="st">'North'</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>   <span class="kw">OR</span> region <span class="op">=</span> <span class="st">'West'</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>SQL evaluates <code>AND</code> before <code>OR</code>. Parentheses make the intended logic visible and prevent accidental broadening:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, region, status, quantity</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> (region <span class="op">=</span> <span class="st">'North'</span> <span class="kw">OR</span> region <span class="op">=</span> <span class="st">'West'</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> quantity <span class="op">&gt;=</span> <span class="dv">2</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Without the parentheses, completed North orders and <em>all</em> West orders could be returned, depending on how the expression is written.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Read the predicate as a sentence
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Say the condition aloud before running it: “completed orders that are in North or West and have at least two units.” If the SQL grouping does not match the sentence, add parentheses.</p>
+</div>
+</div>
+</section>
+<section id="use-in-for-a-known-set" class="level3">
+<h3 class="anchored" data-anchor-id="use-in-for-a-known-set">Use <code>IN</code> for a known set</h3>
+<p><code>IN</code> is clearer than repeating the same column with several <code>OR</code> conditions:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, region, <span class="kw">category</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> region <span class="kw">IN</span> (<span class="st">'North'</span>, <span class="st">'West'</span>);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Its complement is <code>NOT IN</code>, but missing values require extra care because <code>NULL</code> represents unknown information.</p>
+</section>
+<section id="use-between-for-inclusive-ranges" class="level3">
+<h3 class="anchored" data-anchor-id="use-between-for-inclusive-ranges">Use <code>BETWEEN</code> for inclusive ranges</h3>
+<p><code>BETWEEN</code> includes both endpoints:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, order_date, unit_price</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> unit_price <span class="kw">BETWEEN</span> <span class="dv">50</span> <span class="kw">AND</span> <span class="dv">150</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For dates stored in ISO format, lexical order matches chronological order:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, order_date, <span class="kw">category</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> order_date <span class="kw">BETWEEN</span> <span class="st">'2026-01-01'</span> <span class="kw">AND</span> <span class="st">'2026-01-31'</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For timestamps, a half-open interval is often safer because it includes the start and excludes the next boundary:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> event_timestamp <span class="op">&gt;=</span> <span class="st">'2026-01-01'</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> event_timestamp <span class="op">&lt;</span>  <span class="st">'2026-02-01'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This avoids guessing the final possible time on the last day.</p>
+</section>
+<section id="match-text-patterns-with-like" class="level3">
+<h3 class="anchored" data-anchor-id="match-text-patterns-with-like">Match text patterns with <code>LIKE</code></h3>
+<p><code>LIKE</code> uses <code>%</code> for any sequence of characters and <code>_</code> for one character:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="kw">DISTINCT</span> <span class="kw">category</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> <span class="kw">category</span> <span class="kw">LIKE</span> <span class="st">'E%'</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Pattern matching and case sensitivity vary across database systems and collations. Use it deliberately, especially when identifiers, codes, or user-entered text are involved.</p>
+</section>
+</section>
+<section id="treat-null-as-unknown" class="level2">
+<h2 class="anchored" data-anchor-id="treat-null-as-unknown">Treat <code>NULL</code> as unknown</h2>
+<p><code>NULL</code> is not zero, an empty string, or the word “NULL.” It means that a value is missing or unknown. Comparisons such as <code>discount_rate = NULL</code> do not return the intended rows. Use <code>IS NULL</code> or <code>IS NOT NULL</code>:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, discount_rate</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> discount_rate <span class="kw">IS</span> <span class="kw">NULL</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>SQL predicates use three-valued logic: true, false, and unknown. A <code>WHERE</code> clause retains only rows for which the predicate is true. Rows producing false or unknown are removed.</p>
+<p>Use <code>COALESCE</code> when a justified replacement is needed:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    order_id,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    unit_price,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    discount_rate,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    unit_price <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> <span class="fu">COALESCE</span>(discount_rate, <span class="dv">0</span>)) <span class="kw">AS</span> discounted_unit_price</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Here, the chapter’s data contract defines a missing discount as no discount. In another system, missing might mean “not yet known,” making zero an unsafe replacement. The business meaning must come before the function.</p>
+</section>
+<section id="summarize-rows-with-aggregate-functions" class="level2">
+<h2 class="anchored" data-anchor-id="summarize-rows-with-aggregate-functions">Summarize rows with aggregate functions</h2>
+<p>Aggregate functions reduce many input rows to one summary value.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> order_lines,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(quantity) <span class="kw">AS</span> units,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">AVG</span>(unit_price) <span class="kw">AS</span> average_unit_price,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">MIN</span>(unit_price) <span class="kw">AS</span> minimum_unit_price,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">MAX</span>(unit_price) <span class="kw">AS</span> maximum_unit_price</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="understand-the-different-counts" class="level3">
+<h3 class="anchored" data-anchor-id="understand-the-different-counts">Understand the different counts</h3>
+<p>These expressions answer different questions:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Expression</th>
+<th>What it counts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>COUNT(*)</code></td>
+<td>all rows that survive <code>WHERE</code></td>
+</tr>
+<tr class="even">
+<td><code>COUNT(discount_rate)</code></td>
+<td>rows where <code>discount_rate</code> is not <code>NULL</code></td>
+</tr>
+<tr class="odd">
+<td><code>COUNT(DISTINCT region)</code></td>
+<td>distinct non-<code>NULL</code> regions</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb17"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> all_order_lines,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(discount_rate) <span class="kw">AS</span> lines_with_known_discount,</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="op">-</span> <span class="fu">COUNT</span>(discount_rate) <span class="kw">AS</span> lines_with_missing_discount</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>SUM</code>, <code>AVG</code>, <code>MIN</code>, and <code>MAX</code> generally ignore <code>NULL</code>. If every input value is <code>NULL</code>, their result is normally <code>NULL</code>, not zero.</p>
+</section>
+<section id="aggregate-meaningful-measures" class="level3">
+<h3 class="anchored" data-anchor-id="aggregate-meaningful-measures">Aggregate meaningful measures</h3>
+<p>Adding unit prices usually has no useful interpretation. Revenue should reflect quantity and discount:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>        quantity <span class="op">*</span> unit_price <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> <span class="fu">COALESCE</span>(discount_rate, <span class="dv">0</span>))</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    ) <span class="kw">AS</span> net_revenue</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The formula is evaluated for each row and then summed. The definition also excludes cancelled and returned orders through <code>WHERE</code>.</p>
+</section>
+</section>
+<section id="define-output-grain-with-group-by" class="level2">
+<h2 class="anchored" data-anchor-id="define-output-grain-with-group-by">Define output grain with <code>GROUP BY</code></h2>
+<p><code>GROUP BY</code> partitions the filtered rows and calculates aggregates within each group:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">category</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> completed_order_lines,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(quantity) <span class="kw">AS</span> units_sold,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ROUND</span>(</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">SUM</span>(quantity <span class="op">*</span> unit_price <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> <span class="fu">COALESCE</span>(discount_rate, <span class="dv">0</span>))),</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>        <span class="dv">2</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    ) <span class="kw">AS</span> net_revenue</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> <span class="kw">category</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> net_revenue <span class="kw">DESC</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The input grain is one order line. The output grain is one category. Every selected column must therefore be either:</p>
+<ul>
+<li>part of the grouping key; or</li>
+<li>calculated with an aggregate function.</li>
+</ul>
+<p>Some database engines reject a query that selects an ungrouped, unaggregated column. SQLite may allow it in some cases and return an arbitrary value, which makes portability and interpretation unsafe. Write to the stricter rule.</p>
+<section id="group-by-more-than-one-dimension" class="level3">
+<h3 class="anchored" data-anchor-id="group-by-more-than-one-dimension">Group by more than one dimension</h3>
+<div class="sourceCode" id="cb20"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    region,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    sales_channel,</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> order_lines,</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(quantity) <span class="kw">AS</span> units</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> region, sales_channel</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> region, sales_channel;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The output grain is now one row per region–channel combination. Adding grouping columns increases detail; removing them produces a coarser summary.</p>
+</section>
+</section>
+<section id="filter-groups-with-having" class="level2">
+<h2 class="anchored" data-anchor-id="filter-groups-with-having">Filter groups with <code>HAVING</code></h2>
+<p><code>WHERE</code> acts on rows before grouping. <code>HAVING</code> acts on groups after aggregation:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">category</span>,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> completed_order_lines,</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ROUND</span>(<span class="fu">SUM</span>(quantity <span class="op">*</span> unit_price), <span class="dv">2</span>) <span class="kw">AS</span> gross_revenue</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> <span class="kw">category</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="kw">HAVING</span> <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="op">&gt;=</span> <span class="dv">3</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> gross_revenue <span class="kw">DESC</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The logical roles are:</p>
+<pre class="text"><code>FROM     identify the source
+WHERE    filter source rows
+GROUP BY form groups
+HAVING   filter groups
+SELECT   produce columns and aggregates
+ORDER BY sort the final result</code></pre>
+<p>The database optimizer may execute operations differently, but this logical order is the clearest way to reason about a query.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Do not use <code>HAVING</code> as a general substitute for <code>WHERE</code>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Filter individual rows in <code>WHERE</code> whenever possible. This preserves the intended meaning and can reduce the number of rows that must be grouped.</p>
+</div>
+</div>
+</section>
+<section id="calculate-several-measures-with-conditional-aggregation" class="level2">
+<h2 class="anchored" data-anchor-id="calculate-several-measures-with-conditional-aggregation">Calculate several measures with conditional aggregation</h2>
+<p>A <code>CASE</code> expression can classify rows inside an aggregate:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    region,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> all_order_lines,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(<span class="cf">CASE</span> <span class="cf">WHEN</span> status <span class="op">=</span> <span class="st">'Completed'</span> <span class="cf">THEN</span> <span class="dv">1</span> <span class="cf">ELSE</span> <span class="dv">0</span> <span class="cf">END</span>) <span class="kw">AS</span> completed_lines,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(<span class="cf">CASE</span> <span class="cf">WHEN</span> status <span class="op">=</span> <span class="st">'Returned'</span> <span class="cf">THEN</span> <span class="dv">1</span> <span class="cf">ELSE</span> <span class="dv">0</span> <span class="cf">END</span>) <span class="kw">AS</span> returned_lines,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(<span class="cf">CASE</span> <span class="cf">WHEN</span> status <span class="op">=</span> <span class="st">'Cancelled'</span> <span class="cf">THEN</span> <span class="dv">1</span> <span class="cf">ELSE</span> <span class="dv">0</span> <span class="cf">END</span>) <span class="kw">AS</span> cancelled_lines</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> region</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> region;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Conditional aggregation is especially useful for rates:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    region,</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> all_order_lines,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ROUND</span>(</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        <span class="fl">100.0</span> <span class="op">*</span> <span class="fu">SUM</span>(<span class="cf">CASE</span> <span class="cf">WHEN</span> status <span class="op">=</span> <span class="st">'Returned'</span> <span class="cf">THEN</span> <span class="dv">1</span> <span class="cf">ELSE</span> <span class="dv">0</span> <span class="cf">END</span>)</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> <span class="fu">COUNT</span>(<span class="op">*</span>),</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    ) <span class="kw">AS</span> return_rate_percent</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> region</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> return_rate_percent <span class="kw">DESC</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>100.0</code> forces decimal arithmetic in systems where integer division would otherwise truncate the result.</p>
+</section>
+<section id="avoid-common-aggregation-mistakes" class="level2">
+<h2 class="anchored" data-anchor-id="avoid-common-aggregation-mistakes">Avoid common aggregation mistakes</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Mistake</th>
+<th>Why it fails</th>
+<th>Better practice</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Counting rows without checking grain</td>
+<td>Rows may be line items rather than orders</td>
+<td>State the input grain; use <code>COUNT(DISTINCT order_id)</code> when appropriate</td>
+</tr>
+<tr class="even">
+<td>Writing <code>column = NULL</code></td>
+<td>Comparisons with unknown are unknown</td>
+<td>Use <code>IS NULL</code> or <code>IS NOT NULL</code></td>
+</tr>
+<tr class="odd">
+<td>Mixing <code>AND</code> and <code>OR</code> without parentheses</td>
+<td>Operator precedence may change the population</td>
+<td>Group related predicates explicitly</td>
+</tr>
+<tr class="even">
+<td>Selecting an ungrouped detail column</td>
+<td>The result is invalid or nondeterministic</td>
+<td>Group it, aggregate it, or remove it</td>
+</tr>
+<tr class="odd">
+<td>Filtering an aggregate in <code>WHERE</code></td>
+<td>Aggregates do not yet exist logically</td>
+<td>Use <code>HAVING</code></td>
+</tr>
+<tr class="even">
+<td>Replacing every missing value with zero</td>
+<td>Zero may change the business meaning</td>
+<td>Apply <code>COALESCE</code> only under an explicit rule</td>
+</tr>
+<tr class="odd">
+<td>Averaging pre-aggregated averages</td>
+<td>Groups may have different sizes</td>
+<td>Return to the lowest valid grain or use a weighted calculation</td>
+</tr>
+<tr class="even">
+<td>Rounding before aggregation</td>
+<td>Repeated rounding can accumulate error</td>
+<td>Aggregate first and round for presentation</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="validate-an-aggregate-query" class="level2">
+<h2 class="anchored" data-anchor-id="validate-an-aggregate-query">Validate an aggregate query</h2>
+<p>Summary tables should be tested, not merely inspected. The chapter script applies three useful checks.</p>
+<section id="reconcile-grouped-counts" class="level3">
+<h3 class="anchored" data-anchor-id="reconcile-grouped-counts">Reconcile grouped counts</h3>
+<p>The sum of category-level completed order counts must equal the independently calculated total number of completed rows:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="fu">COUNT</span>(<span class="op">*</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="reconcile-grouped-revenue" class="level3">
+<h3 class="anchored" data-anchor-id="reconcile-grouped-revenue">Reconcile grouped revenue</h3>
+<p>The sum of unrounded category revenue must match the ungrouped completed-order total within a small floating-point tolerance.</p>
+</section>
+<section id="check-partition-completeness" class="level3">
+<h3 class="anchored" data-anchor-id="check-partition-completeness">Check partition completeness</h3>
+<p>Within each region:</p>
+<pre class="text"><code>completed + returned + cancelled = all order lines</code></pre>
+<p>These invariants detect missing status categories, unintended filters, duplicated rows, and mismatched grains.</p>
+</section>
+</section>
+<section id="python-execution-pattern" class="level2">
+<h2 class="anchored" data-anchor-id="python-execution-pattern">Python execution pattern</h2>
+<p>Python’s built-in <code>sqlite3</code> module can execute the same SQL and retrieve the results without requiring a separate database server:</p>
+<div id="0f30b9bd" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sqlite3</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>connection <span class="op">=</span> sqlite3.<span class="ex">connect</span>(<span class="st">"data/processed/03-retail.db"</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>connection.row_factory <span class="op">=</span> sqlite3.Row</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="st">    category,</span></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="st">    COUNT(*) AS completed_order_lines,</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="st">    SUM(quantity) AS units_sold</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="st">FROM orders</span></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="st">WHERE status = ?</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="st">GROUP BY category</span></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a><span class="st">ORDER BY units_sold DESC;</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> connection.execute(query, (<span class="st">"Completed"</span>,)).fetchall()</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>connection.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>The placeholder <code>?</code> keeps the value separate from the SQL statement. Parameterization avoids quoting errors and is essential when a value originates outside the program. Never build SQL by concatenating untrusted text.</p>
+</section>
+<section id="practice-exercises" class="level2">
+<h2 class="anchored" data-anchor-id="practice-exercises">Practice exercises</h2>
+<p>Use <code>data/processed/03-retail.db</code> after running the chapter script.</p>
+<ol type="1">
+<li>Return completed online orders from January 2026 with at least two units.</li>
+<li>Count all rows, rows with a known discount, and rows with a missing discount.</li>
+<li>Calculate completed net revenue by region and category.</li>
+<li>Return only region–category groups with at least two completed order lines.</li>
+<li>Calculate the percentage of order lines that were completed in each sales channel.</li>
+<li>Explain why <code>AVG(unit_price)</code> is not the average realized price per unit after discounts.</li>
+<li>Add a validation query proving that all status-specific counts reconcile to the table total.</li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Selected solutions
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="sourceCode" id="cb28"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Exercise 1</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> order_id, order_date, region, <span class="kw">category</span>, quantity</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> sales_channel <span class="op">=</span> <span class="st">'Online'</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> order_date <span class="op">&gt;=</span> <span class="st">'2026-01-01'</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> order_date <span class="op">&lt;</span>  <span class="st">'2026-02-01'</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> quantity <span class="op">&gt;=</span> <span class="dv">2</span>;</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- Exercise 3</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>    region,</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">category</span>,</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ROUND</span>(</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">SUM</span>(quantity <span class="op">*</span> unit_price <span class="op">*</span> (<span class="dv">1</span> <span class="op">-</span> <span class="fu">COALESCE</span>(discount_rate, <span class="dv">0</span>))),</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>        <span class="dv">2</span></span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>    ) <span class="kw">AS</span> net_revenue</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">'Completed'</span></span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> region, <span class="kw">category</span></span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> region, net_revenue <span class="kw">DESC</span>;</span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a><span class="co">-- Exercise 5</span></span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>    sales_channel,</span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> all_order_lines,</span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ROUND</span>(</span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>        <span class="fl">100.0</span> <span class="op">*</span> <span class="fu">SUM</span>(<span class="cf">CASE</span> <span class="cf">WHEN</span> status <span class="op">=</span> <span class="st">'Completed'</span> <span class="cf">THEN</span> <span class="dv">1</span> <span class="cf">ELSE</span> <span class="dv">0</span> <span class="cf">END</span>)</span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a>        <span class="op">/</span> <span class="fu">COUNT</span>(<span class="op">*</span>),</span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span></span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a>    ) <span class="kw">AS</span> completed_percent</span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> sales_channel</span>
+<span id="cb28-34"><a href="#cb28-34" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> completed_percent <span class="kw">DESC</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="chapter-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="chapter-checklist">Chapter checklist</h2>
+<p>Before continuing, confirm that you can:</p>
+<ul>
+<li>explain when filtering occurs relative to grouping;</li>
+<li>choose between <code>WHERE</code> and <code>HAVING</code>;</li>
+<li>use parentheses to express compound logic safely;</li>
+<li>test for missing values correctly;</li>
+<li>distinguish <code>COUNT(*)</code>, <code>COUNT(column)</code>, and <code>COUNT(DISTINCT column)</code>;</li>
+<li>state both the input and output grain of a summary query;</li>
+<li>build a group-level rate with conditional aggregation; and</li>
+<li>reconcile grouped results with an independent total.</li>
+</ul>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>In this chapter, you filtered rows with explicit predicates, handled <code>NULL</code> with three-valued logic, summarized data with aggregate functions, changed result grain with <code>GROUP BY</code>, filtered aggregates with <code>HAVING</code>, and produced multiple measures through conditional aggregation. You also treated validation as part of the query—not an optional step after it.</p>
+<p>The central principle is simple: <strong>filter the intended rows, group at the intended grain, define every measure precisely, and reconcile the result.</strong></p>
+</section>
+<section id="looking-ahead" class="level2">
+<h2 class="anchored" data-anchor-id="looking-ahead">Looking ahead</h2>
+<p>Chapter 04 introduces joins and relational thinking. You will combine tables without accidentally multiplying rows, losing unmatched records, or changing the meaning of an aggregate.</p>
 
 
 </section>

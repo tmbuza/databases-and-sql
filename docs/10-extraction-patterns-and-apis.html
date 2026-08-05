@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -71,6 +106,35 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="assets/css/cdi.css">
 </head>
@@ -286,7 +350,31 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#sec-extraction-patterns-and-apis" id="toc-sec-extraction-patterns-and-apis" class="nav-link active" data-scroll-target="#sec-extraction-patterns-and-apis">Extraction Patterns and APIs</a>
+  <ul class="collapse">
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#extraction-is-a-protocol" id="toc-extraction-is-a-protocol" class="nav-link" data-scroll-target="#extraction-is-a-protocol">Extraction is a protocol</a></li>
+  <li><a href="#read-the-api-contract-first" id="toc-read-the-api-contract-first" class="nav-link" data-scroll-target="#read-the-api-contract-first">Read the API contract first</a></li>
+  <li><a href="#pagination-patterns" id="toc-pagination-patterns" class="nav-link" data-scroll-target="#pagination-patterns">Pagination patterns</a>
+  <ul class="collapse">
+  <li><a href="#page-number" id="toc-page-number" class="nav-link" data-scroll-target="#page-number">Page number</a></li>
+  <li><a href="#offset-and-limit" id="toc-offset-and-limit" class="nav-link" data-scroll-target="#offset-and-limit">Offset and limit</a></li>
+  <li><a href="#cursor" id="toc-cursor" class="nav-link" data-scroll-target="#cursor">Cursor</a></li>
+  <li><a href="#link-based" id="toc-link-based" class="nav-link" data-scroll-target="#link-based">Link-based</a></li>
+  </ul></li>
+  <li><a href="#timeouts-and-bounded-retries" id="toc-timeouts-and-bounded-retries" class="nav-link" data-scroll-target="#timeouts-and-bounded-retries">Timeouts and bounded retries</a></li>
+  <li><a href="#rate-limits" id="toc-rate-limits" class="nav-link" data-scroll-target="#rate-limits">Rate limits</a></li>
+  <li><a href="#incremental-extraction-windows" id="toc-incremental-extraction-windows" class="nav-link" data-scroll-target="#incremental-extraction-windows">Incremental extraction windows</a></li>
+  <li><a href="#checkpoint-discipline" id="toc-checkpoint-discipline" class="nav-link" data-scroll-target="#checkpoint-discipline">Checkpoint discipline</a></li>
+  <li><a href="#the-companion-workflow" id="toc-the-companion-workflow" class="nav-link" data-scroll-target="#the-companion-workflow">The companion workflow</a></li>
+  <li><a href="#validation-before-publication" id="toc-validation-before-publication" class="nav-link" data-scroll-target="#validation-before-publication">Validation before publication</a></li>
+  <li><a href="#observability" id="toc-observability" class="nav-link" data-scroll-target="#observability">Observability</a></li>
+  <li><a href="#testing-strategy" id="toc-testing-strategy" class="nav-link" data-scroll-target="#testing-strategy">Testing strategy</a></li>
+  <li><a href="#production-hardening-checklist" id="toc-production-hardening-checklist" class="nav-link" data-scroll-target="#production-hardening-checklist">Production hardening checklist</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
+  <li><a href="#what-comes-next" id="toc-what-comes-next" class="nav-link" data-scroll-target="#what-comes-next">What comes next</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -295,7 +383,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-from-scripts-to-data-pipelines.html">From Queries to Pipelines</a></li><li class="breadcrumb-item"><a href="./10-extraction-patterns-and-apis.html"><span class="chapter-title">Extraction Patterns and APIs</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-extraction-patterns" class="quarto-section-identifier"><span class="chapter-title">Extraction Patterns and APIs</span></span></h1>
+<h1 class="title"><span class="chapter-title">Extraction Patterns and APIs</span></h1>
 </div>
 
 
@@ -318,15 +406,289 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="sec-extraction-patterns-and-apis" class="level1">
+<h1>Extraction Patterns and APIs</h1>
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-010</li>
+<li><strong>Type:</strong> Guide chapter</li>
+<li><strong>Audience:</strong> Data analysts, data scientists, and beginning data engineers</li>
+<li><strong>Theme:</strong> Building resilient, incremental, and observable API extraction clients</li>
+</ul>
+</div>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
+<ol type="1">
+<li>separate API transport concerns from extraction and publication logic;</li>
+<li>implement explicit pagination without skipping or repeating pages;</li>
+<li>use timeouts and bounded exponential backoff for retryable failures;</li>
+<li>respond safely to rate-limit signals;</li>
+<li>define half-open incremental extraction windows;</li>
+<li>commit checkpoints only after successful publication; and</li>
+<li>record extraction metrics that support diagnosis and replay.</li>
+</ol>
+</section>
+<section id="extraction-is-a-protocol" class="level2">
+<h2 class="anchored" data-anchor-id="extraction-is-a-protocol">Extraction is a protocol</h2>
+<p>An API extraction is not a single <code>GET</code> request. It is a protocol between a client and a changing external system. The client must define how requests are bounded, how pages are discovered, which failures are retryable, when a run is complete, and what evidence is retained.</p>
+<p>A useful separation is:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Responsibility</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Transport</td>
+<td>Authentication, timeout, HTTP status, retries</td>
+<td><code>GET /v1/events</code> with a 30-second timeout</td>
+</tr>
+<tr class="even">
+<td>Pagination</td>
+<td>Discover and request every page exactly once</td>
+<td>Follow <code>next_cursor</code> until it is null</td>
+</tr>
+<tr class="odd">
+<td>Extraction</td>
+<td>Bound the logical records requested</td>
+<td><code>updated_at &gt;= start</code> and <code>updated_at &lt; end</code></td>
+</tr>
+<tr class="even">
+<td>Validation</td>
+<td>Check the returned contract</td>
+<td>Required keys, unique IDs, valid timestamps</td>
+</tr>
+<tr class="odd">
+<td>Publication</td>
+<td>Atomically expose a complete batch</td>
+<td>Replace a temporary file after validation</td>
+</tr>
+<tr class="even">
+<td>State</td>
+<td>Remember only committed progress</td>
+<td>Save <code>window_end</code> after publication succeeds</td>
+</tr>
+</tbody>
+</table>
+<p>Keeping these layers distinct makes the client easier to test. A fake transport can exercise pagination and retry logic without contacting the real service.</p>
+</section>
+<section id="read-the-api-contract-first" class="level2">
+<h2 class="anchored" data-anchor-id="read-the-api-contract-first">Read the API contract first</h2>
+<p>Before writing a client, identify:</p>
 <ul>
-<li>Extract data safely from files and HTTP APIs.</li>
-<li>Handle pagination, rate limits, retries, and incremental checkpoints.</li>
-<li>Preserve source identifiers and extraction timestamps.</li>
+<li>the base URL, resource path, and supported API version;</li>
+<li>the authentication method and credential rotation policy;</li>
+<li>request and response schemas;</li>
+<li>pagination fields and maximum page size;</li>
+<li>filtering and sorting guarantees;</li>
+<li>rate limits and reset signals;</li>
+<li>retryable and terminal status codes;</li>
+<li>timestamp semantics and timezone;</li>
+<li>historical retention limits; and</li>
+<li>provider rules for backfills and concurrent requests.</li>
 </ul>
+<p>Do not infer a stopping rule from one example response. If the contract provides a next cursor, follow it. An empty page is a safe terminal condition only when the API explicitly documents it.</p>
+</section>
+<section id="pagination-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="pagination-patterns">Pagination patterns</h2>
+<p>APIs commonly use one of four patterns.</p>
+<section id="page-number" class="level3">
+<h3 class="anchored" data-anchor-id="page-number">Page number</h3>
+<p>The client requests <code>page=1</code>, <code>page=2</code>, and so on. This is simple, but records inserted during extraction can shift later pages unless the server provides snapshot consistency or stable ordering.</p>
+</section>
+<section id="offset-and-limit" class="level3">
+<h3 class="anchored" data-anchor-id="offset-and-limit">Offset and limit</h3>
+<p>The client requests slices such as <code>offset=0&amp;limit=100</code>. Large offsets may become slow, and mutations can again cause gaps or duplicates.</p>
+</section>
+<section id="cursor" class="level3">
+<h3 class="anchored" data-anchor-id="cursor">Cursor</h3>
+<p>The response contains an opaque <code>next_cursor</code>. Cursor pagination is usually preferable for mutable datasets because the server controls continuation state. Treat the cursor as opaque: store or transmit it, but do not parse meaning from it.</p>
+</section>
+<section id="link-based" class="level3">
+<h3 class="anchored" data-anchor-id="link-based">Link-based</h3>
+<p>The response or HTTP <code>Link</code> header provides the next URL. Validate that continuation URLs remain on the expected host before following them.</p>
+<p>The companion script demonstrates cursor pagination. It maintains a set of cursors already seen and fails if the API creates a cursor cycle.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="va">True</span>:</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> request_with_retry(cursor<span class="op">=</span>cursor)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    records.extend(response[<span class="st">"items"</span>])</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    cursor <span class="op">=</span> response.get(<span class="st">"next_cursor"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> cursor <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">break</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="timeouts-and-bounded-retries" class="level2">
+<h2 class="anchored" data-anchor-id="timeouts-and-bounded-retries">Timeouts and bounded retries</h2>
+<p>Every network request needs a timeout. Without one, a worker may remain blocked indefinitely and prevent the scheduler from deciding whether the run failed.</p>
+<p>Retry only failures likely to be temporary. Typical retryable conditions include timeouts, connection resets, <code>429 Too Many Requests</code>, and selected <code>5xx</code> responses. Authentication failures, malformed requests, and most other <code>4xx</code> responses normally require correction rather than repetition.</p>
+<p>Use a bounded attempt count with exponential backoff:</p>
+<p><span class="math display">\[
+d_a = \min(d_{max}, d_0 2^{a-1})
+\]</span></p>
+<p>where <span class="math inline">\(d_0\)</span> is the initial delay, <span class="math inline">\(d_{max}\)</span> is the delay cap, and <span class="math inline">\(a\)</span> is the attempt number. Production clients should add random jitter so that many workers do not retry simultaneously.</p>
+<p>The example simulates one <code>429</code> and one <code>503</code>, then succeeds. Its sleeper records planned backoff without delaying the offline demonstration.</p>
+</section>
+<section id="rate-limits" class="level2">
+<h2 class="anchored" data-anchor-id="rate-limits">Rate limits</h2>
+<p>Rate limiting is part of the provider contract, not an exceptional surprise. A client should:</p>
+<ul>
+<li>respect <code>Retry-After</code> when supplied;</li>
+<li>use provider-specific remaining-quota and reset headers carefully;</li>
+<li>cap concurrency below the documented limit;</li>
+<li>avoid retry storms;</li>
+<li>record rate-limit events; and</li>
+<li>stop safely when the allowed retry budget is exhausted.</li>
+</ul>
+<p>Never print authorization headers or tokens in logs. Secret values belong in an environment variable or secret manager and should be redacted from exception messages.</p>
+</section>
+<section id="incremental-extraction-windows" class="level2">
+<h2 class="anchored" data-anchor-id="incremental-extraction-windows">Incremental extraction windows</h2>
+<p>Repeated full extracts become inefficient and may exceed provider retention or rate limits. Incremental extraction retrieves records changed within a bounded window.</p>
+<p>Prefer half-open intervals:</p>
+<p><span class="math display">\[
+[t_{start}, t_{end})
+\]</span></p>
+<p>The start is included and the end is excluded. Adjacent windows then meet without overlap or gaps. Use UTC and send the exact same bounds on every retry.</p>
+<p>Timestamps alone may not define a total order. Multiple records can share the same <code>updated_at</code> value. When an API supports keyset pagination, use a compound position such as <code>(updated_at, event_id)</code>.</p>
+<p>For systems with late updates, extract with a deliberate lookback and deduplicate by stable record ID, retaining the newest version. The lookback is a correctness control, not an error.</p>
+</section>
+<section id="checkpoint-discipline" class="level2">
+<h2 class="anchored" data-anchor-id="checkpoint-discipline">Checkpoint discipline</h2>
+<p>A checkpoint states how far a committed extraction has progressed. Its update order is critical:</p>
+<ol type="1">
+<li>load the previously committed checkpoint;</li>
+<li>derive a fixed extraction window;</li>
+<li>retrieve all pages using bounded retries;</li>
+<li>validate and deduplicate the complete batch;</li>
+<li>publish the batch atomically;</li>
+<li>write the audit result; and</li>
+<li>atomically advance the checkpoint.</li>
+</ol>
+<p>If the checkpoint advances before publication, a crash can create a permanent data gap. If publication succeeds but checkpointing fails, the next run may repeat records; stable IDs and idempotent publication make that failure recoverable.</p>
+<p>The example checkpoint is <code>results/10-api-checkpoint.json</code>. Its fixed demonstration window makes reruns deterministic.</p>
+</section>
+<section id="the-companion-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="the-companion-workflow">The companion workflow</h2>
+<p>Run the extraction from the repository root:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/10-run-api-extraction.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The Python script contains a deterministic in-memory API. This avoids network credentials and allows specific failure sequences to be tested. Replace <code>DemoEventsAPI.request()</code> with a real HTTP transport in production while preserving the surrounding client contract.</p>
+<p>The workflow performs the following steps:</p>
+<ol type="1">
+<li>defines the half-open window <code>2026-08-05T00:00:00Z</code> to <code>2026-08-06T00:00:00Z</code>;</li>
+<li>retrieves three cursor-paginated pages;</li>
+<li>recovers from simulated <code>429</code> and <code>503</code> responses;</li>
+<li>validates event IDs and timestamps;</li>
+<li>deduplicates an intentionally repeated record;</li>
+<li>publishes the extracted CSV atomically;</li>
+<li>writes the checkpoint and audit CSV; and</li>
+<li>generates a plot of requests and retries by page.</li>
+</ol>
+<figure class="figure">
+  <img src="results/figures/10-api-extraction-observability.png" alt="A grouped bar chart compares requests and retries for each cursor-paginated API page." class="figure-img">
+  <figcaption>Request and retry activity across the deterministic paginated extraction.</figcaption>
+</figure>
+<p>The extracted batch is stored at <code>data/raw/10-api-extract/events.csv</code>, and the raw response envelopes are retained in <code>data/raw/10-api-extract/pages.json</code>. The audit output at <code>results/10-api-extraction-audit.csv</code> records pages, requests, retries, rate-limit responses, input records, published records, duplicates removed, and final status.</p>
+</section>
+<section id="validation-before-publication" class="level2">
+<h2 class="anchored" data-anchor-id="validation-before-publication">Validation before publication</h2>
+<p>The returned payload should be considered untrusted until validated. At minimum, check:</p>
+<ul>
+<li>the response is valid JSON with the expected top-level shape;</li>
+<li><code>items</code> is a list and required keys are present;</li>
+<li>identifiers are non-null;</li>
+<li>timestamps parse and fall inside the requested window;</li>
+<li>cursors do not repeat;</li>
+<li>duplicate IDs are handled by an explicit rule; and</li>
+<li>the final row count is plausible.</li>
+</ul>
+<p>Schema drift should fail visibly or enter a controlled quarantine. Silently discarding an unknown field can remove information needed later; blindly accepting a changed type can corrupt downstream logic.</p>
+</section>
+<section id="observability" class="level2">
+<h2 class="anchored" data-anchor-id="observability">Observability</h2>
+<p>Useful extraction metrics include:</p>
+<ul>
+<li>request count and latency;</li>
+<li>page count and records per page;</li>
+<li>retry count by status or exception;</li>
+<li>rate-limit events and planned wait time;</li>
+<li>bytes received;</li>
+<li>duplicates removed;</li>
+<li>minimum and maximum source timestamps;</li>
+<li>extraction window and checkpoint position; and</li>
+<li>final status and duration.</li>
+</ul>
+<p>Metrics explain <em>what</em> happened; structured logs provide event context; traces help locate latency across services. Include a run ID and source name across all three signals.</p>
+</section>
+<section id="testing-strategy" class="level2">
+<h2 class="anchored" data-anchor-id="testing-strategy">Testing strategy</h2>
+<p>Reliable clients are tested against controlled responses rather than only against a live endpoint. Important cases include:</p>
+<ol type="1">
+<li>one page and multiple pages;</li>
+<li>empty terminal result;</li>
+<li>repeated or malformed cursor;</li>
+<li>transient timeout followed by success;</li>
+<li><code>429</code> with and without <code>Retry-After</code>;</li>
+<li>exhausted retry budget;</li>
+<li>terminal authentication or validation error;</li>
+<li>duplicate records across pages;</li>
+<li>record outside the requested window; and</li>
+<li>crash before and after publication but before checkpointing.</li>
+</ol>
+<p>The transport boundary makes these cases cheap to simulate and deterministic in continuous integration.</p>
+</section>
+<section id="production-hardening-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="production-hardening-checklist">Production hardening checklist</h2>
+<p>Before deploying an API extractor, confirm that:</p>
+<ul>
+<li>credentials are injected securely and never logged;</li>
+<li>TLS verification is enabled;</li>
+<li>every request has connect and read timeouts;</li>
+<li>retryable statuses and exceptions are explicitly listed;</li>
+<li>retry attempts, backoff, jitter, and total elapsed time are bounded;</li>
+<li>pagination follows the documented continuation mechanism;</li>
+<li>extraction windows use UTC and stable boundary semantics;</li>
+<li>checkpoints advance only after successful publication;</li>
+<li>temporary files are atomically published;</li>
+<li>response schemas and record grains are validated;</li>
+<li>sensitive payloads have appropriate retention and access controls; and</li>
+<li>metrics and alerts distinguish source failure from pipeline failure.</li>
+</ul>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">Exercises</h2>
+<ol type="1">
+<li>Add a simulated timeout before page two succeeds and include it in the audit.</li>
+<li>Change the API to offset pagination. Demonstrate how an insertion between requests could duplicate or skip a record.</li>
+<li>Add a one-hour lookback to the checkpoint and keep the latest record by <code>updated_at</code>.</li>
+<li>Make the retry budget configurable through command-line arguments.</li>
+<li>Write tests for a cursor cycle, a terminal <code>401</code>, and a record outside the requested window.</li>
+</ol>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<ul>
+<li>API extraction is a bounded protocol, not a single request.</li>
+<li>Cursor handling and stopping rules must be explicit and testable.</li>
+<li>Timeouts, retry budgets, exponential backoff, and rate-limit behavior prevent transient failures from becoming uncontrolled loops.</li>
+<li>Half-open UTC windows and deterministic tie-breakers make incremental retrieval defensible.</li>
+<li>Publish the complete validated batch before advancing its checkpoint.</li>
+<li>Retained response evidence and operational metrics make failures diagnosable and replays safe.</li>
+</ul>
+</section>
+<section id="what-comes-next" class="level2">
+<h2 class="anchored" data-anchor-id="what-comes-next">What comes next</h2>
+<p>The next chapter moves from reliable extraction to transformation and data quality. It will convert landed source records into trusted analytical tables using explicit contracts, reproducible transformations, and validation rules.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

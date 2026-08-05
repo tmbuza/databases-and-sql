@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -287,7 +322,35 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
-  <li><a href="#supporting-example" id="toc-supporting-example" class="nav-link" data-scroll-target="#supporting-example">Supporting example</a></li>
+  <li><a href="#from-isolated-tables-to-relational-questions" id="toc-from-isolated-tables-to-relational-questions" class="nav-link" data-scroll-target="#from-isolated-tables-to-relational-questions">From isolated tables to relational questions</a></li>
+  <li><a href="#begin-with-table-grain" id="toc-begin-with-table-grain" class="nav-link" data-scroll-target="#begin-with-table-grain">Begin with table grain</a></li>
+  <li><a href="#keys-define-relationships" id="toc-keys-define-relationships" class="nav-link" data-scroll-target="#keys-define-relationships">Keys define relationships</a></li>
+  <li><a href="#join-anatomy-and-aliases" id="toc-join-anatomy-and-aliases" class="nav-link" data-scroll-target="#join-anatomy-and-aliases">Join anatomy and aliases</a></li>
+  <li><a href="#inner-joins-retain-matches" id="toc-inner-joins-retain-matches" class="nav-link" data-scroll-target="#inner-joins-retain-matches">Inner joins: retain matches</a></li>
+  <li><a href="#left-joins-preserve-the-analytical-population" id="toc-left-joins-preserve-the-analytical-population" class="nav-link" data-scroll-target="#left-joins-preserve-the-analytical-population">Left joins: preserve the analytical population</a></li>
+  <li><a href="#right-and-full-outer-joins" id="toc-right-and-full-outer-joins" class="nav-link" data-scroll-target="#right-and-full-outer-joins">Right and full outer joins</a></li>
+  <li><a href="#anti-joins-and-semi-joins" id="toc-anti-joins-and-semi-joins" class="nav-link" data-scroll-target="#anti-joins-and-semi-joins">Anti-joins and semi-joins</a></li>
+  <li><a href="#join-cardinality" id="toc-join-cardinality" class="nav-link" data-scroll-target="#join-cardinality">Join cardinality</a></li>
+  <li><a href="#many-to-many-relationships-need-an-explicit-model" id="toc-many-to-many-relationships-need-an-explicit-model" class="nav-link" data-scroll-target="#many-to-many-relationships-need-an-explicit-model">Many-to-many relationships need an explicit model</a></li>
+  <li><a href="#aggregate-at-the-intended-grain" id="toc-aggregate-at-the-intended-grain" class="nav-link" data-scroll-target="#aggregate-at-the-intended-grain">Aggregate at the intended grain</a></li>
+  <li><a href="#composite-keys-and-multi-column-conditions" id="toc-composite-keys-and-multi-column-conditions" class="nav-link" data-scroll-target="#composite-keys-and-multi-column-conditions">Composite keys and multi-column conditions</a></li>
+  <li><a href="#self-joins" id="toc-self-joins" class="nav-link" data-scroll-target="#self-joins">Self joins</a></li>
+  <li><a href="#cross-joins" id="toc-cross-joins" class="nav-link" data-scroll-target="#cross-joins">Cross joins</a></li>
+  <li><a href="#nulls-and-join-keys" id="toc-nulls-and-join-keys" class="nav-link" data-scroll-target="#nulls-and-join-keys">Nulls and join keys</a></li>
+  <li><a href="#validate-every-important-join" id="toc-validate-every-important-join" class="nav-link" data-scroll-target="#validate-every-important-join">Validate every important join</a>
+  <ul class="collapse">
+  <li><a href="#record-input-counts" id="toc-record-input-counts" class="nav-link" data-scroll-target="#record-input-counts">1. Record input counts</a></li>
+  <li><a href="#test-uniqueness-on-the-expected-one-side" id="toc-test-uniqueness-on-the-expected-one-side" class="nav-link" data-scroll-target="#test-uniqueness-on-the-expected-one-side">2. Test uniqueness on the expected one side</a></li>
+  <li><a href="#count-null-and-unmatched-keys" id="toc-count-null-and-unmatched-keys" class="nav-link" data-scroll-target="#count-null-and-unmatched-keys">3. Count null and unmatched keys</a></li>
+  <li><a href="#compare-output-counts-with-the-predicted-cardinality" id="toc-compare-output-counts-with-the-predicted-cardinality" class="nav-link" data-scroll-target="#compare-output-counts-with-the-predicted-cardinality">4. Compare output counts with the predicted cardinality</a></li>
+  <li><a href="#reconcile-measures" id="toc-reconcile-measures" class="nav-link" data-scroll-target="#reconcile-measures">5. Reconcile measures</a></li>
+  <li><a href="#inspect-representative-records" id="toc-inspect-representative-records" class="nav-link" data-scroll-target="#inspect-representative-records">6. Inspect representative records</a></li>
+  </ul></li>
+  <li><a href="#reading-the-diagnostic-figure" id="toc-reading-the-diagnostic-figure" class="nav-link" data-scroll-target="#reading-the-diagnostic-figure">Reading the diagnostic figure</a></li>
+  <li><a href="#common-join-failures" id="toc-common-join-failures" class="nav-link" data-scroll-target="#common-join-failures">Common join failures</a></li>
+  <li><a href="#reusable-join-checklist" id="toc-reusable-join-checklist" class="nav-link" data-scroll-target="#reusable-join-checklist">Reusable join checklist</a></li>
+  <li><a href="#practice-exercises" id="toc-practice-exercises" class="nav-link" data-scroll-target="#practice-exercises">Practice exercises</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
   </ul>
 </nav>
     </div>
@@ -296,7 +359,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-relational-databases-and-tables.html">Databases and SQL Foundations</a></li><li class="breadcrumb-item"><a href="./04-joins-and-relational-thinking.html"><span class="chapter-title">Joins and Relational Thinking</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-joins-relational-thinking" class="quarto-section-identifier"><span class="chapter-title">Joins and Relational Thinking</span></span></h1>
+<h1 class="title"><span id="sec-joins-and-relational-thinking" class="quarto-section-identifier"><span class="chapter-title">Joins and Relational Thinking</span></span></h1>
 </div>
 
 
@@ -319,17 +382,494 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-04</li>
+<li><strong>Type:</strong> Core</li>
+<li><strong>Audience:</strong> Data analysts, data scientists, and beginning data engineers</li>
+<li><strong>Theme:</strong> Reliable joins begin with table grain, keys, cardinality, and explicit validation</li>
+</ul>
+</div>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
 <ul>
-<li>Choose between inner and outer joins from the analytical question.</li>
-<li>Predict how table grain and key uniqueness affect row counts.</li>
-<li>Detect accidental many-to-many joins before they corrupt results.</li>
+<li>explain why related facts are stored in separate tables;</li>
+<li>identify table grain, primary keys, and foreign keys before joining;</li>
+<li>use <code>INNER</code>, <code>LEFT</code>, <code>RIGHT</code>, <code>FULL OUTER</code>, <code>CROSS</code>, and self joins appropriately;</li>
+<li>reason about one-to-one, one-to-many, and many-to-many relationships;</li>
+<li>prevent accidental row multiplication with pre-aggregation and bridge tables;</li>
+<li>detect unmatched keys, duplicate keys, and null-related join failures; and</li>
+<li>validate join outputs with counts, assertions, and reconciliation queries.</li>
 </ul>
 </section>
-<section id="supporting-example" class="level2">
-<h2 class="anchored" data-anchor-id="supporting-example">Supporting example</h2>
-<p>The case-study join in <code>scripts/sql/04-joins.sql</code> combines orders, customers, order items, and products while preserving order-item grain.</p>
+<section id="from-isolated-tables-to-relational-questions" class="level2">
+<h2 class="anchored" data-anchor-id="from-isolated-tables-to-relational-questions">From isolated tables to relational questions</h2>
+<p>A relational database separates entities and events into tables that can be connected through keys. A customer table stores one row per customer. An order table stores one row per order. An order-item table stores one row per product line within an order. This separation avoids repeating customer attributes on every transaction and makes each table responsible for one kind of fact.</p>
+<p>The analytical question usually spans those boundaries:</p>
+<blockquote class="blockquote">
+<p>Which customers ordered, what did they buy, and how much revenue did each customer generate?</p>
+</blockquote>
+<p>Answering it correctly requires more than knowing the <code>JOIN</code> keyword. It requires relational thinking: define what one row represents, identify the relationship between tables, predict the expected output grain, and verify the result.</p>
+<p>The executable Chapter 04 workflow creates a small SQLite database, runs diagnostic and analytical joins, and saves reproducible outputs:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/04-run-join-analysis.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The Python script uses only the standard library and <code>matplotlib</code>. It writes tables under <code>results/tables/</code> and the diagnostic figure under <code>results/figures/</code>.</p>
+</section>
+<section id="begin-with-table-grain" class="level2">
+<h2 class="anchored" data-anchor-id="begin-with-table-grain">Begin with table grain</h2>
+<p>The <strong>grain</strong> states what one row represents. State it before writing a join.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Table</th>
+<th>Grain</th>
+<th>Candidate key</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>customers</code></td>
+<td>One row per customer</td>
+<td><code>customer_id</code></td>
+</tr>
+<tr class="even">
+<td><code>orders</code></td>
+<td>One row per order</td>
+<td><code>order_id</code></td>
+</tr>
+<tr class="odd">
+<td><code>order_items</code></td>
+<td>One row per product line in an order</td>
+<td><code>(order_id, product_id)</code></td>
+</tr>
+<tr class="even">
+<td><code>products</code></td>
+<td>One row per product</td>
+<td><code>product_id</code></td>
+</tr>
+</tbody>
+</table>
+<p>If <code>customers</code> is joined to <code>orders</code>, the natural output grain becomes one row per order, with customer attributes repeated for customers who placed multiple orders. If <code>orders</code> is then joined to <code>order_items</code>, the grain becomes one row per order line. The row count can increase without any duplication error: the data is simply being expressed at a finer grain.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Repeated values are not automatically duplicates
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>After a valid one-to-many join, values from the “one” side repeat. Removing those rows with <code>DISTINCT</code> can discard legitimate events. Diagnose the relationship and intended grain instead of hiding unexpected counts.</p>
+</div>
+</div>
+</section>
+<section id="keys-define-relationships" class="level2">
+<h2 class="anchored" data-anchor-id="keys-define-relationships">Keys define relationships</h2>
+<p>A <strong>primary key</strong> uniquely identifies a row in its table. A <strong>foreign key</strong> references a key in another table. Together they express both identity and relationship.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> customers (</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    customer_id <span class="dt">INTEGER</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    customer_name TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    region TEXT <span class="kw">NOT</span> <span class="kw">NULL</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> orders (</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    order_id <span class="dt">INTEGER</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    customer_id <span class="dt">INTEGER</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    order_date TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    status TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (customer_id) <span class="kw">REFERENCES</span> customers(customer_id)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A nullable foreign key can be intentional, but it changes join behaviour. SQL’s equality comparison does not treat <code>NULL</code> as equal to another <code>NULL</code>. Missing keys therefore require explicit investigation rather than an assumption that they will match.</p>
+</section>
+<section id="join-anatomy-and-aliases" class="level2">
+<h2 class="anchored" data-anchor-id="join-anatomy-and-aliases">Join anatomy and aliases</h2>
+<p>The essential join pattern names the left table, the right table, and the condition that relates their rows:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    o.order_id,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    o.order_date,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    c.customer_name,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    c.region</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders <span class="kw">AS</span> o</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> customers <span class="kw">AS</span> c</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> o.customer_id <span class="op">=</span> c.customer_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Aliases keep multi-table queries readable and make column ownership explicit. Qualify shared names such as <code>customer_id</code>, and select the columns required by the output contract instead of relying on <code>SELECT *</code>.</p>
+</section>
+<section id="inner-joins-retain-matches" class="level2">
+<h2 class="anchored" data-anchor-id="inner-joins-retain-matches">Inner joins: retain matches</h2>
+<p>An <code>INNER JOIN</code> returns rows whose join condition matches on both sides. <code>INNER</code> is optional, so <code>JOIN</code> and <code>INNER JOIN</code> mean the same thing.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    c.customer_id,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    c.customer_name,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    o.order_id,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    o.order_date</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> customers <span class="kw">AS</span> c</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">INNER</span> <span class="kw">JOIN</span> orders <span class="kw">AS</span> o</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> c.customer_id <span class="op">=</span> o.customer_id</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> c.customer_id, o.order_date;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This is appropriate when the analysis requires a valid relationship on both sides. It is not appropriate when customers without orders must remain visible. An inner join can silently remove unmatched records, so count them separately.</p>
+</section>
+<section id="left-joins-preserve-the-analytical-population" class="level2">
+<h2 class="anchored" data-anchor-id="left-joins-preserve-the-analytical-population">Left joins: preserve the analytical population</h2>
+<p>A <code>LEFT JOIN</code> retains every row from the left table and fills right-side columns with <code>NULL</code> when no match exists.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    c.customer_id,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    c.customer_name,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(o.order_id) <span class="kw">AS</span> order_count</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> customers <span class="kw">AS</span> c</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> orders <span class="kw">AS</span> o</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> c.customer_id <span class="op">=</span> o.customer_id</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> c.customer_id, c.customer_name</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> c.customer_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The placement of filters matters. Suppose cancelled orders should not count, but customers with no qualifying orders must remain:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    c.customer_id,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(o.order_id) <span class="kw">AS</span> completed_orders</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> customers <span class="kw">AS</span> c</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> orders <span class="kw">AS</span> o</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> c.customer_id <span class="op">=</span> o.customer_id</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a> <span class="kw">AND</span> o.status <span class="op">=</span> <span class="st">'completed'</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> c.customer_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Putting <code>o.status = 'completed'</code> in a <code>WHERE</code> clause would reject the null-filled rows and effectively convert the outer join into an inner join.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Count a right-side key after a left join
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Use <code>COUNT(o.order_id)</code>, not <code>COUNT(*)</code>, when measuring matches. <code>COUNT(*)</code> counts the preserved customer row even when no order matched.</p>
+</div>
+</div>
+</section>
+<section id="right-and-full-outer-joins" class="level2">
+<h2 class="anchored" data-anchor-id="right-and-full-outer-joins">Right and full outer joins</h2>
+<p>A <code>RIGHT JOIN</code> preserves every row from the right table. It can often be rewritten as a <code>LEFT JOIN</code> by swapping table order. A <code>FULL OUTER JOIN</code> preserves matched rows plus unmatched rows from both sides.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    c.customer_id,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    c.customer_name,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    o.order_id</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> customers <span class="kw">AS</span> c</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="kw">FULL</span> <span class="kw">OUTER</span> <span class="kw">JOIN</span> orders <span class="kw">AS</span> o</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> c.customer_id <span class="op">=</span> o.customer_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>These joins are useful for reconciliation: records present only in the source, only in the target, or in both. Database support varies by engine and version, so confirm the dialect used by the project. A portable reconciliation can be built from left anti-joins and <code>UNION ALL</code>.</p>
+</section>
+<section id="anti-joins-and-semi-joins" class="level2">
+<h2 class="anchored" data-anchor-id="anti-joins-and-semi-joins">Anti-joins and semi-joins</h2>
+<p>An <strong>anti-join</strong> returns left-side rows with no match. It is a powerful data quality diagnostic.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> o.<span class="op">*</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders <span class="kw">AS</span> o</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> customers <span class="kw">AS</span> c</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> o.customer_id <span class="op">=</span> c.customer_id</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> c.customer_id <span class="kw">IS</span> <span class="kw">NULL</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>NOT EXISTS</code> expresses the same intention directly and behaves safely when the comparison table contains nulls:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> o.<span class="op">*</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders <span class="kw">AS</span> o</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> (</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> <span class="dv">1</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FROM</span> customers <span class="kw">AS</span> c</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">WHERE</span> c.customer_id <span class="op">=</span> o.customer_id</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A <strong>semi-join</strong> returns left-side rows for which a match exists, without adding right-side columns or multiplying the left rows:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> c.<span class="op">*</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> customers <span class="kw">AS</span> c</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> <span class="kw">EXISTS</span> (</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> <span class="dv">1</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FROM</span> orders <span class="kw">AS</span> o</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">WHERE</span> o.customer_id <span class="op">=</span> c.customer_id</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Prefer <code>EXISTS</code> when the question is simply whether a related record exists.</p>
+</section>
+<section id="join-cardinality" class="level2">
+<h2 class="anchored" data-anchor-id="join-cardinality">Join cardinality</h2>
+<p>Cardinality describes how many rows on one side may relate to a row on the other side.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Relationship</th>
+<th>Meaning</th>
+<th>Expected row-count behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>One-to-one</td>
+<td>Each key appears at most once on both sides</td>
+<td>At most one output row per matched key</td>
+</tr>
+<tr class="even">
+<td>One-to-many</td>
+<td>A unique parent key relates to many child rows</td>
+<td>Parent attributes repeat at child grain</td>
+</tr>
+<tr class="odd">
+<td>Many-to-one</td>
+<td>Many left rows relate to one unique lookup row</td>
+<td>Left row count is preserved for complete matches</td>
+</tr>
+<tr class="even">
+<td>Many-to-many</td>
+<td>Keys repeat on both sides</td>
+<td>Rows multiply within each shared key</td>
+</tr>
+</tbody>
+</table>
+<p>Inspect key uniqueness before joining:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> customer_id, <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> rows_per_key</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> customers</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> customer_id</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="kw">HAVING</span> <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="op">&gt;</span> <span class="dv">1</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Run the equivalent check on both inputs. If the join key repeats on both sides, the number of rows for a key is the product of the two group sizes. Three left rows joined to four right rows produce twelve rows for that key.</p>
+</section>
+<section id="many-to-many-relationships-need-an-explicit-model" class="level2">
+<h2 class="anchored" data-anchor-id="many-to-many-relationships-need-an-explicit-model">Many-to-many relationships need an explicit model</h2>
+<p>Orders and products form a valid many-to-many relationship: one order can contain many products, and one product can appear in many orders. A bridge table resolves the relationship:</p>
+<pre class="text"><code>orders 1 ----&lt; order_items &gt;---- 1 products</code></pre>
+<p><code>order_items</code> has its own grain and measures such as quantity and unit price.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    oi.order_id,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    p.product_name,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    oi.quantity,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    oi.quantity <span class="op">*</span> oi.unit_price <span class="kw">AS</span> line_revenue</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> order_items <span class="kw">AS</span> oi</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> products <span class="kw">AS</span> p</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> oi.product_id <span class="op">=</span> p.product_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Do not join <code>orders</code> directly to <code>products</code> on a non-key descriptive field. Use the bridge that records which product participated in which order.</p>
+</section>
+<section id="aggregate-at-the-intended-grain" class="level2">
+<h2 class="anchored" data-anchor-id="aggregate-at-the-intended-grain">Aggregate at the intended grain</h2>
+<p>To calculate one row per customer, first compute order totals at the order grain, then aggregate them to the customer grain:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">WITH</span> order_totals <span class="kw">AS</span> (</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        o.order_id,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        o.customer_id,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">SUM</span>(oi.quantity <span class="op">*</span> oi.unit_price) <span class="kw">AS</span> order_revenue</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FROM</span> orders <span class="kw">AS</span> o</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">JOIN</span> order_items <span class="kw">AS</span> oi</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>      <span class="kw">ON</span> o.order_id <span class="op">=</span> oi.order_id</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">WHERE</span> o.status <span class="op">=</span> <span class="st">'completed'</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">GROUP</span> <span class="kw">BY</span> o.order_id, o.customer_id</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    c.customer_id,</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    c.customer_name,</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(ot.order_id) <span class="kw">AS</span> completed_orders,</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COALESCE</span>(<span class="fu">SUM</span>(ot.order_revenue), <span class="dv">0</span>) <span class="kw">AS</span> revenue</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> customers <span class="kw">AS</span> c</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> order_totals <span class="kw">AS</span> ot</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> c.customer_id <span class="op">=</span> ot.customer_id</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> c.customer_id, c.customer_name</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> revenue <span class="kw">DESC</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Pre-aggregation prevents measures stored at different grains from being counted more than once. Always ask which table owns each measure and at what grain it is valid.</p>
+</section>
+<section id="composite-keys-and-multi-column-conditions" class="level2">
+<h2 class="anchored" data-anchor-id="composite-keys-and-multi-column-conditions">Composite keys and multi-column conditions</h2>
+<p>Some relationships require more than one column. A daily price table, for example, may be unique by product and effective date:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> s.sale_id, s.product_id, s.sale_date, p.price</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> sales <span class="kw">AS</span> s</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> daily_prices <span class="kw">AS</span> p</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> s.product_id <span class="op">=</span> p.product_id</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a> <span class="kw">AND</span> s.sale_date <span class="op">=</span> p.effective_date;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Joining only on <code>product_id</code> would match every sale to every historical price for that product. The complete key must appear in the join condition.</p>
+</section>
+<section id="self-joins" class="level2">
+<h2 class="anchored" data-anchor-id="self-joins">Self joins</h2>
+<p>A self join relates rows within one table. An employee hierarchy can connect each employee to their manager:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    e.employee_name,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    m.employee_name <span class="kw">AS</span> manager_name</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> employees <span class="kw">AS</span> e</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> employees <span class="kw">AS</span> m</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> e.manager_id <span class="op">=</span> m.employee_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Distinct aliases are essential because the same table plays two roles.</p>
+</section>
+<section id="cross-joins" class="level2">
+<h2 class="anchored" data-anchor-id="cross-joins">Cross joins</h2>
+<p>A <code>CROSS JOIN</code> returns every combination of rows. If the left table contains five rows and the right contains four, the result contains twenty rows.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> d.calendar_date, r.region</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> calendar_dates <span class="kw">AS</span> d</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="kw">CROSS</span> <span class="kw">JOIN</span> regions <span class="kw">AS</span> r;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This is useful for constructing a complete date-by-region reporting grid. It is dangerous when produced accidentally by omitting or weakening a join condition.</p>
+</section>
+<section id="nulls-and-join-keys" class="level2">
+<h2 class="anchored" data-anchor-id="nulls-and-join-keys">Nulls and join keys</h2>
+<p>Because <code>NULL = NULL</code> is unknown rather than true, null keys do not match under ordinary equality. Profile them before the join:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> total_rows,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(<span class="cf">CASE</span> <span class="cf">WHEN</span> customer_id <span class="kw">IS</span> <span class="kw">NULL</span> <span class="cf">THEN</span> <span class="dv">1</span> <span class="cf">ELSE</span> <span class="dv">0</span> <span class="cf">END</span>) <span class="kw">AS</span> null_keys</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Do not replace missing identifiers with a shared sentinel merely to force a match. Doing so can connect unrelated records. If a business-approved unknown member is required in a dimensional model, implement and document it explicitly.</p>
+</section>
+<section id="validate-every-important-join" class="level2">
+<h2 class="anchored" data-anchor-id="validate-every-important-join">Validate every important join</h2>
+<p>A reliable join makes its expectations executable.</p>
+<section id="record-input-counts" class="level3">
+<h3 class="anchored" data-anchor-id="record-input-counts">1. Record input counts</h3>
+<div class="sourceCode" id="cb19"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">FROM</span> customers;</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">FROM</span> orders;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="test-uniqueness-on-the-expected-one-side" class="level3">
+<h3 class="anchored" data-anchor-id="test-uniqueness-on-the-expected-one-side">2. Test uniqueness on the expected one side</h3>
+<div class="sourceCode" id="cb20"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="kw">rows</span>,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">COUNT</span>(<span class="kw">DISTINCT</span> customer_id) <span class="kw">AS</span> distinct_keys</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> customers;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="count-null-and-unmatched-keys" class="level3">
+<h3 class="anchored" data-anchor-id="count-null-and-unmatched-keys">3. Count null and unmatched keys</h3>
+<div class="sourceCode" id="cb21"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> unmatched_orders</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders <span class="kw">AS</span> o</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> (</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> <span class="dv">1</span> <span class="kw">FROM</span> customers <span class="kw">AS</span> c</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">WHERE</span> c.customer_id <span class="op">=</span> o.customer_id</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="compare-output-counts-with-the-predicted-cardinality" class="level3">
+<h3 class="anchored" data-anchor-id="compare-output-counts-with-the-predicted-cardinality">4. Compare output counts with the predicted cardinality</h3>
+<p>For a many-to-one lookup join with complete foreign keys and a unique lookup key, the joined row count should equal the left row count. A different count is evidence to investigate.</p>
+</section>
+<section id="reconcile-measures" class="level3">
+<h3 class="anchored" data-anchor-id="reconcile-measures">5. Reconcile measures</h3>
+<p>If joining should not change a measure’s grain, compare totals before and after:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">WITH</span> before_join <span class="kw">AS</span> (</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> <span class="fu">SUM</span>(quantity <span class="op">*</span> unit_price) <span class="kw">AS</span> revenue <span class="kw">FROM</span> order_items</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>after_join <span class="kw">AS</span> (</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span> <span class="fu">SUM</span>(oi.quantity <span class="op">*</span> oi.unit_price) <span class="kw">AS</span> revenue</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FROM</span> order_items <span class="kw">AS</span> oi</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">JOIN</span> products <span class="kw">AS</span> p <span class="kw">ON</span> oi.product_id <span class="op">=</span> p.product_id</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> before_join.revenue <span class="kw">AS</span> before_revenue,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>       after_join.revenue <span class="kw">AS</span> after_revenue</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> before_join <span class="kw">CROSS</span> <span class="kw">JOIN</span> after_join;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="inspect-representative-records" class="level3">
+<h3 class="anchored" data-anchor-id="inspect-representative-records">6. Inspect representative records</h3>
+<p>Review matched, left-only, right-only, high-frequency, and null-key examples. Aggregate checks can pass while individual records are incorrectly connected.</p>
+</section>
+</section>
+<section id="reading-the-diagnostic-figure" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-diagnostic-figure">Reading the diagnostic figure</h2>
+<p>The Chapter 04 script deliberately includes one orphan order and one customer without an order. It compares input row counts with the result of inner and left joins.</p>
+<div id="fig-join-cardinality-diagnostics" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Bar chart comparing customers, orders, inner join rows, and left join rows, with annotations for an orphan order and a customer without an order.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-join-cardinality-diagnostics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="results/figures/04-join-cardinality-diagnostics.png" class="img-fluid figure-img" alt="Bar chart comparing customers, orders, inner join rows, and left join rows, with annotations for an orphan order and a customer without an order.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-join-cardinality-diagnostics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5.1: Join row counts and relationship diagnostics
+</figcaption>
+</figure>
+</div>
+<p>The figure is not a universal expected pattern. It is an audit aid: observed counts must be interpreted against the declared relationship and preservation rule.</p>
+</section>
+<section id="common-join-failures" class="level2">
+<h2 class="anchored" data-anchor-id="common-join-failures">Common join failures</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Failure</th>
+<th>Symptom</th>
+<th>Better practice</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Joining before declaring grain</td>
+<td>Unexpected repetitions</td>
+<td>Write one-row-per-table statements first</td>
+</tr>
+<tr class="even">
+<td>Incomplete composite key</td>
+<td>Large row multiplication</td>
+<td>Join on the complete relationship key</td>
+</tr>
+<tr class="odd">
+<td>Duplicate lookup keys</td>
+<td>Left rows unexpectedly multiply</td>
+<td>Assert uniqueness before the join</td>
+</tr>
+<tr class="even">
+<td>Filtering an outer-joined table in <code>WHERE</code></td>
+<td>Unmatched left rows disappear</td>
+<td>Put match qualification in <code>ON</code></td>
+</tr>
+<tr class="odd">
+<td>Using <code>DISTINCT</code> as a repair</td>
+<td>Real events may be discarded</td>
+<td>Fix cardinality or aggregation logic</td>
+</tr>
+<tr class="even">
+<td>Counting <code>*</code> after a left join</td>
+<td>Zero-match groups appear to have one</td>
+<td>Count a nullable right-side key</td>
+</tr>
+<tr class="odd">
+<td><code>NOT IN</code> with nulls</td>
+<td>Anti-join returns surprising results</td>
+<td>Prefer <code>NOT EXISTS</code></td>
+</tr>
+<tr class="even">
+<td>Joining on names or labels</td>
+<td>False matches and missed variants</td>
+<td>Use stable identifiers</td>
+</tr>
+<tr class="odd">
+<td>Summing after a finer-grain join</td>
+<td>Measures are overstated</td>
+<td>Pre-aggregate at the measure’s grain</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reusable-join-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="reusable-join-checklist">Reusable join checklist</h2>
+<p>Before accepting a join, confirm that you can answer <strong>yes</strong> to each question:</p>
+<ul>
+<li>Is the grain of every input table documented?</li>
+<li>Is the expected output grain documented?</li>
+<li>Are the join columns the complete keys for the relationship?</li>
+<li>Is the intended cardinality known?</li>
+<li>Have uniqueness and null-key assumptions been tested?</li>
+<li>Is the correct population preserved by the join type?</li>
+<li>Are unmatched rows measured and explained?</li>
+<li>Are row counts consistent with the expected relationship?</li>
+<li>Are important measures reconciled before and after the join?</li>
+<li>Have representative matched and unmatched records been inspected?</li>
+</ul>
+</section>
+<section id="practice-exercises" class="level2">
+<h2 class="anchored" data-anchor-id="practice-exercises">Practice exercises</h2>
+<ol type="1">
+<li>Modify the customer summary to report completed and cancelled orders in separate columns while retaining customers with no orders.</li>
+<li>Write an anti-join that returns products never purchased.</li>
+<li>Add a duplicate <code>customer_id</code> to a temporary lookup table. Predict and then measure how it changes the order join.</li>
+<li>Create a calendar-by-region grid with <code>CROSS JOIN</code>, then left join daily sales so missing combinations appear with zero revenue.</li>
+<li>Reconcile total completed revenue at the order-item grain and customer grain.</li>
+<li>Explain why <code>SELECT DISTINCT</code> is not a safe fix for an unintended many-to-many join.</li>
+</ol>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>Joins are where database structure becomes analytical meaning. Correct syntax is necessary, but reliable results depend on stronger habits: declare grain, use stable and complete keys, predict cardinality, preserve the intended population, aggregate measures at their valid grain, and validate the result.</p>
+<p>The next chapter applies the same relational discipline to database design and normalization, showing how schemas can prevent many join problems before a query is written.</p>
 
 
 </section>

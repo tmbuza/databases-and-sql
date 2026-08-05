@@ -1,0 +1,6 @@
+event_id,customer_id,event_type,updated_at,source_system,source_object,extraction_window_start,extraction_window_end,run_id,extracted_at_utc
+E101,C001,ticket_opened,2026-08-05 02:15:00+00:00,demo-support-api,/v1/events,2026-08-05T00:00:00Z,2026-08-06T00:00:00Z,dsdp10-demo-20260806,2026-08-05T22:05:58.348107+00:00
+E102,C003,chat_started,2026-08-05 06:40:00+00:00,demo-support-api,/v1/events,2026-08-05T00:00:00Z,2026-08-06T00:00:00Z,dsdp10-demo-20260806,2026-08-05T22:05:58.348107+00:00
+E103,C002,ticket_updated,2026-08-05 10:05:00+00:00,demo-support-api,/v1/events,2026-08-05T00:00:00Z,2026-08-06T00:00:00Z,dsdp10-demo-20260806,2026-08-05T22:05:58.348107+00:00
+E104,C005,chat_closed,2026-08-05 13:30:00+00:00,demo-support-api,/v1/events,2026-08-05T00:00:00Z,2026-08-06T00:00:00Z,dsdp10-demo-20260806,2026-08-05T22:05:58.348107+00:00
+E105,C004,ticket_resolved,2026-08-05 21:10:00+00:00,demo-support-api,/v1/events,2026-08-05T00:00:00Z,2026-08-06T00:00:00Z,dsdp10-demo-20260806,2026-08-05T22:05:58.348107+00:00

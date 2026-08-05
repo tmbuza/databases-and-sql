@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -287,6 +322,38 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#from-scripts-to-managed-runs" id="toc-from-scripts-to-managed-runs" class="nav-link" data-scroll-target="#from-scripts-to-managed-runs">From scripts to managed runs</a></li>
+  <li><a href="#scheduling-is-only-the-trigger" id="toc-scheduling-is-only-the-trigger" class="nav-link" data-scroll-target="#scheduling-is-only-the-trigger">Scheduling is only the trigger</a></li>
+  <li><a href="#model-the-workflow-as-a-directed-graph" id="toc-model-the-workflow-as-a-directed-graph" class="nav-link" data-scroll-target="#model-the-workflow-as-a-directed-graph">Model the workflow as a directed graph</a></li>
+  <li><a href="#separate-wall-clock-time-from-data-time" id="toc-separate-wall-clock-time-from-data-time" class="nav-link" data-scroll-target="#separate-wall-clock-time-from-data-time">Separate wall-clock time from data time</a></li>
+  <li><a href="#choose-the-right-trigger" id="toc-choose-the-right-trigger" class="nav-link" data-scroll-target="#choose-the-right-trigger">Choose the right trigger</a>
+  <ul class="collapse">
+  <li><a href="#time-based-scheduling" id="toc-time-based-scheduling" class="nav-link" data-scroll-target="#time-based-scheduling">Time-based scheduling</a></li>
+  <li><a href="#event-based-triggering" id="toc-event-based-triggering" class="nav-link" data-scroll-target="#event-based-triggering">Event-based triggering</a></li>
+  <li><a href="#data-aware-triggering" id="toc-data-aware-triggering" class="nav-link" data-scroll-target="#data-aware-triggering">Data-aware triggering</a></li>
+  <li><a href="#manual-triggering" id="toc-manual-triggering" class="nav-link" data-scroll-target="#manual-triggering">Manual triggering</a></li>
+  </ul></li>
+  <li><a href="#define-task-and-run-states" id="toc-define-task-and-run-states" class="nav-link" data-scroll-target="#define-task-and-run-states">Define task and run states</a></li>
+  <li><a href="#retry-deliberately" id="toc-retry-deliberately" class="nav-link" data-scroll-target="#retry-deliberately">Retry deliberately</a></li>
+  <li><a href="#use-timeouts-and-service-level-expectations" id="toc-use-timeouts-and-service-level-expectations" class="nav-link" data-scroll-target="#use-timeouts-and-service-level-expectations">Use timeouts and service-level expectations</a></li>
+  <li><a href="#prevent-unsafe-overlap" id="toc-prevent-unsafe-overlap" class="nav-link" data-scroll-target="#prevent-unsafe-overlap">Prevent unsafe overlap</a></li>
+  <li><a href="#make-retries-and-backfills-idempotent" id="toc-make-retries-and-backfills-idempotent" class="nav-link" data-scroll-target="#make-retries-and-backfills-idempotent">Make retries and backfills idempotent</a></li>
+  <li><a href="#backfills-are-controlled-historical-runs" id="toc-backfills-are-controlled-historical-runs" class="nav-link" data-scroll-target="#backfills-are-controlled-historical-runs">Backfills are controlled historical runs</a></li>
+  <li><a href="#observe-the-control-plane" id="toc-observe-the-control-plane" class="nav-link" data-scroll-target="#observe-the-control-plane">Observe the control plane</a></li>
+  <li><a href="#case-study-simulate-scheduled-runs" id="toc-case-study-simulate-scheduled-runs" class="nav-link" data-scroll-target="#case-study-simulate-scheduled-runs">Case study: simulate scheduled runs</a></li>
+  <li><a href="#read-the-run-history" id="toc-read-the-run-history" class="nav-link" data-scroll-target="#read-the-run-history">Read the run history</a></li>
+  <li><a href="#a-production-orchestration-contract" id="toc-a-production-orchestration-contract" class="nav-link" data-scroll-target="#a-production-orchestration-contract">A production orchestration contract</a></li>
+  <li><a href="#common-failure-patterns" id="toc-common-failure-patterns" class="nav-link" data-scroll-target="#common-failure-patterns">Common failure patterns</a>
+  <ul class="collapse">
+  <li><a href="#using-the-current-date-inside-tasks" id="toc-using-the-current-date-inside-tasks" class="nav-link" data-scroll-target="#using-the-current-date-inside-tasks">Using the current date inside tasks</a></li>
+  <li><a href="#retrying-every-exception" id="toc-retrying-every-exception" class="nav-link" data-scroll-target="#retrying-every-exception">Retrying every exception</a></li>
+  <li><a href="#allowing-overlapping-writes" id="toc-allowing-overlapping-writes" class="nav-link" data-scroll-target="#allowing-overlapping-writes">Allowing overlapping writes</a></li>
+  <li><a href="#hiding-work-inside-one-large-task" id="toc-hiding-work-inside-one-large-task" class="nav-link" data-scroll-target="#hiding-work-inside-one-large-task">Hiding work inside one large task</a></li>
+  <li><a href="#treating-a-backfill-as-a-loop-in-production" id="toc-treating-a-backfill-as-a-loop-in-production" class="nav-link" data-scroll-target="#treating-a-backfill-as-a-loop-in-production">Treating a backfill as a loop in production</a></li>
+  <li><a href="#alerting-without-context" id="toc-alerting-without-context" class="nav-link" data-scroll-target="#alerting-without-context">Alerting without context</a></li>
+  </ul></li>
+  <li><a href="#design-checklist" id="toc-design-checklist" class="nav-link" data-scroll-target="#design-checklist">Design checklist</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
   </ul>
 </nav>
     </div>
@@ -295,7 +362,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./13-orchestration-and-scheduling.html">Orchestration and Reliable Operations</a></li><li class="breadcrumb-item"><a href="./13-orchestration-and-scheduling.html"><span class="chapter-title">Orchestration and Scheduling</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-orchestration-scheduling" class="quarto-section-identifier"><span class="chapter-title">Orchestration and Scheduling</span></span></h1>
+<h1 class="title"><span id="sec-orchestration-and-scheduling" class="quarto-section-identifier"><span class="chapter-title">Orchestration and Scheduling</span></span></h1>
 </div>
 
 
@@ -318,13 +385,478 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-013</li>
+<li><strong>Type:</strong> Core guide chapter</li>
+<li><strong>Audience:</strong> Data practitioners moving from runnable pipelines to dependable scheduled workflows</li>
+<li><strong>Theme:</strong> Coordinate pipeline work explicitly, observe every run, and recover safely</li>
+</ul>
+</div>
+<p>A data pipeline is not operational merely because its tasks run successfully from a terminal. Production work must start at the right time, respect dependencies, avoid unsafe overlap, record what happened, retry only when appropriate, and alert someone when automated recovery is exhausted. <strong>Orchestration</strong> provides that control layer. <strong>Scheduling</strong> is one trigger within it.</p>
+<p>This chapter develops a local, tool-neutral orchestration model for the running case study. A small Python program simulates scheduled pipeline runs, dependency checks, retries, concurrency protection, and operational metrics. The same reasoning transfers to Airflow, Dagster, Prefect, managed cloud orchestrators, and other workflow systems.</p>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you should be able to:</p>
 <ul>
-<li>Represent pipeline tasks as an explicit dependency graph.</li>
-<li>Choose schedules from business freshness requirements.</li>
-<li>Configure retries, timeouts, concurrency, and parameterized runs.</li>
+<li>distinguish a scheduler from an orchestrator;</li>
+<li>model a pipeline as tasks and explicit dependencies;</li>
+<li>choose between time-, event-, and data-aware triggers;</li>
+<li>define retry, timeout, concurrency, and late-data policies;</li>
+<li>explain how idempotency makes reruns and backfills safer;</li>
+<li>interpret run-level operational metrics; and</li>
+<li>specify a production-ready orchestration contract.</li>
 </ul>
+</section>
+<section id="from-scripts-to-managed-runs" class="level2">
+<h2 class="anchored" data-anchor-id="from-scripts-to-managed-runs">From scripts to managed runs</h2>
+<p>Suppose the pipeline introduced earlier contains four stages:</p>
+<ol type="1">
+<li>extract source records;</li>
+<li>validate the landing data;</li>
+<li>transform accepted records;</li>
+<li>publish a partition for downstream use.</li>
+</ol>
+<p>A shell script can execute those stages in order. It usually does not answer the operational questions that appear immediately afterward:</p>
+<ul>
+<li>What if extraction starts late?</li>
+<li>What if validation fails twice and then succeeds?</li>
+<li>Can two runs publish the same partition concurrently?</li>
+<li>Which date should a rerun process?</li>
+<li>How does an operator know which task failed?</li>
+<li>Can the failed run resume without repeating successful work?</li>
+</ul>
+<p>An orchestrator turns each pipeline execution into a <strong>run</strong> with identity, state, timestamps, parameters, logs, and task-level outcomes.</p>
+</section>
+<section id="scheduling-is-only-the-trigger" class="level2">
+<h2 class="anchored" data-anchor-id="scheduling-is-only-the-trigger">Scheduling is only the trigger</h2>
+<p>A scheduler decides <em>when a run becomes eligible to start</em>. An orchestrator manages <em>what happens after that trigger</em>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concern</th>
+<th>Scheduler</th>
+<th>Orchestrator</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Time or event trigger</td>
+<td>Primary responsibility</td>
+<td>Accepts and records trigger</td>
+</tr>
+<tr class="even">
+<td>Dependency ordering</td>
+<td>Usually limited</td>
+<td>Core responsibility</td>
+</tr>
+<tr class="odd">
+<td>Retries and timeouts</td>
+<td>Sometimes</td>
+<td>Task-aware policies</td>
+</tr>
+<tr class="even">
+<td>Run history</td>
+<td>Basic</td>
+<td>Detailed run and task state</td>
+</tr>
+<tr class="odd">
+<td>Concurrency control</td>
+<td>Often coarse</td>
+<td>Workflow-, task-, or resource-level</td>
+</tr>
+<tr class="even">
+<td>Backfills</td>
+<td>May emit times</td>
+<td>Maps intervals to reproducible runs</td>
+</tr>
+<tr class="odd">
+<td>Alerts</td>
+<td>Trigger failure</td>
+<td>Context-rich operational alerts</td>
+</tr>
+</tbody>
+</table>
+<p>A cron entry can start a script every morning. It cannot, by itself, guarantee that the input partition exists, prevent overlapping publications, preserve the logical data interval, or resume from the failed task.</p>
+</section>
+<section id="model-the-workflow-as-a-directed-graph" class="level2">
+<h2 class="anchored" data-anchor-id="model-the-workflow-as-a-directed-graph">Model the workflow as a directed graph</h2>
+<p>An orchestrated pipeline is commonly represented as a directed acyclic graph (DAG). Tasks are nodes; dependency relationships are directed edges. The graph must be acyclic so that every run has a valid execution order.</p>
+<p>For the case-study workflow:</p>
+<pre class="text"><code>extract -&gt; validate -&gt; transform -&gt; publish</code></pre>
+<p>The important idea is not the diagram itself. It is the contract behind every node.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Reads</th>
+<th>Writes</th>
+<th>Success condition</th>
+<th>Safe to retry?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>extract</code></td>
+<td>source interval</td>
+<td>immutable landing object</td>
+<td>expected object and metadata exist</td>
+<td>Yes, with deterministic key</td>
+</tr>
+<tr class="even">
+<td><code>validate</code></td>
+<td>landing object</td>
+<td>quality report</td>
+<td>blocking checks pass</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td><code>transform</code></td>
+<td>accepted landing data</td>
+<td>staged partition</td>
+<td>schema and row rules hold</td>
+<td>Yes, with replace semantics</td>
+</tr>
+<tr class="even">
+<td><code>publish</code></td>
+<td>staged partition</td>
+<td>curated partition</td>
+<td>atomic promotion succeeds</td>
+<td>Yes, if promotion is idempotent</td>
+</tr>
+</tbody>
+</table>
+<p>Explicit contracts prevent orchestration code from becoming a collection of vague commands. Each task should have a narrow responsibility and a verifiable output.</p>
+</section>
+<section id="separate-wall-clock-time-from-data-time" class="level2">
+<h2 class="anchored" data-anchor-id="separate-wall-clock-time-from-data-time">Separate wall-clock time from data time</h2>
+<p>One of the most important orchestration concepts is the distinction between:</p>
+<ul>
+<li><strong>trigger time</strong>: when the orchestrator starts or queues the run;</li>
+<li><strong>logical date</strong>: the data interval represented by the run;</li>
+<li><strong>actual start time</strong>: when execution capacity becomes available; and</li>
+<li><strong>completion time</strong>: when the terminal state is recorded.</li>
+</ul>
+<p>A run triggered at <code>2026-08-06 02:00</code> may process the complete UTC interval for <code>2026-08-05</code>. Using the current clock inside pipeline logic would make a later rerun process different data. Instead, the orchestrator should pass an explicit interval such as:</p>
+<pre class="text"><code>interval_start = 2026-08-05T00:00:00Z
+interval_end   = 2026-08-06T00:00:00Z</code></pre>
+<p>Every task then derives input and output locations from that interval. This makes retries, historical reruns, and backfills reproducible.</p>
+</section>
+<section id="choose-the-right-trigger" class="level2">
+<h2 class="anchored" data-anchor-id="choose-the-right-trigger">Choose the right trigger</h2>
+<section id="time-based-scheduling" class="level3">
+<h3 class="anchored" data-anchor-id="time-based-scheduling">Time-based scheduling</h3>
+<p>Time-based schedules are appropriate when data is expected at predictable intervals and downstream users need a stable publication rhythm. A daily run might be eligible at 02:00 after the source system closes its business day.</p>
+<p>Time alone does not prove readiness. Add a bounded readiness check or a data-availability condition when upstream delivery can vary.</p>
+</section>
+<section id="event-based-triggering" class="level3">
+<h3 class="anchored" data-anchor-id="event-based-triggering">Event-based triggering</h3>
+<p>An event can announce that a source file arrived, an upstream table partition was committed, or an API export completed. Event-driven runs reduce unnecessary polling and may lower latency.</p>
+<p>Events must be treated as delivery signals, not unquestioned truth. They can be duplicated, delayed, or reordered. Store a stable event identifier and make run creation idempotent.</p>
+</section>
+<section id="data-aware-triggering" class="level3">
+<h3 class="anchored" data-anchor-id="data-aware-triggering">Data-aware triggering</h3>
+<p>A data-aware trigger starts work only when declared upstream datasets or partitions are ready. This expresses the real dependency more accurately than guessing a clock time. It is especially useful when several upstream workflows contribute to one downstream product.</p>
+</section>
+<section id="manual-triggering" class="level3">
+<h3 class="anchored" data-anchor-id="manual-triggering">Manual triggering</h3>
+<p>Manual runs remain valuable for controlled recovery, testing, and exceptional reprocessing. A manual trigger should require the same explicit interval and parameters as an automated run; it should not bypass contracts.</p>
+</section>
+</section>
+<section id="define-task-and-run-states" class="level2">
+<h2 class="anchored" data-anchor-id="define-task-and-run-states">Define task and run states</h2>
+<p>A clear state model allows operators and automation to reason consistently. A compact model includes:</p>
+<ul>
+<li><code>scheduled</code>: the run is registered for an interval;</li>
+<li><code>queued</code>: dependencies are satisfied, but execution capacity is pending;</li>
+<li><code>running</code>: a worker is executing the task or run;</li>
+<li><code>retrying</code>: a retryable failure occurred and another attempt is planned;</li>
+<li><code>succeeded</code>: all required success conditions hold;</li>
+<li><code>failed</code>: automated recovery is exhausted or the error is non-retryable;</li>
+<li><code>skipped</code>: a branch or upstream condition intentionally prevented execution; and</li>
+<li><code>cancelled</code>: an operator or policy stopped the run.</li>
+</ul>
+<p>Do not equate process exit code zero with pipeline success. A task should verify the output contract before entering <code>succeeded</code>.</p>
+</section>
+<section id="retry-deliberately" class="level2">
+<h2 class="anchored" data-anchor-id="retry-deliberately">Retry deliberately</h2>
+<p>Retries are useful for transient conditions such as temporary network failure, rate limiting, or brief service unavailability. They are harmful when applied blindly to invalid credentials, incompatible schemas, corrupt inputs, or deterministic code defects.</p>
+<p>A retry policy should specify:</p>
+<ul>
+<li>the retryable exception or status classes;</li>
+<li>the maximum attempts;</li>
+<li>initial delay and backoff multiplier;</li>
+<li>random jitter to avoid synchronized retry storms;</li>
+<li>a maximum delay; and</li>
+<li>the terminal action after exhaustion.</li>
+</ul>
+<p>For example, three attempts with exponential backoff might wait 30 seconds and then 60 seconds between attempts. The run history must retain all attempts. Operators need to know that a task succeeded after retries because repeated transient failures may indicate a deteriorating dependency.</p>
+</section>
+<section id="use-timeouts-and-service-level-expectations" class="level2">
+<h2 class="anchored" data-anchor-id="use-timeouts-and-service-level-expectations">Use timeouts and service-level expectations</h2>
+<p>A stalled task can be more damaging than a failed task because it occupies capacity and delays downstream work without reaching a terminal state. Define timeouts from observed behavior, not arbitrary round numbers.</p>
+<p>Useful timing measures include:</p>
+<ul>
+<li><strong>queue delay</strong>: actual start minus scheduled time;</li>
+<li><strong>task duration</strong>: task completion minus task start;</li>
+<li><strong>run duration</strong>: terminal time minus run start;</li>
+<li><strong>schedule delay</strong>: run start minus expected trigger time; and</li>
+<li><strong>freshness lag</strong>: publication time minus the end of the data interval.</li>
+</ul>
+<p>If the daily product must be available by 06:00, that is an operational objective. A run can technically succeed at 10:00 and still violate the product expectation.</p>
+</section>
+<section id="prevent-unsafe-overlap" class="level2">
+<h2 class="anchored" data-anchor-id="prevent-unsafe-overlap">Prevent unsafe overlap</h2>
+<p>Concurrency improves throughput only when tasks do not contend for the same mutable resource. Common controls include:</p>
+<ul>
+<li>one active run per workflow;</li>
+<li>one active run per logical partition;</li>
+<li>worker pools for rate-limited APIs or databases;</li>
+<li>task-level concurrency limits; and</li>
+<li>atomic publication or compare-and-swap behavior.</li>
+</ul>
+<p>For a daily partition pipeline, a strong default is to prevent two runs for the same interval from publishing simultaneously. Different independent partitions may still run in parallel if source and warehouse capacity permit.</p>
+</section>
+<section id="make-retries-and-backfills-idempotent" class="level2">
+<h2 class="anchored" data-anchor-id="make-retries-and-backfills-idempotent">Make retries and backfills idempotent</h2>
+<p>An idempotent task can run more than once for the same inputs and produce the same intended state. Practical techniques include:</p>
+<ul>
+<li>derive object and table partition names from the logical interval;</li>
+<li>write to a temporary location and promote atomically;</li>
+<li>use merge, upsert, or partition replacement with stable business keys;</li>
+<li>record source checkpoints and content hashes;</li>
+<li>avoid unguarded append operations; and</li>
+<li>separate computation from publication.</li>
+</ul>
+<p>Idempotency is not an optional optimization. It is what allows retries, reruns, and backfills to be routine rather than dangerous.</p>
+</section>
+<section id="backfills-are-controlled-historical-runs" class="level2">
+<h2 class="anchored" data-anchor-id="backfills-are-controlled-historical-runs">Backfills are controlled historical runs</h2>
+<p>A backfill creates runs for past intervals. It may be needed after fixing logic, receiving late data, or introducing a new derived field.</p>
+<p>Before starting a backfill, define:</p>
+<ol type="1">
+<li>the exact interval range;</li>
+<li>the code and configuration version;</li>
+<li>source-data availability and retention;</li>
+<li>expected write semantics;</li>
+<li>concurrency and rate limits;</li>
+<li>downstream notification or refresh behavior; and</li>
+<li>validation and rollback criteria.</li>
+</ol>
+<p>Do not let a large backfill starve current scheduled runs. Use a separate worker pool, lower priority, or a bounded number of active historical intervals.</p>
+</section>
+<section id="observe-the-control-plane" class="level2">
+<h2 class="anchored" data-anchor-id="observe-the-control-plane">Observe the control plane</h2>
+<p>Pipeline data metrics and orchestration metrics answer different questions. Both are required.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Example metrics</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Orchestration</td>
+<td>run success rate, retry rate, queue delay, duration, missed schedules</td>
+</tr>
+<tr class="even">
+<td>Data quality</td>
+<td>row count, null rate, uniqueness, schema compatibility</td>
+</tr>
+<tr class="odd">
+<td>Data product</td>
+<td>freshness, partition completeness, downstream availability</td>
+</tr>
+<tr class="even">
+<td>Infrastructure</td>
+<td>worker saturation, memory, network errors, API throttling</td>
+</tr>
+</tbody>
+</table>
+<p>Alerts should be actionable. A useful failure alert identifies the workflow, logical interval, failed task, attempt count, error class, run link or log location, and expected next action. Avoid paging on a first transient failure when the retry policy is working as designed.</p>
+</section>
+<section id="case-study-simulate-scheduled-runs" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-simulate-scheduled-runs">Case study: simulate scheduled runs</h2>
+<p>The chapter script, <code>scripts/python/13-simulate-orchestration.py</code>, creates a deterministic seven-run history for the daily workflow. It demonstrates:</p>
+<ul>
+<li>a fixed logical interval for each run;</li>
+<li>sequential dependency enforcement;</li>
+<li>bounded retries for transient failures;</li>
+<li>a non-retryable validation failure;</li>
+<li>an idempotency key per interval and task;</li>
+<li>run and task event records; and</li>
+<li>operational summaries and a diagnostic plot.</li>
+</ul>
+<p>Run it from the repository root:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/13-run-orchestration-simulation.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The command creates:</p>
+<ul>
+<li><code>results/13-orchestration-runs.csv</code>;</li>
+<li><code>results/13-orchestration-events.csv</code>;</li>
+<li><code>results/13-orchestration-summary.json</code>; and</li>
+<li><code>results/figures/13-orchestration-run-history.png</code>.</li>
+</ul>
+<div id="fig-orchestration-run-history" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Horizontal bars show simulated pipeline duration by logical date. Successful runs are blue, the failed validation run is red, and retry counts are annotated.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-orchestration-run-history-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="results/figures/13-orchestration-run-history.png" class="img-fluid figure-img" alt="Horizontal bars show simulated pipeline duration by logical date. Successful runs are blue, the failed validation run is red, and retry counts are annotated.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-orchestration-run-history-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.1: Seven scheduled runs showing duration, terminal status, and retry attempts.
+</figcaption>
+</figure>
+</div>
+<p>The simulation is intentionally local: it teaches orchestration semantics without requiring a server or vendor-specific project. The generated event table can be inspected like an orchestrator’s metadata history.</p>
+</section>
+<section id="read-the-run-history" class="level2">
+<h2 class="anchored" data-anchor-id="read-the-run-history">Read the run history</h2>
+<p>The summary separates final reliability from recovery activity. A run that succeeds after a retry contributes to the final success rate, while the retry rate reveals dependency instability that the success rate alone would hide.</p>
+<p>Ask these questions when interpreting the outputs:</p>
+<ul>
+<li>Did every logical interval produce exactly one terminal run?</li>
+<li>Which task accounts for retries?</li>
+<li>Is the failed task retryable or deterministic?</li>
+<li>Did successful recovery still breach the freshness objective?</li>
+<li>Are durations drifting upward across intervals?</li>
+<li>Would the publication operation remain correct if repeated?</li>
+</ul>
+<p>This is the operational habit orchestration should create: reason from explicit state and evidence, not from whether a scheduled command appears to have run.</p>
+</section>
+<section id="a-production-orchestration-contract" class="level2">
+<h2 class="anchored" data-anchor-id="a-production-orchestration-contract">A production orchestration contract</h2>
+<p>Before deploying a workflow, record the following fields in code or version-controlled configuration.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Contract field</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Workflow ID</td>
+<td><code>daily_orders_pipeline</code></td>
+</tr>
+<tr class="even">
+<td>Trigger</td>
+<td>daily at 02:00 UTC after readiness check</td>
+</tr>
+<tr class="odd">
+<td>Logical interval</td>
+<td>previous UTC calendar day</td>
+</tr>
+<tr class="even">
+<td>Catch-up policy</td>
+<td>enabled for explicitly approved intervals</td>
+</tr>
+<tr class="odd">
+<td>Maximum active runs</td>
+<td>1 current, 2 backfill</td>
+</tr>
+<tr class="even">
+<td>Task retries</td>
+<td>extract: 2; validate: 0; transform: 1; publish: 1</td>
+</tr>
+<tr class="odd">
+<td>Timeouts</td>
+<td>per task plus four-hour run deadline</td>
+</tr>
+<tr class="even">
+<td>Idempotency scope</td>
+<td>workflow + interval + task</td>
+</tr>
+<tr class="odd">
+<td>Success condition</td>
+<td>curated partition and quality manifest committed</td>
+</tr>
+<tr class="even">
+<td>Alert owner</td>
+<td>data platform on-call</td>
+</tr>
+<tr class="odd">
+<td>Recovery action</td>
+<td>retry transient failure; quarantine invalid data; rerun interval after correction</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="common-failure-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="common-failure-patterns">Common failure patterns</h2>
+<section id="using-the-current-date-inside-tasks" class="level3">
+<h3 class="anchored" data-anchor-id="using-the-current-date-inside-tasks">Using the current date inside tasks</h3>
+<p>The same rerun selects different inputs. Pass a logical interval explicitly and derive all paths from it.</p>
+</section>
+<section id="retrying-every-exception" class="level3">
+<h3 class="anchored" data-anchor-id="retrying-every-exception">Retrying every exception</h3>
+<p>Deterministic failures consume resources and delay diagnosis. Classify failures and retry only transient conditions.</p>
+</section>
+<section id="allowing-overlapping-writes" class="level3">
+<h3 class="anchored" data-anchor-id="allowing-overlapping-writes">Allowing overlapping writes</h3>
+<p>Two runs modify the same partition and produce nondeterministic output. Apply interval-level concurrency control and atomic publication.</p>
+</section>
+<section id="hiding-work-inside-one-large-task" class="level3">
+<h3 class="anchored" data-anchor-id="hiding-work-inside-one-large-task">Hiding work inside one large task</h3>
+<p>The orchestrator cannot isolate failures or resume efficiently. Split work at meaningful, independently verifiable boundaries—not at every function call.</p>
+</section>
+<section id="treating-a-backfill-as-a-loop-in-production" class="level3">
+<h3 class="anchored" data-anchor-id="treating-a-backfill-as-a-loop-in-production">Treating a backfill as a loop in production</h3>
+<p>A local loop lacks per-interval state, capacity controls, and clear recovery. Materialize backfill intervals as ordinary observable runs.</p>
+</section>
+<section id="alerting-without-context" class="level3">
+<h3 class="anchored" data-anchor-id="alerting-without-context">Alerting without context</h3>
+<p>An alert that says only “pipeline failed” transfers investigation work to the operator. Include the identity, interval, failed task, attempts, and recovery expectation.</p>
+</section>
+</section>
+<section id="design-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="design-checklist">Design checklist</h2>
+<p>Before calling a pipeline orchestrated, confirm that:</p>
+<ul>
+<li>tasks and dependencies are explicit;</li>
+<li>every run has a stable workflow ID and logical interval;</li>
+<li>outputs are deterministic for that interval;</li>
+<li>retryable and non-retryable failures are distinguished;</li>
+<li>retries have bounded backoff and retained attempt history;</li>
+<li>task and run timeouts are defined;</li>
+<li>unsafe overlapping runs are prevented;</li>
+<li>backfills use the same contracts as current runs;</li>
+<li>success checks validate outputs, not only exit codes;</li>
+<li>logs and metrics connect to run and task identity; and</li>
+<li>alerts identify an owner and a recovery action.</li>
+</ul>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<ul>
+<li>Scheduling decides when work becomes eligible; orchestration manages dependencies, state, recovery, and evidence.</li>
+<li>Logical data intervals make reruns and backfills reproducible.</li>
+<li>Retries are appropriate only for classified transient failures.</li>
+<li>Idempotent tasks and atomic publication make automated recovery safe.</li>
+<li>Concurrency must be constrained at the resource or partition that can be corrupted.</li>
+<li>Final success rate, retry activity, duration, queue delay, and freshness must be observed together.</li>
+<li>A workflow is production-ready when its execution and recovery policies are explicit, testable, and owned.</li>
+</ul>
+<p>The next chapter extends this operational foundation into testing, monitoring, and observability across the pipeline and its data products.</p>
 
 
 </section>
