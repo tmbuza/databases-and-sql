@@ -16,7 +16,7 @@ __pycache__/
 _freeze/
 
 # Rendered Quarto website
-docs/
+!docs/
 
 # Generated processed data; retain the directory placeholder
 data/processed/*
