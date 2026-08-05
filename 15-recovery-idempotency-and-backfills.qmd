@@ -1,0 +1,7 @@
+# Recovery, Idempotency, and Backfills {#sec-recovery-backfills}
+
+## Learning objectives
+
+- Design repeatable runs that do not duplicate outputs.
+- Resume safely after partial failure.
+- Plan bounded backfills without disrupting current production data.

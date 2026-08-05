@@ -1,0 +1,21 @@
+# Appendix {#sec-appendix}
+
+## Common commands
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+quarto render
+```
+
+## Repository map
+
+- `data/raw`: immutable source extracts
+- `data/processed`: validated and transformed outputs
+- `src/data_pipelines`: reusable pipeline package
+- `scripts/bash`: repeatable command-line entry points
+- `scripts/sql`: schema, query, join, aggregation, and extraction examples
+- `tests`: automated pipeline checks
+- `results` and `logs`: run evidence and operational records

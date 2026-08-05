@@ -1,55 +1,32 @@
-# =====================================================
-# Quarto Source-Level Build Artifacts (ignore)
-# =====================================================
+# macOS metadata
+.DS_Store
 
-_site/
+# Repository-specific Python virtual environment
+.venv/
+
+# Python bytecode and cache directories
+__pycache__/
+*.py[cod]
+
+# Test caches
+.pytest_cache/
+
+# Quarto-generated working files
 .quarto/
-_cache/
 _freeze/
 
-# Ignore HTML everywhere EXCEPT docs/
-*.html
-!docs/**/*.html
+# Rendered Quarto website
+docs/
 
-# Ignore figure folders everywhere EXCEPT docs/
-*_files/
-!docs/*_files/
-!docs/*_files/**
+# Generated processed data; retain the directory placeholder
+data/processed/*
+!data/processed/.gitkeep
 
-# Ignore PDFs/DOCX everywhere
-*.pdf
-*.docx
+# Runtime logs; retain the directory placeholder
+logs/*
+!logs/.gitkeep
 
-# ========================================
-# Python
-# ========================================
-
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.egg-info/
-.ipynb_checkpoints/
-
-# ========================================
-# Jupyter
-# ========================================
-
-*.ipynb_checkpoints
-
-# ========================================
-# OS / Editor
-# ========================================
-
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# ========================================
-# Logs
-# ========================================
-
-*.log
+# Generated results and figures; retain the directory placeholder
+results/*
+!results/.gitkeep
 /.quarto/

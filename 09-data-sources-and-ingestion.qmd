@@ -1,0 +1,7 @@
+# Data Sources and Ingestion {#sec-data-sources-ingestion}
+
+## Learning objectives
+
+- Compare batch, micro-batch, and streaming ingestion.
+- Inspect schemas, freshness, volume, and access constraints.
+- Land immutable raw data with useful ingestion metadata.

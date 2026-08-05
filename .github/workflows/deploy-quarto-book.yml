@@ -20,5 +20,5 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
           publish_branch: gh-pages
-          cname: databases-sql.complexdatainsights.com
+          cname: data-pipelines.complexdatainsights.com
           force_orphan: true

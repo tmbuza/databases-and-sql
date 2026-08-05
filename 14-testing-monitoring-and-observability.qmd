@@ -1,0 +1,11 @@
+# Testing, Monitoring, and Observability {#sec-testing-observability}
+
+## Learning objectives
+
+- Test functions, stage boundaries, data contracts, and complete runs.
+- Monitor freshness, volume, quality, duration, and failures.
+- Create run metadata that supports fast diagnosis.
+
+## Supporting example
+
+Run `python -m pytest -q` to verify the starter transformation and end-to-end workflow.

@@ -2,48 +2,69 @@ project:
   type: book
   output-dir: docs
 
+bibliography: library/references.bib
+date: 2026-08-05
+date-format: "MMM YYYY"
+
 book:
-  title: "Databases and SQL"
-  subtitle: "Building the Data Backbone for Analytical Workflows"
+  title: "Data Pipelines"
+  subtitle: "Building Reliable Workflows from Data Sources to Trusted Outputs"
 
   chapters:
     - index.qmd
+    - 00-preface.qmd
 
-    - part: "Foundations & Setup"
+    - part: "Databases and SQL Foundations"
       chapters:
-        - 01-preface-and-setup.qmd
-        - 02-sql-fundamentals.qmd
-
-    - part: "Querying Data"
-      chapters:
-        - 03-aggregation-and-grouping.qmd
+        - 01-relational-databases-and-tables.qmd
+        - 02-querying-data-with-sql.qmd
+        - 03-filtering-aggregation-and-grouping.qmd
         - 04-joins-and-relational-thinking.qmd
-
-    - part: "Design & Integration"
-      chapters:
         - 05-database-design-and-normalization.qmd
         - 06-sql-and-python-integration.qmd
 
-    - part: "Summary & Next Steps"
+    - part: "From Queries to Pipelines"
       chapters:
-        - 07-next-steps.qmd
+        - 07-from-scripts-to-data-pipelines.qmd
+        - 08-pipeline-case-study-and-architecture.qmd
+        - 09-data-sources-and-ingestion.qmd
+        - 10-extraction-patterns-and-apis.qmd
+        - 11-transformation-and-data-quality.qmd
+        - 12-storage-formats-and-partitioning.qmd
 
-    - part: "Appendix"
+    - part: "Orchestration and Reliable Operations"
       chapters:
-        - 99-appendix.qmd
-        - 99-references.qmd
+        - 13-orchestration-and-scheduling.qmd
+        - 14-testing-monitoring-and-observability.qmd
+        - 15-recovery-idempotency-and-backfills.qmd
 
-bibliography: references.bib
+    - part: "Production Data Systems"
+      chapters:
+        - 16-security-governance-and-lineage.qmd
+        - 17-ci-cd-and-pipeline-environments.qmd
+        - 18-end-to-end-pipeline-case-study.qmd
+
+  appendices:
+    - 999-appendix.qmd
+    - 999-references.qmd
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    smooth-scroll: true
+    anchor-sections: true
+    link-external-icon: true
+    code-fold: true
+    css: assets/css/cdi.css
+    mermaid:
+      theme: forest
 
 execute:
   echo: true
   warning: false
   message: false
   freeze: auto
-
-format:
-  html:
-    toc: true
-    number-sections: false
-    code-copy: true
-    css: assets/css/cdi.css
+  working-dir: .

@@ -1,0 +1,7 @@
+# Security, Governance, and Lineage {#sec-security-governance-lineage}
+
+## Learning objectives
+
+- Protect credentials and sensitive data across pipeline stages.
+- Apply least privilege, retention, and audit controls.
+- Record lineage from source fields to published outputs.

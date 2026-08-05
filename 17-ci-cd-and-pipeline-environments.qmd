@@ -1,0 +1,7 @@
+# CI/CD and Pipeline Environments {#sec-cicd-environments}
+
+## Learning objectives
+
+- Validate pipeline changes before merging.
+- Separate development, test, staging, and production configuration.
+- Promote versioned code and schemas through controlled releases.

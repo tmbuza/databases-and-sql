@@ -1,0 +1,7 @@
+# Orchestration and Scheduling {#sec-orchestration-scheduling}
+
+## Learning objectives
+
+- Represent pipeline tasks as an explicit dependency graph.
+- Choose schedules from business freshness requirements.
+- Configure retries, timeouts, concurrency, and parameterized runs.

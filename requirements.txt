@@ -1,9 +1,8 @@
 pandas
 numpy
 matplotlib
+seaborn
 sqlalchemy
+pytest
+jupyter
 ipykernel
-
-# Pick ONE MySQL driver if you want MySQL later:
-# pymysql
-# mysql-connector-python

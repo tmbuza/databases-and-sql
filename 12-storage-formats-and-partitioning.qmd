@@ -1,0 +1,7 @@
+# Storage Formats and Partitioning {#sec-storage-partitioning}
+
+## Learning objectives
+
+- Compare CSV, JSON, Parquet, database tables, and object storage.
+- Select partition keys that support common access patterns.
+- Avoid small-file and schema-evolution problems.

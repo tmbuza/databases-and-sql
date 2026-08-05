@@ -2,198 +2,330 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Databases and SQL",
+    "title": "Data Pipelines",
     "section": "",
-    "text": "DB-SQL Guide · Updated Apr 2026",
+    "text": "Free Guide · Updated Aug 2026",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>index.html</span>"
     ]
   },
   {
-    "objectID": "01-preface-and-setup.html",
-    "href": "01-preface-and-setup.html",
-    "title": "Preface and Setup",
+    "objectID": "00-preface.html",
+    "href": "00-preface.html",
+    "title": "Preface",
     "section": "",
-    "text": "Connecting to SQLite\nRelational databases are formal systems for structuring data Codd (1970).\nThis track focuses on structural clarity before analysis.\nimport sqlite3\nimport pandas as pd\n\ncon = sqlite3.connect(\"data/cdi-retail.sqlite\")\nprint(con)\n\n&lt;sqlite3.Connection object at 0x11f931990&gt;\nThe output shows a sqlite3.Connection object.\nThis is not a server connection. SQLite is file-based and embedded.",
+    "text": "Position in the Data Science pathway\nData rarely arrives ready for analysis. It may be distributed across spreadsheets, application databases, APIs, and operational systems. It may contain duplicates, missing values, inconsistent identifiers, changing schemas, and records that arrive late. Before analysts, data scientists, or machine-learning systems can use it confidently, the data must be extracted, organized, validated, transformed, stored, and delivered through a process that can be repeated.\nThis guide develops that process from first principles. It begins with relational databases and SQL because dependable pipelines require a clear understanding of tables, keys, relationships, queries, and data integrity. It then connects SQL with Python and extends individual queries into reproducible data pipelines that can be scheduled, tested, monitored, recovered, and governed.\nThe central idea is simple:\nThis guide is part of the Complex Data Insights Data Science pathway. It complements the analytical and modelling guides by concentrating on the data systems that make reliable analysis possible.\nThe progression is:\nThe first part therefore focuses on Databases and SQL. The later parts focus on Data Pipelines. These subjects belong together: SQL provides the language and relational reasoning, while pipeline engineering provides the repeatability, automation, and operational controls.",
     "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Preface and Setup</span>"
+      "Preface"
     ]
   },
   {
-    "objectID": "01-preface-and-setup.html#inspecting-tables",
-    "href": "01-preface-and-setup.html#inspecting-tables",
-    "title": "Preface and Setup",
-    "section": "Inspecting Tables",
-    "text": "Inspecting Tables\n\ntables = pd.read_sql(\n    \"SELECT name FROM sqlite_master WHERE type='table';\",\n    con\n)\nprint(tables)\n\n          name\n0    customers\n1     products\n2       orders\n3  order_items\n\n\nThis confirms available tables.\n\nStructure → Query → Interpretation\n\n\n\n\nCodd, Edgar F. 1970. “A Relational Model of Data for Large Shared Data Banks.” Communications of the ACM 13 (6): 377–87. https://doi.org/10.1145/362384.362685.",
-    "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Preface and Setup</span>"
-    ]
-  },
-  {
-    "objectID": "02-sql-fundamentals.html",
-    "href": "02-sql-fundamentals.html",
-    "title": "SQL Fundamentals",
+    "objectID": "00-preface.html#position-in-the-data-science-pathway",
+    "href": "00-preface.html#position-in-the-data-science-pathway",
+    "title": "Preface",
     "section": "",
-    "text": "Setup\nSQL is a language for asking structured questions.\nIn this lesson, we focus on the core pattern used in analytical queries:\nSELECT → FROM → WHERE → ORDER BY → LIMIT",
+    "text": "learn how relational data is represented;\nretrieve and combine it correctly with SQL;\nconnect database work to Python;\nconvert scripts into structured pipelines;\noperate those pipelines reliably; and\ndeliver a complete, testable workflow from source to destination.",
     "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+      "Preface"
     ]
   },
   {
-    "objectID": "02-sql-fundamentals.html#confirm-the-database-connection",
-    "href": "02-sql-fundamentals.html#confirm-the-database-connection",
-    "title": "SQL Fundamentals",
-    "section": "Confirm the Database Connection",
-    "text": "Confirm the Database Connection\n\nprint(con)\n\n&lt;sqlite3.Connection object at 0x10b6f9990&gt;\n\n\nThe printed object confirms that Python created a live SQLite connection.\nThis is not a connection to a server.\nSQLite is file-based and embedded, so the database engine runs locally within the process.",
+    "objectID": "00-preface.html#what-this-guide-covers",
+    "href": "00-preface.html#what-this-guide-covers",
+    "title": "Preface",
+    "section": "What this guide covers",
+    "text": "What this guide covers\nBy the end of the guide, you will be able to:\n\nexplain how relational databases organize entities, attributes, and relationships;\ncreate and query tables using clear, readable SQL;\nfilter, aggregate, group, and summarize records;\njoin tables without unintentionally duplicating or losing data;\napply keys, constraints, normalization, and indexing appropriately;\nconnect SQL databases to Python-based workflows;\ndistinguish an exploratory script from a dependable data pipeline;\nextract data from files, databases, and APIs;\ndesign transformations that are explicit, testable, and reproducible;\nvalidate schemas, values, row counts, uniqueness, and relationships;\nselect suitable storage formats and partitioning strategies;\nschedule pipeline tasks and manage dependencies;\nmonitor runs using logs, metrics, and data-quality signals;\ndesign for retries, idempotency, recovery, and backfills;\napply security, governance, lineage, and documentation practices; and\nassemble and evaluate an end-to-end pipeline.\n\nThe emphasis is not only on getting a query or script to run. Each chapter asks what would make the result understandable, repeatable, verifiable, and safe to operate again.",
     "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+      "Preface"
     ]
   },
   {
-    "objectID": "02-sql-fundamentals.html#list-available-tables",
-    "href": "02-sql-fundamentals.html#list-available-tables",
-    "title": "SQL Fundamentals",
-    "section": "List Available Tables",
-    "text": "List Available Tables\n\ntables = pd.read_sql(\n    \"SELECT name FROM sqlite_master WHERE type='table';\",\n    con\n)\nprint(tables)\n\n          name\n0    customers\n1     products\n2       orders\n3  order_items",
+    "objectID": "00-preface.html#a-continuous-case-study",
+    "href": "00-preface.html#a-continuous-case-study",
+    "title": "Preface",
+    "section": "A continuous case study",
+    "text": "A continuous case study\nThe guide uses a continuous case study to connect individual concepts. The case study follows a small organization that needs dependable analytical data assembled from operational sources. Its workflow evolves gradually:\n\nsource tables represent operational entities and events;\nSQL queries retrieve, filter, aggregate, and join the records;\nPython coordinates extraction and transformation tasks;\nvalidation rules detect structural and semantic problems;\nprocessed data is written in analysis-ready formats;\norchestration determines task order and scheduling;\nmonitoring records whether the pipeline ran successfully and whether its output remains trustworthy; and\nrecovery, governance, and delivery practices turn the workflow into an operational data product.\n\nUsing one evolving system makes the relationships between database design, SQL logic, pipeline architecture, and operations visible. The final pipeline is therefore the result of decisions developed throughout the guide rather than an isolated example introduced at the end.",
     "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+      "Preface"
     ]
   },
   {
-    "objectID": "02-sql-fundamentals.html#select-specific-columns",
-    "href": "02-sql-fundamentals.html#select-specific-columns",
-    "title": "SQL Fundamentals",
-    "section": "Select Specific Columns",
-    "text": "Select Specific Columns\nSELECT customer_id, full_name, country\nFROM customers;\nSelecting only needed columns keeps queries readable and reduces unnecessary data transfer.",
+    "objectID": "00-preface.html#how-the-guide-is-organized",
+    "href": "00-preface.html#how-the-guide-is-organized",
+    "title": "Preface",
+    "section": "How the guide is organized",
+    "text": "How the guide is organized\nThe material develops in five stages.\n\nRelational foundations\nThe opening chapters introduce relational databases, tables, data types, primary and foreign keys, constraints, SQL queries, filtering, aggregation, grouping, joins, database design, and normalization. These chapters establish the relational reasoning needed to interpret data correctly.\n\n\nSQL and Python integration\nThe next stage connects database queries to Python. It shows how application code can open connections, execute parameterized queries, retrieve results, manage transactions, and separate configuration from reusable logic.\n\n\nFrom scripts to pipelines\nThe guide then introduces pipeline architecture. You will examine sources, destinations, task dependencies, execution state, configuration, metadata, and the distinction between a collection of scripts and a coherent workflow.\n\n\nReliable pipeline operations\nLater chapters address extraction patterns, APIs, transformation, data quality, storage formats, partitioning, orchestration, scheduling, testing, monitoring, observability, recovery, idempotency, and backfills. These practices allow a pipeline to run repeatedly under changing real-world conditions.\n\n\nGovernance and end-to-end delivery\nThe final stage considers security, access, sensitive data, lineage, documentation, governance, and delivery. It brings the components together in an end-to-end case study and evaluates the pipeline as a complete system.",
     "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+      "Preface"
     ]
   },
   {
-    "objectID": "02-sql-fundamentals.html#filter-with-where",
-    "href": "02-sql-fundamentals.html#filter-with-where",
-    "title": "SQL Fundamentals",
-    "section": "Filter with WHERE",
-    "text": "Filter with WHERE\nSELECT full_name, city\nFROM customers\nWHERE country = 'Tanzania';\nYou can combine conditions:\nSELECT order_id, order_date, status\nFROM orders\nWHERE status = 'paid' AND order_date &gt;= '2026-02-01';",
+    "objectID": "00-preface.html#who-this-guide-is-for",
+    "href": "00-preface.html#who-this-guide-is-for",
+    "title": "Preface",
+    "section": "Who this guide is for",
+    "text": "Who this guide is for\nThis guide is designed for learners who want to move beyond working with isolated data files and understand how dependable analytical data is produced. It is especially relevant to:\n\ndata analysts who want stronger SQL and database skills;\ndata scientists who need reproducible access to reliable data;\nresearchers building recurring data collection and preparation workflows;\nPython users moving into analytics engineering or data engineering; and\nlearners preparing to work with production data systems.\n\nNo professional database-administration or data-engineering experience is assumed. Concepts are introduced progressively, but the guide does expect basic familiarity with Python, tabular data, the command line, and repository-based work.",
     "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+      "Preface"
     ]
   },
   {
-    "objectID": "02-sql-fundamentals.html#sort-with-order-by",
-    "href": "02-sql-fundamentals.html#sort-with-order-by",
-    "title": "SQL Fundamentals",
-    "section": "Sort with ORDER BY",
-    "text": "Sort with ORDER BY\nSELECT product_name, unit_price\nFROM products\nORDER BY unit_price DESC;\nDESC sorts from largest to smallest.",
+    "objectID": "00-preface.html#tools-and-repository-conventions",
+    "href": "00-preface.html#tools-and-repository-conventions",
+    "title": "Preface",
+    "section": "Tools and repository conventions",
+    "text": "Tools and repository conventions\nExamples use Python 3.12, SQL, Bash, Quarto, and a repository-specific virtual environment. SQLite provides a lightweight relational database for local learning, while the underlying SQL and design principles transfer to larger database systems. When a feature differs across systems, the guide distinguishes the general concept from implementation-specific syntax.\nThe repository follows a predictable structure:\n\nchapter source files are stored as Quarto Markdown (.qmd);\nreusable Python code belongs under src/;\nrunnable Python and Bash programs belong under scripts/;\nraw, interim, and processed datasets remain separated under data/;\ndatabase files belong under data/databases/ when they are safe to version or regenerate;\ngenerated summaries and figures belong under results/;\noperational records belong under logs/; and\nrendered book output belongs under docs/.\n\nGenerated files should not be mixed with source data or source code. Credentials, connection strings, tokens, and other secrets must not be embedded in scripts, notebooks, chapter files, or version control.",
     "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+      "Preface"
     ]
   },
   {
-    "objectID": "02-sql-fundamentals.html#limit-results",
-    "href": "02-sql-fundamentals.html#limit-results",
-    "title": "SQL Fundamentals",
-    "section": "Limit Results",
-    "text": "Limit Results\nSELECT product_name, unit_price\nFROM products\nORDER BY unit_price DESC\nLIMIT 3;",
+    "objectID": "00-preface.html#how-to-work-through-the-chapters",
+    "href": "00-preface.html#how-to-work-through-the-chapters",
+    "title": "Preface",
+    "section": "How to work through the chapters",
+    "text": "How to work through the chapters\nThe chapters are sequential. Learners new to SQL should begin with the relational foundations and execute each example. Readers with established SQL experience may review the early chapters quickly, but should pay particular attention to joins, data integrity, transactions, and SQL–Python integration because these ideas become pipeline controls later.\nFor each practical section:\n\nread the purpose of the task before examining the code;\nrun the supplied command from the repository root;\ninspect both the terminal output and any generated file;\nchange one input or assumption and observe the effect;\nconfirm that validation fails when the data violates an expectation; and\nconnect the exercise to the continuous case study.\n\nSuccessful execution is only one form of evidence. A dependable workflow should also make its inputs, outputs, assumptions, checks, and failure behavior visible.",
     "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+      "Preface"
     ]
   },
   {
-    "objectID": "02-sql-fundamentals.html#execute-sql-in-python",
-    "href": "02-sql-fundamentals.html#execute-sql-in-python",
-    "title": "SQL Fundamentals",
-    "section": "Execute SQL in Python",
-    "text": "Execute SQL in Python\n\nquery = '''\nSELECT product_name, unit_price\nFROM products\nORDER BY unit_price DESC\nLIMIT 3;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n     product_name  unit_price\n0      Headphones       19.50\n1  USB Drive 32GB        8.90\n2    Water Bottle        6.25\n\n\nThis is the backbone-to-analysis workflow:\nDatabase → SQL → DataFrame",
+    "objectID": "00-preface.html#scope-boundaries",
+    "href": "00-preface.html#scope-boundaries",
+    "title": "Preface",
+    "section": "Scope boundaries",
+    "text": "Scope boundaries\nThis is an applied introduction to database and pipeline engineering for analytical work. It does not attempt to replace specialist references for distributed database internals, large-scale stream processing, cloud-platform administration, or vendor-specific certification. Instead, it develops durable principles that can be carried into those environments:\n\nmodel data deliberately;\npreserve relational meaning;\nparameterize queries and protect secrets;\nseparate source, transformation, and delivery concerns;\nmake transformations deterministic where possible;\nvalidate assumptions explicitly;\ndesign repeated execution to be safe;\nobserve both system behavior and data behavior; and\ndocument ownership, lineage, and operational decisions.",
     "crumbs": [
-      "Foundations & Setup",
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>SQL Fundamentals</span>"
+      "Preface"
     ]
   },
   {
-    "objectID": "03-aggregation-and-grouping.html",
-    "href": "03-aggregation-and-grouping.html",
-    "title": "Aggregation and Grouping",
+    "objectID": "00-preface.html#reproducibility-and-responsible-practice",
+    "href": "00-preface.html#reproducibility-and-responsible-practice",
+    "title": "Preface",
+    "section": "Reproducibility and responsible practice",
+    "text": "Reproducibility and responsible practice\nExamples are designed to run locally with small datasets so that the complete workflow remains inspectable. Real production systems require additional decisions about infrastructure, identity and access management, encryption, retention, compliance, service-level objectives, cost, and incident response.\nData access also creates responsibility. Permission to connect to a system does not automatically justify every use of its data. Before collecting or combining records, practitioners should consider purpose, consent, minimization, sensitivity, retention, and the risk created by new linkages. Technical reliability and responsible data practice are both part of a trustworthy pipeline.",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "00-preface.html#from-raw-records-to-dependable-data",
+    "href": "00-preface.html#from-raw-records-to-dependable-data",
+    "title": "Preface",
+    "section": "From raw records to dependable data",
+    "text": "From raw records to dependable data\nThe guide begins with tables and queries, but its destination is broader. A well-designed pipeline creates a traceable path from source records to a defined analytical output. Along that path, each stage should answer four questions:\n\nWhat data entered the stage?\nWhat operation was applied?\nWhat evidence shows that the result is acceptable?\nWhat should happen if the stage fails or must run again?\n\nThose questions provide the foundation for the chapters that follow. They turn database skills into reliable data practice and isolated transformations into systems that other people can understand, trust, and maintain.",
+    "crumbs": [
+      "Preface"
+    ]
+  },
+  {
+    "objectID": "01-relational-databases-and-tables.html",
+    "href": "01-relational-databases-and-tables.html",
+    "title": "Relational Databases and Tables",
     "section": "",
-    "text": "Setup\nSelecting rows retrieves information.\nAggregation summarizes it.\nIn analytics, we often need answers like:",
+    "text": "Learning objectives\nBy the end of this chapter, you will be able to:",
     "crumbs": [
-      "Querying Data",
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
     ]
   },
   {
-    "objectID": "03-aggregation-and-grouping.html#core-aggregate-functions",
-    "href": "03-aggregation-and-grouping.html#core-aggregate-functions",
-    "title": "Aggregation and Grouping",
-    "section": "Core Aggregate Functions",
-    "text": "Core Aggregate Functions\nCommon aggregate functions:\n\nCOUNT()\nSUM()\nAVG()\nMIN()\nMAX()",
+    "objectID": "01-relational-databases-and-tables.html#sec-01-learning-objectives",
+    "href": "01-relational-databases-and-tables.html#sec-01-learning-objectives",
+    "title": "Relational Databases and Tables",
+    "section": "",
+    "text": "explain why databases are preferable to disconnected files for many analytical systems;\ndistinguish a database, a relational database, a table, a row, and a column;\nchoose appropriate column types and constraints;\nidentify primary and foreign keys;\ndescribe one-to-one, one-to-many, and many-to-many relationships;\ncreate and inspect a small SQLite database; and\nrecognize the boundary between a table’s structure and the records stored in it.",
     "crumbs": [
-      "Querying Data",
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
     ]
   },
   {
-    "objectID": "03-aggregation-and-grouping.html#count-orders",
-    "href": "03-aggregation-and-grouping.html#count-orders",
-    "title": "Aggregation and Grouping",
-    "section": "Count Orders",
-    "text": "Count Orders\n\ndf = pd.read_sql(\n    \"SELECT COUNT(*) AS total_orders FROM orders;\",\n    con\n)\nprint(df)\n\n   total_orders\n0             5",
+    "objectID": "01-relational-databases-and-tables.html#sec-01-files-to-managed-data",
+    "href": "01-relational-databases-and-tables.html#sec-01-files-to-managed-data",
+    "title": "Relational Databases and Tables",
+    "section": "From files to managed data",
+    "text": "From files to managed data\nA CSV file is often an excellent starting point. It is portable, readable, and easy to load with Python. Problems emerge when several files describe the same system and must remain consistent. A customer identifier may be entered differently in two files, an order may refer to a customer who does not exist, or two people may overwrite the same file.\nA database is an organized collection of data managed by software called a database management system (DBMS). The DBMS provides controlled ways to store, retrieve, update, validate, and protect data. Examples include SQLite, PostgreSQL, MySQL, SQL Server, and Oracle Database.\nA relational database represents data in tables and connects those tables through shared keys. The relational model is valuable because it makes relationships explicit and allows the DBMS to enforce important rules.\n\n\n\n\n\n\n\nFlat-file challenge\nRelational response\n\n\n\n\nCustomer details repeated for every order\nStore customers once and reference them by key\n\n\nUnknown or inconsistent data types\nDeclare column types\n\n\nOrders for nonexistent customers\nEnforce a foreign-key constraint\n\n\nAccidental duplicate identifiers\nEnforce a primary key or unique constraint\n\n\nMultiple copies become inconsistent\nMaintain one authoritative record\n\n\n\nDatabases do not replace every file. Files remain useful for exchange, archives, and analytical outputs. A database becomes especially useful when data is related, updated repeatedly, shared by several processes, or required to satisfy consistency rules.",
     "crumbs": [
-      "Querying Data",
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
     ]
   },
   {
-    "objectID": "03-aggregation-and-grouping.html#compute-total-revenue",
-    "href": "03-aggregation-and-grouping.html#compute-total-revenue",
-    "title": "Aggregation and Grouping",
-    "section": "Compute Total Revenue",
-    "text": "Compute Total Revenue\nRevenue in this dataset is computed from line items:\nquantity × unit_price\n\ndf = pd.read_sql(\n    \"SELECT SUM(quantity * unit_price) AS total_revenue FROM order_items;\",\n    con\n)\nprint(df)\n\n   total_revenue\n0          65.55",
+    "objectID": "01-relational-databases-and-tables.html#sec-01-relational-vocabulary",
+    "href": "01-relational-databases-and-tables.html#sec-01-relational-vocabulary",
+    "title": "Relational Databases and Tables",
+    "section": "The relational vocabulary",
+    "text": "The relational vocabulary\nConsider a small retail system with two tables:\n\ncustomers stores one row per customer;\norders stores one row per order.\n\nIn relational terminology:\n\na table represents one kind of entity or event;\na row is one record;\na column is one named attribute;\na schema describes the database structure;\na key identifies or connects records; and\na constraint is a rule the database enforces.\n\nThe schema and the data are different. The schema states that customer_id is an integer primary key; the data contains values such as 101 and 102. This distinction becomes important when databases evolve and pipelines validate incoming records.",
     "crumbs": [
-      "Querying Data",
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
     ]
   },
   {
-    "objectID": "03-aggregation-and-grouping.html#group-by",
-    "href": "03-aggregation-and-grouping.html#group-by",
-    "title": "Aggregation and Grouping",
-    "section": "GROUP BY",
-    "text": "GROUP BY\nGROUP BY creates summaries per group.\n\nOrders by Status\n\ndf = pd.read_sql(\n    '''\n    SELECT status, COUNT(*) AS order_count\n    FROM orders\n    GROUP BY status\n    ORDER BY order_count DESC;\n    ''',\n    con\n)\nprint(df)\n\n      status  order_count\n0       paid            4\n1  cancelled            1",
+    "objectID": "01-relational-databases-and-tables.html#sec-01-tables-rows-columns",
+    "href": "01-relational-databases-and-tables.html#sec-01-tables-rows-columns",
+    "title": "Relational Databases and Tables",
+    "section": "Tables, rows, and columns",
+    "text": "Tables, rows, and columns\nA well-scoped table usually represents a single subject. Mixing customer, order, product, and payment attributes into one wide table creates repetition and makes updates harder to control.\nThe example customers table has this logical structure:\n\n\n\n\n\n\n\n\n\nColumn\nType\nRule\nMeaning\n\n\n\n\ncustomer_id\nINTEGER\nPrimary key\nStable customer identifier\n\n\ncustomer_name\nTEXT\nRequired\nCustomer’s display name\n\n\nregion\nTEXT\nRequired\nReporting region\n\n\nsignup_date\nTEXT\nRequired\nISO-formatted date in this SQLite example\n\n\n\nThe orders table records transactions:\n\n\n\n\n\n\n\n\n\nColumn\nType\nRule\nMeaning\n\n\n\n\norder_id\nINTEGER\nPrimary key\nStable order identifier\n\n\ncustomer_id\nINTEGER\nForeign key\nCustomer who placed the order\n\n\norder_date\nTEXT\nRequired\nISO-formatted order date\n\n\namount\nREAL\nNonnegative check\nOrder value\n\n\nstatus\nTEXT\nAllowed-value check\nOrder lifecycle state\n\n\n\nSQLite uses a flexible type system, but declaring meaningful types still communicates intent and supports validation. Production systems such as PostgreSQL provide a wider range of strict types, including dedicated date, timestamp, numeric, JSON, and array types.",
     "crumbs": [
-      "Querying Data",
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
     ]
   },
   {
-    "objectID": "03-aggregation-and-grouping.html#aggregation-with-joins",
-    "href": "03-aggregation-and-grouping.html#aggregation-with-joins",
-    "title": "Aggregation and Grouping",
-    "section": "Aggregation with Joins",
-    "text": "Aggregation with Joins\nTo summarize revenue by product name, we join order_items to products.\n\nquery = '''\nSELECT p.product_name,\n       SUM(oi.quantity * oi.unit_price) AS revenue\nFROM order_items oi\nJOIN products p\n  ON oi.product_id = p.product_id\nGROUP BY p.product_name\nORDER BY revenue DESC;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n     product_name  revenue\n0  USB Drive 32GB    26.70\n1      Headphones    19.50\n2     Notebook A5     7.50\n3    Water Bottle     6.25\n4        Pen Blue     5.60",
+    "objectID": "01-relational-databases-and-tables.html#sec-01-keys",
+    "href": "01-relational-databases-and-tables.html#sec-01-keys",
+    "title": "Relational Databases and Tables",
+    "section": "Keys create identity and relationships",
+    "text": "Keys create identity and relationships\n\nPrimary keys\nA primary key uniquely identifies each row. Good primary keys are unique, never null, and stable over time. In this chapter, customer_id identifies customers and order_id identifies orders.\nNames are poor primary keys because two people may share a name and a person’s name can change. A generated integer or UUID is usually safer. A key made from one column is a simple key; one made from several columns is a composite key.\n\n\nForeign keys\nA foreign key is a column, or group of columns, whose values refer to a candidate key in another table. orders.customer_id refers to customers.customer_id.\ncustomers.customer_id  1 ───────&lt; many  orders.customer_id\nWith foreign-key enforcement enabled, the database rejects an order for a customer that does not exist. This rule is called referential integrity.",
     "crumbs": [
-      "Querying Data",
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
     ]
   },
   {
-    "objectID": "03-aggregation-and-grouping.html#having",
-    "href": "03-aggregation-and-grouping.html#having",
-    "title": "Aggregation and Grouping",
-    "section": "HAVING",
-    "text": "HAVING\nWHERE filters rows before grouping.\nHAVING filters groups after aggregation.\n\ndf = pd.read_sql(\n    '''\n    SELECT status, COUNT(*) AS order_count\n    FROM orders\n    GROUP BY status\n    HAVING COUNT(*) &gt; 1;\n    ''',\n    con\n)\nprint(df)\n\n  status  order_count\n0   paid            4\n\n\nAggregation is powerful.\nIt must be paired with structural discipline, especially when joins are involved.",
+    "objectID": "01-relational-databases-and-tables.html#sec-01-relationship-patterns",
+    "href": "01-relational-databases-and-tables.html#sec-01-relationship-patterns",
+    "title": "Relational Databases and Tables",
+    "section": "Relationship patterns",
+    "text": "Relationship patterns\nRelational designs commonly express three patterns:\n\n\n\n\n\n\n\n\nRelationship\nMeaning\nExample\n\n\n\n\nOne-to-one\nOne row relates to at most one row\nOne employee and one current security badge\n\n\nOne-to-many\nOne parent relates to many children\nOne customer and many orders\n\n\nMany-to-many\nMany rows relate to many rows\nMany orders containing many products\n\n\n\nA many-to-many relationship is implemented through an intermediate table. For example, order_items(order_id, product_id, quantity) links orders and products. Its primary key may combine order_id and product_id, while each column is also a foreign key.",
     "crumbs": [
-      "Querying Data",
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Aggregation and Grouping</span>"
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
+    ]
+  },
+  {
+    "objectID": "01-relational-databases-and-tables.html#sec-01-constraints",
+    "href": "01-relational-databases-and-tables.html#sec-01-constraints",
+    "title": "Relational Databases and Tables",
+    "section": "Constraints protect data quality",
+    "text": "Constraints protect data quality\nConstraints convert business rules into checks performed by the database:\n\nPRIMARY KEY prevents missing or duplicated row identities;\nFOREIGN KEY protects relationships;\nNOT NULL requires a value;\nUNIQUE prevents duplicates in a candidate key;\nCHECK restricts acceptable values; and\nDEFAULT supplies a value when one is omitted.\n\nFor example:\nCREATE TABLE orders (\n    order_id    INTEGER PRIMARY KEY,\n    customer_id INTEGER NOT NULL,\n    order_date  TEXT NOT NULL,\n    amount      REAL NOT NULL CHECK (amount &gt;= 0),\n    status      TEXT NOT NULL\n                CHECK (status IN ('pending', 'completed', 'cancelled')),\n    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)\n);\nConstraints do not eliminate the need for pipeline validation. They form the final defensive boundary that prevents invalid records from entering the stored system.",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
+    ]
+  },
+  {
+    "objectID": "01-relational-databases-and-tables.html#sec-01-practical",
+    "href": "01-relational-databases-and-tables.html#sec-01-practical",
+    "title": "Relational Databases and Tables",
+    "section": "Practical: build a small SQLite database",
+    "text": "Practical: build a small SQLite database\nSQLite stores a complete relational database in one file and is included with Python. It is therefore ideal for learning, local analysis, tests, and embedded applications.\nThe chapter package contains:\n\ndata/raw/01-customers.csv and data/raw/01-orders.csv as source data;\nscripts/sql/01-create-retail-schema.sql as the schema definition;\nscripts/python/01-build-retail-database.py as the reproducible build and validation workflow; and\nscripts/bash/01-build-retail-database.sh as a convenient command-line entry point.\n\nFrom the repository root, run:\nbash scripts/bash/01-build-retail-database.sh\nThe workflow recreates data/processed/01-retail-demo.sqlite, loads both CSV files in one transaction, validates the relationship, and writes results/01-table-summary.csv plus results/figures/01-relational-table-profile.png.\nThe validation query summarizes customers and their orders:\nSELECT\n    c.customer_id,\n    c.customer_name,\n    COUNT(o.order_id) AS order_count,\n    COALESCE(SUM(o.amount), 0) AS total_amount\nFROM customers AS c\nLEFT JOIN orders AS o\n    ON c.customer_id = o.customer_id\nGROUP BY c.customer_id, c.customer_name\nORDER BY c.customer_id;\nThe LEFT JOIN retains customers even when they have no orders. Joins are developed fully in Joins and Relational Thinking; here, the query simply verifies that the two-table design behaves as intended.\n\n\n\n\n\n\nFigure 2.1: Customer and order counts in the generated SQLite database.",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
+    ]
+  },
+  {
+    "objectID": "01-relational-databases-and-tables.html#sec-01-inspect-database",
+    "href": "01-relational-databases-and-tables.html#sec-01-inspect-database",
+    "title": "Relational Databases and Tables",
+    "section": "Inspect the database",
+    "text": "Inspect the database\nIf the SQLite command-line program is installed, inspect the generated database with:\nsqlite3 data/processed/01-retail-demo.sqlite\nThen run:\n.tables\n.schema customers\n.schema orders\nSELECT * FROM customers;\nSELECT * FROM orders;\nPRAGMA foreign_key_check;\nAn empty result from PRAGMA foreign_key_check means SQLite found no broken foreign-key relationships.\nThe same inspection is available from Python:\nimport sqlite3\n\nwith sqlite3.connect(\"data/processed/01-retail-demo.sqlite\") as connection:\n    connection.execute(\"PRAGMA foreign_keys = ON\")\n    tables = connection.execute(\n        \"SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name\"\n    ).fetchall()\n    print(tables)\nAlways enable foreign-key enforcement explicitly for each SQLite connection. Other relational database systems commonly enforce it by default.",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
+    ]
+  },
+  {
+    "objectID": "01-relational-databases-and-tables.html#sec-01-common-mistakes",
+    "href": "01-relational-databases-and-tables.html#sec-01-common-mistakes",
+    "title": "Relational Databases and Tables",
+    "section": "Common design mistakes",
+    "text": "Common design mistakes\n\nRepeating groups in one row\nColumns such as product_1, product_2, and product_3 impose an artificial limit and complicate queries. Store repeated items as rows in a related table.\n\n\nStoring several values in one column\nA value such as \"SQL,Python,Git\" is difficult to validate and join. If skills are meaningful entities, create a skills table and an employee-skills bridge table.\n\n\nUsing mutable labels as keys\nNames, email addresses, and product descriptions can change. Use stable identifiers and place human-readable labels in separate columns.\n\n\nTreating missing values as empty strings\nNULL, an empty string, and zero have different meanings. Decide what absence means for each attribute and represent it consistently.\n\n\nAssuming the database will infer every rule\nA declared data type alone cannot express every business rule. Add suitable constraints and validate requirements that span multiple tables in the application or pipeline layer.",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
+    ]
+  },
+  {
+    "objectID": "01-relational-databases-and-tables.html#sec-01-check-understanding",
+    "href": "01-relational-databases-and-tables.html#sec-01-check-understanding",
+    "title": "Relational Databases and Tables",
+    "section": "Check your understanding",
+    "text": "Check your understanding\n\nWhy is customer_name a weaker primary key than customer_id?\nWhich constraint prevents an order from referencing an unknown customer?\nHow would you represent products that appear in many orders?\nWhat is the difference between a database schema and the rows stored in it?\nWhen might a CSV file still be preferable to a database table?",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
+    ]
+  },
+  {
+    "objectID": "01-relational-databases-and-tables.html#sec-01-summary",
+    "href": "01-relational-databases-and-tables.html#sec-01-summary",
+    "title": "Relational Databases and Tables",
+    "section": "Chapter summary",
+    "text": "Chapter summary\nA relational database organizes data into focused tables and links those tables through keys. Primary keys establish row identity; foreign keys establish valid relationships; and constraints protect essential rules. The resulting structure reduces unnecessary repetition and provides a dependable foundation for SQL queries and data pipelines.\nThe next chapter introduces SQL as the language for retrieving and shaping data from these tables.",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Relational Databases and Tables</span>"
+    ]
+  },
+  {
+    "objectID": "02-querying-data-with-sql.html",
+    "href": "02-querying-data-with-sql.html",
+    "title": "Querying Data with SQL",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Querying Data with SQL</span>"
+    ]
+  },
+  {
+    "objectID": "02-querying-data-with-sql.html#learning-objectives",
+    "href": "02-querying-data-with-sql.html#learning-objectives",
+    "title": "Querying Data with SQL",
+    "section": "",
+    "text": "Select columns and rows from relational tables.\nUse aliases, expressions, sorting, limits, and null-aware conditions.\nWrite readable queries whose output columns form an explicit contract.",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Querying Data with SQL</span>"
+    ]
+  },
+  {
+    "objectID": "02-querying-data-with-sql.html#supporting-example",
+    "href": "02-querying-data-with-sql.html#supporting-example",
+    "title": "Querying Data with SQL",
+    "section": "Supporting example",
+    "text": "Supporting example\nRun scripts/sql/02-querying-data.sql against the case-study database created in Chapter 1.",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Querying Data with SQL</span>"
+    ]
+  },
+  {
+    "objectID": "03-filtering-aggregation-and-grouping.html",
+    "href": "03-filtering-aggregation-and-grouping.html",
+    "title": "Filtering, Aggregation, and Grouping",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Filtering, Aggregation, and Grouping</span>"
+    ]
+  },
+  {
+    "objectID": "03-filtering-aggregation-and-grouping.html#learning-objectives",
+    "href": "03-filtering-aggregation-and-grouping.html#learning-objectives",
+    "title": "Filtering, Aggregation, and Grouping",
+    "section": "",
+    "text": "Filter records with compound conditions.\nSummarize data with counts, totals, averages, minima, and maxima.\nUse GROUP BY and HAVING to answer questions at the correct grain.",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Filtering, Aggregation, and Grouping</span>"
+    ]
+  },
+  {
+    "objectID": "03-filtering-aggregation-and-grouping.html#supporting-example",
+    "href": "03-filtering-aggregation-and-grouping.html#supporting-example",
+    "title": "Filtering, Aggregation, and Grouping",
+    "section": "Supporting example",
+    "text": "Supporting example\nThe file scripts/sql/03-aggregation-and-grouping.sql calculates order counts and revenue by customer.",
+    "crumbs": [
+      "Databases and SQL Foundations",
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Filtering, Aggregation, and Grouping</span>"
     ]
   },
   {
@@ -201,53 +333,31 @@
     "href": "04-joins-and-relational-thinking.html",
     "title": "Joins and Relational Thinking",
     "section": "",
-    "text": "Setup\nJoins reconstruct meaning across tables.\nMost SQL mistakes in analytics come from joins that change row counts in unexpected ways.\nRelational thinking means understanding:",
+    "text": "Learning objectives",
     "crumbs": [
-      "Querying Data",
+      "Databases and SQL Foundations",
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
     ]
   },
   {
-    "objectID": "04-joins-and-relational-thinking.html#inner-join",
-    "href": "04-joins-and-relational-thinking.html#inner-join",
+    "objectID": "04-joins-and-relational-thinking.html#learning-objectives",
+    "href": "04-joins-and-relational-thinking.html#learning-objectives",
     "title": "Joins and Relational Thinking",
-    "section": "INNER JOIN",
-    "text": "INNER JOIN\nINNER JOIN keeps rows that match in both tables.\nOrders with customer names:\n\nquery = '''\nSELECT o.order_id,\n       c.full_name,\n       o.order_date,\n       o.status\nFROM orders o\nJOIN customers c\n  ON o.customer_id = c.customer_id\nORDER BY o.order_date;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n  order_id      full_name  order_date     status\n0    O3001   Amina Hassan  2026-01-15       paid\n1    O3002   Amina Hassan  2026-02-02       paid\n2    O3003  Joseph Kimaro  2026-02-05       paid\n3    O3004    Neema Msuya  2026-02-11  cancelled\n4    O3005  Grace Nyerere  2026-02-14       paid",
+    "section": "",
+    "text": "Choose between inner and outer joins from the analytical question.\nPredict how table grain and key uniqueness affect row counts.\nDetect accidental many-to-many joins before they corrupt results.",
     "crumbs": [
-      "Querying Data",
+      "Databases and SQL Foundations",
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
     ]
   },
   {
-    "objectID": "04-joins-and-relational-thinking.html#left-join",
-    "href": "04-joins-and-relational-thinking.html#left-join",
+    "objectID": "04-joins-and-relational-thinking.html#supporting-example",
+    "href": "04-joins-and-relational-thinking.html#supporting-example",
     "title": "Joins and Relational Thinking",
-    "section": "LEFT JOIN",
-    "text": "LEFT JOIN\nLEFT JOIN keeps all rows from the left table, even when no match exists on the right.\nCustomers and their orders:\n\nquery = '''\nSELECT c.full_name,\n       o.order_id,\n       o.order_date,\n       o.status\nFROM customers c\nLEFT JOIN orders o\n  ON c.customer_id = o.customer_id\nORDER BY c.full_name, o.order_date;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n       full_name order_id  order_date     status\n0   Amina Hassan    O3001  2026-01-15       paid\n1   Amina Hassan    O3002  2026-02-02       paid\n2   David Okello      NaN         NaN        NaN\n3  Grace Nyerere    O3005  2026-02-14       paid\n4  Joseph Kimaro    O3003  2026-02-05       paid\n5    Neema Msuya    O3004  2026-02-11  cancelled",
+    "section": "Supporting example",
+    "text": "Supporting example\nThe case-study join in scripts/sql/04-joins.sql combines orders, customers, order items, and products while preserving order-item grain.",
     "crumbs": [
-      "Querying Data",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
-    ]
-  },
-  {
-    "objectID": "04-joins-and-relational-thinking.html#cardinality-and-duplication",
-    "href": "04-joins-and-relational-thinking.html#cardinality-and-duplication",
-    "title": "Joins and Relational Thinking",
-    "section": "Cardinality and Duplication",
-    "text": "Cardinality and Duplication\nOne-to-many relationships are common:\n\none customer → many orders\none order → many order_items\n\nDuplication is expected when you join across one-to-many relationships.\nThe error happens when duplication is interpreted as more customers, more orders, or more revenue without verifying row counts.",
-    "crumbs": [
-      "Querying Data",
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
-    ]
-  },
-  {
-    "objectID": "04-joins-and-relational-thinking.html#verify-row-counts",
-    "href": "04-joins-and-relational-thinking.html#verify-row-counts",
-    "title": "Joins and Relational Thinking",
-    "section": "Verify Row Counts",
-    "text": "Verify Row Counts\n\norders_n = pd.read_sql(\"SELECT COUNT(*) AS n_orders FROM orders;\", con)\nitems_n  = pd.read_sql(\"SELECT COUNT(*) AS n_items FROM order_items;\", con)\n\nprint(orders_n)\nprint(items_n)\n\n   n_orders\n0         5\n   n_items\n0        8\n\n\nRow count changes after a join are not automatically wrong.\nThey must match the structure you expect.",
-    "crumbs": [
-      "Querying Data",
+      "Databases and SQL Foundations",
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Joins and Relational Thinking</span>"
     ]
   },
@@ -256,42 +366,31 @@
     "href": "05-database-design-and-normalization.html",
     "title": "Database Design and Normalization",
     "section": "",
-    "text": "Setup\nSchema design determines whether queries remain reliable.\nNormalization reduces redundancy and prevents update, insert, and delete anomalies.\nThis lesson follows standard database design treatments Date (2004); Silberschatz, Korth, and Sudarshan (2019).",
+    "text": "Learning objectives",
     "crumbs": [
-      "Design & Integration",
+      "Databases and SQL Foundations",
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Database Design and Normalization</span>"
     ]
   },
   {
-    "objectID": "05-database-design-and-normalization.html#inspect-table-structure",
-    "href": "05-database-design-and-normalization.html#inspect-table-structure",
+    "objectID": "05-database-design-and-normalization.html#learning-objectives",
+    "href": "05-database-design-and-normalization.html#learning-objectives",
     "title": "Database Design and Normalization",
-    "section": "Inspect Table Structure",
-    "text": "Inspect Table Structure\nSQLite provides schema inspection through PRAGMA.\n\ndf = pd.read_sql(\"PRAGMA table_info(customers);\", con)\nprint(df)\n\n   cid         name  type  notnull dflt_value  pk\n0    0  customer_id  TEXT        0       None   1\n1    1    full_name  TEXT        1       None   0\n2    2         city  TEXT        1       None   0\n3    3      country  TEXT        1       None   0\n4    4  signup_date  DATE        1       None   0\n\n\n\ndf = pd.read_sql(\"PRAGMA table_info(orders);\", con)\nprint(df)\n\n   cid         name  type  notnull dflt_value  pk\n0    0     order_id  TEXT        0       None   1\n1    1  customer_id  TEXT        1       None   0\n2    2   order_date  DATE        1       None   0\n3    3       status  TEXT        1       None   0",
+    "section": "",
+    "text": "Translate entities and relationships into tables and constraints.\nUse normalization to reduce duplication and update anomalies.\nBalance normalized operational storage with analytical access patterns.",
     "crumbs": [
-      "Design & Integration",
+      "Databases and SQL Foundations",
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Database Design and Normalization</span>"
     ]
   },
   {
-    "objectID": "05-database-design-and-normalization.html#why-normalization-helps",
-    "href": "05-database-design-and-normalization.html#why-normalization-helps",
+    "objectID": "05-database-design-and-normalization.html#design-principle",
+    "href": "05-database-design-and-normalization.html#design-principle",
     "title": "Database Design and Normalization",
-    "section": "Why Normalization Helps",
-    "text": "Why Normalization Helps\nIf customer information were repeated in every order row, a city update would require changing many rows.\nSeparating customers from orders prevents redundancy.\nIn this schema:\n\ncustomers stores identity and profile attributes\norders stores transaction events\norder_items stores line items\nproducts stores product attributes\n\nThe goal is one entity per table and relationships enforced through keys.",
+    "section": "Design principle",
+    "text": "Design principle\nNormalization protects data integrity at the source. Pipeline transformations can later publish denormalized, analysis-ready outputs without weakening the operational schema.",
     "crumbs": [
-      "Design & Integration",
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Database Design and Normalization</span>"
-    ]
-  },
-  {
-    "objectID": "05-database-design-and-normalization.html#constraints-protect-integrity",
-    "href": "05-database-design-and-normalization.html#constraints-protect-integrity",
-    "title": "Database Design and Normalization",
-    "section": "Constraints Protect Integrity",
-    "text": "Constraints Protect Integrity\nConstraints prevent invalid data at the database level.\n\ndf = pd.read_sql(\"SELECT sql FROM sqlite_master WHERE name = 'products';\", con)\nprint(df)\n\n                                                 sql\n0  CREATE TABLE products (\\n  product_id   TEXT P...\n\n\nLook for:\n\nPRIMARY KEY\nNOT NULL\nCHECK constraints\n\nDesign discipline reduces analytical fragility.\n\n\n\n\nDate, C. J. 2004. An Introduction to Database Systems. 8th ed. Addison-Wesley.\n\n\nSilberschatz, Abraham, Henry F. Korth, and S. Sudarshan. 2019. Database System Concepts. 7th ed. McGraw-Hill Education.",
-    "crumbs": [
-      "Design & Integration",
+      "Databases and SQL Foundations",
       "<span class='chapter-number'>6</span>  <span class='chapter-title'>Database Design and Normalization</span>"
     ]
   },
@@ -300,142 +399,384 @@
     "href": "06-sql-and-python-integration.html",
     "title": "SQL and Python Integration",
     "section": "",
-    "text": "Setup\nSQL and Python work best together when responsibilities are clear.\nSQLite engine behavior is documented in the official documentation SQLite Consortium (2026).",
+    "text": "Learning objectives",
     "crumbs": [
-      "Design & Integration",
+      "Databases and SQL Foundations",
       "<span class='chapter-number'>7</span>  <span class='chapter-title'>SQL and Python Integration</span>"
     ]
   },
   {
-    "objectID": "06-sql-and-python-integration.html#revenue-per-customer",
-    "href": "06-sql-and-python-integration.html#revenue-per-customer",
+    "objectID": "06-sql-and-python-integration.html#learning-objectives",
+    "href": "06-sql-and-python-integration.html#learning-objectives",
     "title": "SQL and Python Integration",
-    "section": "Revenue per Customer",
-    "text": "Revenue per Customer\n\nquery = '''\nSELECT c.full_name,\n       SUM(oi.quantity * oi.unit_price) AS revenue\nFROM customers c\nJOIN orders o ON c.customer_id = o.customer_id\nJOIN order_items oi ON o.order_id = oi.order_id\nGROUP BY c.full_name\nORDER BY revenue DESC;\n'''\n\ndf = pd.read_sql(query, con)\nprint(df)\n\n       full_name  revenue\n0  Joseph Kimaro    25.75\n1   Amina Hassan    19.50\n2  Grace Nyerere    17.80\n3    Neema Msuya     2.50",
+    "section": "",
+    "text": "Connect Python to a relational database safely.\nParameterize queries instead of interpolating values into SQL strings.\nMove query results into a reproducible transformation workflow.",
     "crumbs": [
-      "Design & Integration",
+      "Databases and SQL Foundations",
       "<span class='chapter-number'>7</span>  <span class='chapter-title'>SQL and Python Integration</span>"
     ]
   },
   {
-    "objectID": "06-sql-and-python-integration.html#visualize-the-summary",
-    "href": "06-sql-and-python-integration.html#visualize-the-summary",
+    "objectID": "06-sql-and-python-integration.html#supporting-example",
+    "href": "06-sql-and-python-integration.html#supporting-example",
     "title": "SQL and Python Integration",
-    "section": "Visualize the Summary",
-    "text": "Visualize the Summary\n\nplt.bar(df[\"full_name\"], df[\"revenue\"])\nplt.xticks(rotation=45)\nplt.title(\"Revenue by Customer\")\nplt.tight_layout()\nplt.show()",
+    "section": "Supporting example",
+    "text": "Supporting example\nbash scripts/bash/06-run-sql-python-example.sh\nThe example uses Python’s standard sqlite3 module, builds the case-study database, runs a parameterized query, and writes a CSV result.",
     "crumbs": [
-      "Design & Integration",
+      "Databases and SQL Foundations",
       "<span class='chapter-number'>7</span>  <span class='chapter-title'>SQL and Python Integration</span>"
     ]
   },
   {
-    "objectID": "06-sql-and-python-integration.html#why-sql-first-matters",
-    "href": "06-sql-and-python-integration.html#why-sql-first-matters",
-    "title": "SQL and Python Integration",
-    "section": "Why SQL First Matters",
-    "text": "Why SQL First Matters\nA common workflow mistake is to load full tables into Python and then join or filter there.\nBetter practice is to:\n\nFilter in SQL\nJoin in SQL\nAggregate in SQL\nTransfer only structured results into Python\n\nThis keeps analysis efficient and reduces opportunities for structural mistakes.\n\n\n\n\nSQLite Consortium. 2026. “SQLite Documentation.” Online documentation.",
-    "crumbs": [
-      "Design & Integration",
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>SQL and Python Integration</span>"
-    ]
-  },
-  {
-    "objectID": "07-next-steps.html",
-    "href": "07-next-steps.html",
-    "title": "Next Steps",
+    "objectID": "07-from-scripts-to-data-pipelines.html",
+    "href": "07-from-scripts-to-data-pipelines.html",
+    "title": "From Scripts to Data Pipelines",
     "section": "",
-    "text": "ID: DBSQL-F-L07\nType: Conclusion\nAudience: Public\nTheme: Structural discipline scales\n\n\nYou now understand:\n\nDatabase connections\nSQL querying\nAggregation\nJoins\nNormalization\nPython integration\n\nThis backbone supports all CDI domains.",
+    "text": "Learning objectives",
     "crumbs": [
-      "Summary & Next Steps",
-      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Next Steps</span>"
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>From Scripts to Data Pipelines</span>"
     ]
   },
   {
-    "objectID": "99-appendix.html",
-    "href": "99-appendix.html",
-    "title": "Appendix",
+    "objectID": "07-from-scripts-to-data-pipelines.html#learning-objectives",
+    "href": "07-from-scripts-to-data-pipelines.html#learning-objectives",
+    "title": "From Scripts to Data Pipelines",
     "section": "",
-    "text": "Common SQL Errors\nThis appendix provides additional reference material and troubleshooting guidance for the Databases and SQL free track.",
+    "text": "Distinguish a one-off script from an operational data pipeline.\nIdentify stages, contracts, dependencies, and failure boundaries.\nDescribe how reproducibility and idempotency change pipeline design.",
     "crumbs": [
-      "Appendix",
-      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>From Scripts to Data Pipelines</span>"
     ]
   },
   {
-    "objectID": "99-appendix.html#common-sql-errors",
-    "href": "99-appendix.html#common-sql-errors",
-    "title": "Appendix",
+    "objectID": "07-from-scripts-to-data-pipelines.html#supporting-example",
+    "href": "07-from-scripts-to-data-pipelines.html#supporting-example",
+    "title": "From Scripts to Data Pipelines",
+    "section": "Supporting example",
+    "text": "Supporting example\nRun bash scripts/bash/07-run-starter-pipeline.sh to execute the starter extract-transform-load workflow.",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>From Scripts to Data Pipelines</span>"
+    ]
+  },
+  {
+    "objectID": "08-pipeline-case-study-and-architecture.html",
+    "href": "08-pipeline-case-study-and-architecture.html",
+    "title": "Pipeline Case Study and Architecture",
     "section": "",
-    "text": "No such table\nError example:\nno such table: customers\nPossible causes:\n\nThe SQLite database was not initialized.\nThe file path to the database is incorrect.\nThe working directory is not the project root.\n\nFix:\npython scripts/init-sqlite-db.py\nEnsure you are running commands from the repository root directory.\n\n\n\nNo such column\nError example:\nno such column: customer_name\nPossible causes:\n\nMisspelled column name\nColumn does not exist in the selected table\nAlias not referenced correctly\n\nFix:\nInspect the schema:\nPRAGMA table_info(customers);\nAlways verify column names before writing complex queries.\n\n\n\nIncorrect Aggregation\nIf you see an error related to GROUP BY, verify:\n\nAll non-aggregated columns are included in GROUP BY\nAggregation functions are used correctly\n\nExample of correct usage:\nSELECT status, COUNT(*)\nFROM orders\nGROUP BY status;",
+    "text": "Learning objectives",
     "crumbs": [
-      "Appendix",
-      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Pipeline Case Study and Architecture</span>"
     ]
   },
   {
-    "objectID": "99-appendix.html#inspecting-the-schema",
-    "href": "99-appendix.html#inspecting-the-schema",
-    "title": "Appendix",
-    "section": "Inspecting the Schema",
-    "text": "Inspecting the Schema\nTo list tables:\nSELECT name\nFROM sqlite_master\nWHERE type='table';\nTo inspect columns:\nPRAGMA table_info(orders);\nUnderstanding structure prevents most SQL mistakes.",
-    "crumbs": [
-      "Appendix",
-      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
-    ]
-  },
-  {
-    "objectID": "99-appendix.html#verifying-join-integrity",
-    "href": "99-appendix.html#verifying-join-integrity",
-    "title": "Appendix",
-    "section": "Verifying Join Integrity",
-    "text": "Verifying Join Integrity\nBefore trusting joined results:\n\nCount rows before join.\nCount rows after join.\nConfirm expected cardinality.\n\nExample:\nSELECT COUNT(*) FROM orders;\nIf the count increases unexpectedly after a join, review cardinality and join conditions.",
-    "crumbs": [
-      "Appendix",
-      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
-    ]
-  },
-  {
-    "objectID": "99-appendix.html#sqlite-notes",
-    "href": "99-appendix.html#sqlite-notes",
-    "title": "Appendix",
-    "section": "SQLite Notes",
-    "text": "SQLite Notes\nThis free track uses SQLite for simplicity.\nKey characteristics:\n\nFile-based database\nNo server required\nLightweight and portable\n\nFor production systems, similar SQL concepts apply in:\n\nMySQL\nPostgreSQL\nCloud data warehouses\n\nOnly connection configuration changes. The relational logic remains the same.",
-    "crumbs": [
-      "Appendix",
-      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
-    ]
-  },
-  {
-    "objectID": "99-appendix.html#suggested-practice-questions",
-    "href": "99-appendix.html#suggested-practice-questions",
-    "title": "Appendix",
-    "section": "Suggested Practice Questions",
-    "text": "Suggested Practice Questions\n\nWhat is total revenue per country?\nWhich product category generates the most revenue?\nWhich customer placed the highest-value single order?\nHow many orders were cancelled?\nWhat is the average order value?\n\nTry answering these questions using only SQL before moving results into Python.",
-    "crumbs": [
-      "Appendix",
-      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
-    ]
-  },
-  {
-    "objectID": "99-appendix.html#final-reminder",
-    "href": "99-appendix.html#final-reminder",
-    "title": "Appendix",
-    "section": "Final Reminder",
-    "text": "Final Reminder\nSQL proficiency improves through structured repetition.\n\nInspect schema before writing joins.\nVerify assumptions with row counts.\nKeep queries readable and explicit.\nLet structure guide interpretation.\n\nRelational discipline reduces analytical fragility.\nThat is the purpose of this pillar.",
-    "crumbs": [
-      "Appendix",
-      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Appendix</span>"
-    ]
-  },
-  {
-    "objectID": "99-references.html",
-    "href": "99-references.html",
-    "title": "References",
+    "objectID": "08-pipeline-case-study-and-architecture.html#learning-objectives",
+    "href": "08-pipeline-case-study-and-architecture.html#learning-objectives",
+    "title": "Pipeline Case Study and Architecture",
     "section": "",
-    "text": "ID: DBSQL-REF\nType: References\nAudience: Public\nTheme: BibTeX-backed citations used across the guide\n\n\nThis guide uses BibTeX-based references via references.bib.\nCitations appear inline using keys like @codd1970relational and @silberschatz2019database.\nBelow is the automatically generated reference list for all works cited in the guide.\n\n\nCodd, Edgar F. 1970. “A Relational Model of Data for Large Shared\nData Banks.” Communications of the ACM 13 (6): 377–87.\nhttps://doi.org/10.1145/362384.362685.\n\n\nDate, C. J. 2004. An Introduction to Database Systems. 8th ed.\nAddison-Wesley.\n\n\nSilberschatz, Abraham, Henry F. Korth, and S. Sudarshan. 2019.\nDatabase System Concepts. 7th ed. McGraw-Hill Education.\n\n\nSQLite Consortium. 2026. “SQLite Documentation.” Online\ndocumentation.",
+    "text": "Define the continuous case study and its trusted output.\nMap sources, processing stages, storage layers, and consumers.\nEstablish data contracts and ownership boundaries.",
     "crumbs": [
-      "Appendix",
-      "<span class='chapter-number'>10</span>  <span class='chapter-title'>References</span>"
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Pipeline Case Study and Architecture</span>"
+    ]
+  },
+  {
+    "objectID": "08-pipeline-case-study-and-architecture.html#case-study-flow",
+    "href": "08-pipeline-case-study-and-architecture.html#case-study-flow",
+    "title": "Pipeline Case Study and Architecture",
+    "section": "Case-study flow",
+    "text": "Case-study flow\n\n\nCode\nflowchart LR\n  A[\"Raw source\"] --&gt; B[\"Extract\"]\n  B --&gt; C[\"Validate and transform\"]\n  C --&gt; D[\"Trusted dataset\"]\n  D --&gt; E[\"Analytics consumer\"]\n\n\n\n\n\nflowchart LR\n  A[\"Raw source\"] --&gt; B[\"Extract\"]\n  B --&gt; C[\"Validate and transform\"]\n  C --&gt; D[\"Trusted dataset\"]\n  D --&gt; E[\"Analytics consumer\"]",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>9</span>  <span class='chapter-title'>Pipeline Case Study and Architecture</span>"
+    ]
+  },
+  {
+    "objectID": "09-data-sources-and-ingestion.html",
+    "href": "09-data-sources-and-ingestion.html",
+    "title": "Data Sources and Ingestion",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Data Sources and Ingestion</span>"
+    ]
+  },
+  {
+    "objectID": "09-data-sources-and-ingestion.html#learning-objectives",
+    "href": "09-data-sources-and-ingestion.html#learning-objectives",
+    "title": "Data Sources and Ingestion",
+    "section": "",
+    "text": "Compare batch, micro-batch, and streaming ingestion.\nInspect schemas, freshness, volume, and access constraints.\nLand immutable raw data with useful ingestion metadata.",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>10</span>  <span class='chapter-title'>Data Sources and Ingestion</span>"
+    ]
+  },
+  {
+    "objectID": "10-extraction-patterns-and-apis.html",
+    "href": "10-extraction-patterns-and-apis.html",
+    "title": "Extraction Patterns and APIs",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Extraction Patterns and APIs</span>"
+    ]
+  },
+  {
+    "objectID": "10-extraction-patterns-and-apis.html#learning-objectives",
+    "href": "10-extraction-patterns-and-apis.html#learning-objectives",
+    "title": "Extraction Patterns and APIs",
+    "section": "",
+    "text": "Extract data safely from files and HTTP APIs.\nHandle pagination, rate limits, retries, and incremental checkpoints.\nPreserve source identifiers and extraction timestamps.",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>11</span>  <span class='chapter-title'>Extraction Patterns and APIs</span>"
+    ]
+  },
+  {
+    "objectID": "11-transformation-and-data-quality.html",
+    "href": "11-transformation-and-data-quality.html",
+    "title": "Transformation and Data Quality",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Transformation and Data Quality</span>"
+    ]
+  },
+  {
+    "objectID": "11-transformation-and-data-quality.html#learning-objectives",
+    "href": "11-transformation-and-data-quality.html#learning-objectives",
+    "title": "Transformation and Data Quality",
+    "section": "",
+    "text": "Separate structural cleaning from business-rule transformations.\nEncode schema, completeness, uniqueness, and validity checks.\nQuarantine invalid records without silently losing evidence.",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Transformation and Data Quality</span>"
+    ]
+  },
+  {
+    "objectID": "11-transformation-and-data-quality.html#supporting-example",
+    "href": "11-transformation-and-data-quality.html#supporting-example",
+    "title": "Transformation and Data Quality",
+    "section": "Supporting example",
+    "text": "Supporting example\nThe starter pipeline in src/data_pipelines/pipeline.py validates required fields, standardizes values, and rejects invalid rows.",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Transformation and Data Quality</span>"
+    ]
+  },
+  {
+    "objectID": "12-storage-formats-and-partitioning.html",
+    "href": "12-storage-formats-and-partitioning.html",
+    "title": "Storage Formats and Partitioning",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Storage Formats and Partitioning</span>"
+    ]
+  },
+  {
+    "objectID": "12-storage-formats-and-partitioning.html#learning-objectives",
+    "href": "12-storage-formats-and-partitioning.html#learning-objectives",
+    "title": "Storage Formats and Partitioning",
+    "section": "",
+    "text": "Compare CSV, JSON, Parquet, database tables, and object storage.\nSelect partition keys that support common access patterns.\nAvoid small-file and schema-evolution problems.",
+    "crumbs": [
+      "From Queries to Pipelines",
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Storage Formats and Partitioning</span>"
+    ]
+  },
+  {
+    "objectID": "13-orchestration-and-scheduling.html",
+    "href": "13-orchestration-and-scheduling.html",
+    "title": "Orchestration and Scheduling",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Orchestration and Scheduling</span>"
+    ]
+  },
+  {
+    "objectID": "13-orchestration-and-scheduling.html#learning-objectives",
+    "href": "13-orchestration-and-scheduling.html#learning-objectives",
+    "title": "Orchestration and Scheduling",
+    "section": "",
+    "text": "Represent pipeline tasks as an explicit dependency graph.\nChoose schedules from business freshness requirements.\nConfigure retries, timeouts, concurrency, and parameterized runs.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Orchestration and Scheduling</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html",
+    "href": "14-testing-monitoring-and-observability.html",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#learning-objectives",
+    "href": "14-testing-monitoring-and-observability.html#learning-objectives",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "",
+    "text": "Test functions, stage boundaries, data contracts, and complete runs.\nMonitor freshness, volume, quality, duration, and failures.\nCreate run metadata that supports fast diagnosis.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#supporting-example",
+    "href": "14-testing-monitoring-and-observability.html#supporting-example",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "Supporting example",
+    "text": "Supporting example\nRun python -m pytest -q to verify the starter transformation and end-to-end workflow.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html",
+    "href": "15-recovery-idempotency-and-backfills.html",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#learning-objectives",
+    "href": "15-recovery-idempotency-and-backfills.html#learning-objectives",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "",
+    "text": "Design repeatable runs that do not duplicate outputs.\nResume safely after partial failure.\nPlan bounded backfills without disrupting current production data.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html",
+    "href": "16-security-governance-and-lineage.html",
+    "title": "Security, Governance, and Lineage",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#learning-objectives",
+    "href": "16-security-governance-and-lineage.html#learning-objectives",
+    "title": "Security, Governance, and Lineage",
+    "section": "",
+    "text": "Protect credentials and sensitive data across pipeline stages.\nApply least privilege, retention, and audit controls.\nRecord lineage from source fields to published outputs.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html",
+    "href": "17-ci-cd-and-pipeline-environments.html",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#learning-objectives",
+    "href": "17-ci-cd-and-pipeline-environments.html#learning-objectives",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "",
+    "text": "Validate pipeline changes before merging.\nSeparate development, test, staging, and production configuration.\nPromote versioned code and schemas through controlled releases.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html",
+    "href": "18-end-to-end-pipeline-case-study.html",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "",
+    "text": "Learning objectives",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#learning-objectives",
+    "href": "18-end-to-end-pipeline-case-study.html#learning-objectives",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "",
+    "text": "Assemble extraction, validation, transformation, and loading stages.\nVerify outputs and operational metadata.\nEvaluate the pipeline against reliability and governance requirements.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#starter-execution",
+    "href": "18-end-to-end-pipeline-case-study.html#starter-execution",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Starter execution",
+    "text": "Starter execution\nbash scripts/bash/00-check-environment.sh\nbash scripts/bash/07-run-starter-pipeline.sh\npython -m pytest -q",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html",
+    "href": "999-appendix.html",
+    "title": "Appendix A — Appendix",
+    "section": "",
+    "text": "Common commands",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#common-commands",
+    "href": "999-appendix.html#common-commands",
+    "title": "Appendix A — Appendix",
+    "section": "",
+    "text": "python3.12 -m venv .venv\nsource .venv/bin/activate\npython -m pip install --upgrade pip\npython -m pip install -r requirements.txt\nquarto render",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#repository-map",
+    "href": "999-appendix.html#repository-map",
+    "title": "Appendix A — Appendix",
+    "section": "Repository map",
+    "text": "Repository map\n\ndata/raw: immutable source extracts\ndata/processed: validated and transformed outputs\nsrc/data_pipelines: reusable pipeline package\nscripts/bash: repeatable command-line entry points\nscripts/sql: schema, query, join, aggregation, and extraction examples\ntests: automated pipeline checks\nresults and logs: run evidence and operational records",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
     ]
   }
 ]

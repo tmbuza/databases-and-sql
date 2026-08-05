@@ -1,0 +1,7 @@
+# Extraction Patterns and APIs {#sec-extraction-patterns}
+
+## Learning objectives
+
+- Extract data safely from files and HTTP APIs.
+- Handle pagination, rate limits, retries, and incremental checkpoints.
+- Preserve source identifiers and extraction timestamps.

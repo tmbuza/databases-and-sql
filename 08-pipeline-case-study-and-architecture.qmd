@@ -1,0 +1,17 @@
+# Pipeline Case Study and Architecture {#sec-pipeline-case-study}
+
+## Learning objectives
+
+- Define the continuous case study and its trusted output.
+- Map sources, processing stages, storage layers, and consumers.
+- Establish data contracts and ownership boundaries.
+
+## Case-study flow
+
+```{mermaid}
+flowchart LR
+  A["Raw source"] --> B["Extract"]
+  B --> C["Validate and transform"]
+  C --> D["Trusted dataset"]
+  D --> E["Analytics consumer"]
+```

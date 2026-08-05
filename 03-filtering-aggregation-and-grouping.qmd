@@ -1,0 +1,12 @@
+# Filtering, Aggregation, and Grouping {#sec-aggregation-grouping}
+
+## Learning objectives
+
+- Filter records with compound conditions.
+- Summarize data with counts, totals, averages, minima, and maxima.
+- Use `GROUP BY` and `HAVING` to answer questions at the correct grain.
+
+## Supporting example
+
+The file `scripts/sql/03-aggregation-and-grouping.sql` calculates order counts and revenue by customer.
+

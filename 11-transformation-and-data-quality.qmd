@@ -1,0 +1,11 @@
+# Transformation and Data Quality {#sec-transformation-quality}
+
+## Learning objectives
+
+- Separate structural cleaning from business-rule transformations.
+- Encode schema, completeness, uniqueness, and validity checks.
+- Quarantine invalid records without silently losing evidence.
+
+## Supporting example
+
+The starter pipeline in `src/data_pipelines/pipeline.py` validates required fields, standardizes values, and rejects invalid rows.

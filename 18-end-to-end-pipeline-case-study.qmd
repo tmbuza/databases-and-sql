@@ -1,0 +1,15 @@
+# End-to-End Pipeline Case Study {#sec-end-to-end-case-study}
+
+## Learning objectives
+
+- Assemble extraction, validation, transformation, and loading stages.
+- Verify outputs and operational metadata.
+- Evaluate the pipeline against reliability and governance requirements.
+
+## Starter execution
+
+```bash
+bash scripts/bash/00-check-environment.sh
+bash scripts/bash/07-run-starter-pipeline.sh
+python -m pytest -q
+```

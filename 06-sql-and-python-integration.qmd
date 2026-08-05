@@ -1,83 +1,16 @@
-# SQL and Python Integration
+# SQL and Python Integration {#sec-sql-python-integration}
 
-:::cdi-message
-- **ID:** DBSQL-F-L06
-- **Type:** Lesson
-- **Audience:** Public
-- **Theme:** Query then analyze
-:::
+## Learning objectives
 
-SQL and Python work best together when responsibilities are clear.
+- Connect Python to a relational database safely.
+- Parameterize queries instead of interpolating values into SQL strings.
+- Move query results into a reproducible transformation workflow.
 
-- SQL shapes data through relational logic
-- Python extends analysis, visualization, and modeling
+## Supporting example
 
-SQLite engine behavior is documented in the official documentation @sqliteDocs.
-
----
-
-## Setup
-
-```{python}
-#| label: l06-setup
-#| include: false
-
-import sqlite3
-import pandas as pd
-import matplotlib.pyplot as plt
-
-con = sqlite3.connect("data/cdi-retail.sqlite")
+```bash
+bash scripts/bash/06-run-sql-python-example.sh
 ```
 
----
-
-## Revenue per Customer
-
-```{python}
-#| label: l06-revenue-per-customer
-#| echo: true
-
-query = '''
-SELECT c.full_name,
-       SUM(oi.quantity * oi.unit_price) AS revenue
-FROM customers c
-JOIN orders o ON c.customer_id = o.customer_id
-JOIN order_items oi ON o.order_id = oi.order_id
-GROUP BY c.full_name
-ORDER BY revenue DESC;
-'''
-
-df = pd.read_sql(query, con)
-print(df)
-```
-
----
-
-## Visualize the Summary
-
-```{python}
-#| label: l06-revenue-bar
-#| echo: true
-
-plt.bar(df["full_name"], df["revenue"])
-plt.xticks(rotation=45)
-plt.title("Revenue by Customer")
-plt.tight_layout()
-plt.show()
-```
-
----
-
-## Why SQL First Matters
-
-A common workflow mistake is to load full tables into Python and then join or filter there.
-
-Better practice is to:
-
-- Filter in SQL
-- Join in SQL
-- Aggregate in SQL
-- Transfer only structured results into Python
-
-This keeps analysis efficient and reduces opportunities for structural mistakes.
+The example uses Python's standard `sqlite3` module, builds the case-study database, runs a parameterized query, and writes a CSV result.
 

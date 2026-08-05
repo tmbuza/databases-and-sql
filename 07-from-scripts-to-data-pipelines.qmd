@@ -1,0 +1,11 @@
+# From Scripts to Data Pipelines {#sec-from-scripts-to-pipelines}
+
+## Learning objectives
+
+- Distinguish a one-off script from an operational data pipeline.
+- Identify stages, contracts, dependencies, and failure boundaries.
+- Describe how reproducibility and idempotency change pipeline design.
+
+## Supporting example
+
+Run `bash scripts/bash/07-run-starter-pipeline.sh` to execute the starter extract-transform-load workflow.

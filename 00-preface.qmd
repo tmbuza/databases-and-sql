@@ -1,0 +1,168 @@
+# Preface {#sec-preface .unnumbered}
+
+:::cdi-message
+- **ID:** DSDP-000
+- **Type:** Orientation
+- **Audience:** Data science learners and practitioners
+- **Theme:** From relational data foundations to reliable data pipelines
+:::
+
+Data rarely arrives ready for analysis. It may be distributed across spreadsheets, application databases, APIs, and operational systems. It may contain duplicates, missing values, inconsistent identifiers, changing schemas, and records that arrive late. Before analysts, data scientists, or machine-learning systems can use it confidently, the data must be extracted, organized, validated, transformed, stored, and delivered through a process that can be repeated.
+
+This guide develops that process from first principles. It begins with relational databases and SQL because dependable pipelines require a clear understanding of tables, keys, relationships, queries, and data integrity. It then connects SQL with Python and extends individual queries into reproducible data pipelines that can be scheduled, tested, monitored, recovered, and governed.
+
+The central idea is simple:
+
+> A data pipeline is not merely code that moves data. It is a repeatable system that preserves meaning, verifies quality, records what happened, and delivers trustworthy data to a defined destination.
+
+## Position in the Data Science pathway
+
+This guide is part of the Complex Data Insights Data Science pathway. It complements the analytical and modelling guides by concentrating on the data systems that make reliable analysis possible.
+
+The progression is:
+
+1. learn how relational data is represented;
+2. retrieve and combine it correctly with SQL;
+3. connect database work to Python;
+4. convert scripts into structured pipelines;
+5. operate those pipelines reliably; and
+6. deliver a complete, testable workflow from source to destination.
+
+The first part therefore focuses on **Databases and SQL**. The later parts focus on **Data Pipelines**. These subjects belong together: SQL provides the language and relational reasoning, while pipeline engineering provides the repeatability, automation, and operational controls.
+
+## What this guide covers
+
+By the end of the guide, you will be able to:
+
+- explain how relational databases organize entities, attributes, and relationships;
+- create and query tables using clear, readable SQL;
+- filter, aggregate, group, and summarize records;
+- join tables without unintentionally duplicating or losing data;
+- apply keys, constraints, normalization, and indexing appropriately;
+- connect SQL databases to Python-based workflows;
+- distinguish an exploratory script from a dependable data pipeline;
+- extract data from files, databases, and APIs;
+- design transformations that are explicit, testable, and reproducible;
+- validate schemas, values, row counts, uniqueness, and relationships;
+- select suitable storage formats and partitioning strategies;
+- schedule pipeline tasks and manage dependencies;
+- monitor runs using logs, metrics, and data-quality signals;
+- design for retries, idempotency, recovery, and backfills;
+- apply security, governance, lineage, and documentation practices; and
+- assemble and evaluate an end-to-end pipeline.
+
+The emphasis is not only on getting a query or script to run. Each chapter asks what would make the result understandable, repeatable, verifiable, and safe to operate again.
+
+## A continuous case study
+
+The guide uses a continuous case study to connect individual concepts. The case study follows a small organization that needs dependable analytical data assembled from operational sources. Its workflow evolves gradually:
+
+- source tables represent operational entities and events;
+- SQL queries retrieve, filter, aggregate, and join the records;
+- Python coordinates extraction and transformation tasks;
+- validation rules detect structural and semantic problems;
+- processed data is written in analysis-ready formats;
+- orchestration determines task order and scheduling;
+- monitoring records whether the pipeline ran successfully and whether its output remains trustworthy; and
+- recovery, governance, and delivery practices turn the workflow into an operational data product.
+
+Using one evolving system makes the relationships between database design, SQL logic, pipeline architecture, and operations visible. The final pipeline is therefore the result of decisions developed throughout the guide rather than an isolated example introduced at the end.
+
+## How the guide is organized
+
+The material develops in five stages.
+
+### Relational foundations
+
+The opening chapters introduce relational databases, tables, data types, primary and foreign keys, constraints, SQL queries, filtering, aggregation, grouping, joins, database design, and normalization. These chapters establish the relational reasoning needed to interpret data correctly.
+
+### SQL and Python integration
+
+The next stage connects database queries to Python. It shows how application code can open connections, execute parameterized queries, retrieve results, manage transactions, and separate configuration from reusable logic.
+
+### From scripts to pipelines
+
+The guide then introduces pipeline architecture. You will examine sources, destinations, task dependencies, execution state, configuration, metadata, and the distinction between a collection of scripts and a coherent workflow.
+
+### Reliable pipeline operations
+
+Later chapters address extraction patterns, APIs, transformation, data quality, storage formats, partitioning, orchestration, scheduling, testing, monitoring, observability, recovery, idempotency, and backfills. These practices allow a pipeline to run repeatedly under changing real-world conditions.
+
+### Governance and end-to-end delivery
+
+The final stage considers security, access, sensitive data, lineage, documentation, governance, and delivery. It brings the components together in an end-to-end case study and evaluates the pipeline as a complete system.
+
+## Who this guide is for
+
+This guide is designed for learners who want to move beyond working with isolated data files and understand how dependable analytical data is produced. It is especially relevant to:
+
+- data analysts who want stronger SQL and database skills;
+- data scientists who need reproducible access to reliable data;
+- researchers building recurring data collection and preparation workflows;
+- Python users moving into analytics engineering or data engineering; and
+- learners preparing to work with production data systems.
+
+No professional database-administration or data-engineering experience is assumed. Concepts are introduced progressively, but the guide does expect basic familiarity with Python, tabular data, the command line, and repository-based work.
+
+## Tools and repository conventions
+
+Examples use Python 3.12, SQL, Bash, Quarto, and a repository-specific virtual environment. SQLite provides a lightweight relational database for local learning, while the underlying SQL and design principles transfer to larger database systems. When a feature differs across systems, the guide distinguishes the general concept from implementation-specific syntax.
+
+The repository follows a predictable structure:
+
+- chapter source files are stored as Quarto Markdown (`.qmd`);
+- reusable Python code belongs under `src/`;
+- runnable Python and Bash programs belong under `scripts/`;
+- raw, interim, and processed datasets remain separated under `data/`;
+- database files belong under `data/databases/` when they are safe to version or regenerate;
+- generated summaries and figures belong under `results/`;
+- operational records belong under `logs/`; and
+- rendered book output belongs under `docs/`.
+
+Generated files should not be mixed with source data or source code. Credentials, connection strings, tokens, and other secrets must not be embedded in scripts, notebooks, chapter files, or version control.
+
+## How to work through the chapters
+
+The chapters are sequential. Learners new to SQL should begin with the relational foundations and execute each example. Readers with established SQL experience may review the early chapters quickly, but should pay particular attention to joins, data integrity, transactions, and SQL–Python integration because these ideas become pipeline controls later.
+
+For each practical section:
+
+1. read the purpose of the task before examining the code;
+2. run the supplied command from the repository root;
+3. inspect both the terminal output and any generated file;
+4. change one input or assumption and observe the effect;
+5. confirm that validation fails when the data violates an expectation; and
+6. connect the exercise to the continuous case study.
+
+Successful execution is only one form of evidence. A dependable workflow should also make its inputs, outputs, assumptions, checks, and failure behavior visible.
+
+## Scope boundaries
+
+This is an applied introduction to database and pipeline engineering for analytical work. It does not attempt to replace specialist references for distributed database internals, large-scale stream processing, cloud-platform administration, or vendor-specific certification. Instead, it develops durable principles that can be carried into those environments:
+
+- model data deliberately;
+- preserve relational meaning;
+- parameterize queries and protect secrets;
+- separate source, transformation, and delivery concerns;
+- make transformations deterministic where possible;
+- validate assumptions explicitly;
+- design repeated execution to be safe;
+- observe both system behavior and data behavior; and
+- document ownership, lineage, and operational decisions.
+
+## Reproducibility and responsible practice
+
+Examples are designed to run locally with small datasets so that the complete workflow remains inspectable. Real production systems require additional decisions about infrastructure, identity and access management, encryption, retention, compliance, service-level objectives, cost, and incident response.
+
+Data access also creates responsibility. Permission to connect to a system does not automatically justify every use of its data. Before collecting or combining records, practitioners should consider purpose, consent, minimization, sensitivity, retention, and the risk created by new linkages. Technical reliability and responsible data practice are both part of a trustworthy pipeline.
+
+## From raw records to dependable data
+
+The guide begins with tables and queries, but its destination is broader. A well-designed pipeline creates a traceable path from source records to a defined analytical output. Along that path, each stage should answer four questions:
+
+1. **What data entered the stage?**
+2. **What operation was applied?**
+3. **What evidence shows that the result is acceptable?**
+4. **What should happen if the stage fails or must run again?**
+
+Those questions provide the foundation for the chapters that follow. They turn database skills into reliable data practice and isolated transformations into systems that other people can understand, trust, and maintain.

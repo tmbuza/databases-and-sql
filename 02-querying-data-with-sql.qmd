@@ -1,0 +1,12 @@
+# Querying Data with SQL {#sec-querying-with-sql}
+
+## Learning objectives
+
+- Select columns and rows from relational tables.
+- Use aliases, expressions, sorting, limits, and null-aware conditions.
+- Write readable queries whose output columns form an explicit contract.
+
+## Supporting example
+
+Run `scripts/sql/02-querying-data.sql` against the case-study database created in Chapter 1.
+
