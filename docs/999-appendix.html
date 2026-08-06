@@ -55,7 +55,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -604,7 +624,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> sales_date, store_id;</span>
 <span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="kw">COMMIT</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>If validation fails before the commit, execute <code>ROLLBACK;</code>. Transaction behavior varies by database and statement type, so verify the target platform’s guarantees.</p>
+<p>If validation fails before the commit, execute <code>ROLLBACK;</code>. Transaction behavior varies by database, statement type, and isolation level, so verify the target platform’s guarantees <span class="citation" data-cites="postgresqlTransactions2026">(<a href="999-references.html#ref-postgresqlTransactions2026" role="doc-biblioref">PostgreSQL Global Development Group 2026b</a>)</span>.</p>
 </section>
 <section id="parameterize-values" class="level3">
 <h3 class="anchored" data-anchor-id="parameterize-values">Parameterize values</h3>
@@ -640,7 +660,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> connection.execute(</span>
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"SELECT customer_id, customer_name FROM customers"</span></span>
 <span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    ).fetchall()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>For writes, use the driver’s transaction context or commit explicitly only after validation.</p>
+<p>For writes, use the driver’s transaction context or commit explicitly only after validation. Python’s <code>sqlite3</code> documentation distinguishes resource cleanup from transaction control and documents when explicit <code>commit()</code> or <code>rollback()</code> is required <span class="citation" data-cites="pythonSqlite32026">(<a href="999-references.html#ref-pythonSqlite32026" role="doc-biblioref">Python Software Foundation 2026</a>)</span>.</p>
 </section>
 <section id="log-events-with-useful-context" class="level3">
 <h3 class="anchored" data-anchor-id="log-events-with-useful-context">Log events with useful context</h3>
@@ -742,7 +762,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>A failed hard contract should stop publication. A warning-level check may allow the run to continue, but it must be visible and assigned for follow-up.</p>
+<p>A failed hard contract should stop publication. A warning-level check may allow the run to continue, but it must be visible and assigned for follow-up. At the database boundary, <code>NOT NULL</code>, <code>UNIQUE</code>, <code>PRIMARY KEY</code>, <code>FOREIGN KEY</code>, and <code>CHECK</code> constraints provide enforceable safeguards rather than relying only on application-side validation <span class="citation" data-cites="postgresqlConstraints2026">(<a href="999-references.html#ref-postgresqlConstraints2026" role="doc-biblioref">PostgreSQL Global Development Group 2026a</a>)</span>.</p>
 </section>
 <section id="pipeline-execution-checklist" class="level2">
 <h2 class="anchored" data-anchor-id="pipeline-execution-checklist">Pipeline execution checklist</h2>
@@ -865,7 +885,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="observability-and-incident-triage" class="level2">
 <h2 class="anchored" data-anchor-id="observability-and-incident-triage">Observability and incident triage</h2>
-<p>Monitor the pipeline from three complementary views:</p>
+<p>Monitor the pipeline from three complementary views. Logs record events, metrics capture runtime measurements, and traces connect work across components; using these signals together makes diagnosis stronger than relying on any one signal alone <span class="citation" data-cites="opentelemetrySignals2026 googleSREMonitoring2018">(<a href="999-references.html#ref-opentelemetrySignals2026" role="doc-biblioref">OpenTelemetry Authors 2026</a>; <a href="999-references.html#ref-googleSREMonitoring2018" role="doc-biblioref">Beyer et al. 2018a</a>)</span>.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -897,7 +917,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>When an alert fires:</p>
+<p>When an alert fires, preserve a working record of diagnosis and mitigation and keep ownership of the response clear <span class="citation" data-cites="googleSREIncidentResponse2018">(<a href="999-references.html#ref-googleSREIncidentResponse2018" role="doc-biblioref">Beyer et al. 2018b</a>)</span>:</p>
 <ol type="1">
 <li>Identify the affected environment, pipeline, run, stage, and data interval.</li>
 <li>Determine whether the failure is active and whether bad data was published.</li>
@@ -911,6 +931,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="security-and-governance-checklist" class="level2">
 <h2 class="anchored" data-anchor-id="security-and-governance-checklist">Security and governance checklist</h2>
+<p>The checklist below is a concise project-level interpretation of established access-control, audit, incident-response, contingency-planning, and data-protection control families <span class="citation" data-cites="nistSP80053r5">(<a href="999-references.html#ref-nistSP80053r5" role="doc-biblioref">Force 2020</a>)</span>.</p>
 <ul>
 <li>Grant each service account only the permissions it needs.</li>
 <li>Separate development, staging, and production credentials.</li>
@@ -954,7 +975,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="quarto-reports-a-missing-citation" class="level3">
 <h3 class="anchored" data-anchor-id="quarto-reports-a-missing-citation">Quarto reports a missing citation</h3>
-<p>Confirm that the citation key exists in <code>library/references.bib</code>, that the bibliography path is configured in <code>_quarto.yml</code>, and that the key matches exactly. Section identifiers should use the <code>{#sec-*}</code> convention, such as <code>{#sec-appendix}</code>.</p>
+<p>Confirm that the citation key exists in <code>library/references.bib</code>, that the bibliography path is configured in <code>_quarto.yml</code>, and that the key matches exactly. Quarto accepts BibTeX and several other bibliography formats through the <code>bibliography</code> YAML field <span class="citation" data-cites="quartoCitations2026">(<a href="999-references.html#ref-quartoCitations2026" role="doc-biblioref">Quarto Project 2026</a>)</span>. Section identifiers should use the <code>{#sec-*}</code> convention, such as <code>{#sec-appendix}</code>.</p>
 </section>
 <section id="generated-figures-do-not-appear" class="level3">
 <h3 class="anchored" data-anchor-id="generated-figures-do-not-appear">Generated figures do not appear</h3>
@@ -1034,6 +1055,32 @@ A recorded boundary indicating how far incremental processing has progressed.</p
 <p>Confirm that tests pass, the book renders without unresolved citations or cross-references, generated artifacts are current, no credentials or local datasets are staged, and all intentional source files are included in version control.</p>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-googleSREMonitoring2018" class="csl-entry" role="listitem">
+Beyer, Betsy, Chris Jones, Jennifer Petoff, and Niall Richard Murphy. 2018a. <em>The Site Reliability Workbook: Practical Ways to Implement SRE</em>. Sebastopol, CA: O’Reilly Media. <a href="https://sre.google/workbook/monitoring/">https://sre.google/workbook/monitoring/</a>.
+</div>
+<div id="ref-googleSREIncidentResponse2018" class="csl-entry" role="listitem">
+———. 2018b. <em>The Site Reliability Workbook: Practical Ways to Implement SRE</em>. Sebastopol, CA: O’Reilly Media. <a href="https://sre.google/workbook/incident-response/">https://sre.google/workbook/incident-response/</a>.
+</div>
+<div id="ref-nistSP80053r5" class="csl-entry" role="listitem">
+Force, Joint Task. 2020. <span>“Security and Privacy Controls for Information Systems and Organizations.”</span> NIST Special Publication 800-53, Revision 5. National Institute of Standards; Technology. <a href="https://doi.org/10.6028/NIST.SP.800-53r5">https://doi.org/10.6028/NIST.SP.800-53r5</a>.
+</div>
+<div id="ref-opentelemetrySignals2026" class="csl-entry" role="listitem">
+OpenTelemetry Authors. 2026. <span>“Signals.”</span> 2026. <a href="https://opentelemetry.io/docs/concepts/signals/">https://opentelemetry.io/docs/concepts/signals/</a>.
+</div>
+<div id="ref-postgresqlConstraints2026" class="csl-entry" role="listitem">
+PostgreSQL Global Development Group. 2026a. <span>“Constraints.”</span> 2026. <a href="https://www.postgresql.org/docs/current/ddl-constraints.html">https://www.postgresql.org/docs/current/ddl-constraints.html</a>.
+</div>
+<div id="ref-postgresqlTransactions2026" class="csl-entry" role="listitem">
+———. 2026b. <span>“Transaction Isolation.”</span> 2026. <a href="https://www.postgresql.org/docs/current/transaction-iso.html">https://www.postgresql.org/docs/current/transaction-iso.html</a>.
+</div>
+<div id="ref-pythonSqlite32026" class="csl-entry" role="listitem">
+Python Software Foundation. 2026. <span>“Sqlite3 — DB-API 2.0 Interface for SQLite Databases.”</span> 2026. <a href="https://docs.python.org/3/library/sqlite3.html">https://docs.python.org/3/library/sqlite3.html</a>.
+</div>
+<div id="ref-quartoCitations2026" class="csl-entry" role="listitem">
+Quarto Project. 2026. <span>“Citations.”</span> 2026. <a href="https://quarto.org/docs/authoring/citations.html">https://quarto.org/docs/authoring/citations.html</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

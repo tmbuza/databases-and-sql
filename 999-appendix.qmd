@@ -191,7 +191,7 @@ GROUP BY sales_date, store_id;
 COMMIT;
 ```
 
-If validation fails before the commit, execute `ROLLBACK;`. Transaction behavior varies by database and statement type, so verify the target platform's guarantees.
+If validation fails before the commit, execute `ROLLBACK;`. Transaction behavior varies by database, statement type, and isolation level, so verify the target platform's guarantees [@postgresqlTransactions2026].
 
 ### Parameterize values
 
@@ -234,7 +234,7 @@ with closing(sqlite3.connect("data/pipeline.db")) as connection:
     ).fetchall()
 ```
 
-For writes, use the driver's transaction context or commit explicitly only after validation.
+For writes, use the driver's transaction context or commit explicitly only after validation. Python's `sqlite3` documentation distinguishes resource cleanup from transaction control and documents when explicit `commit()` or `rollback()` is required [@pythonSqlite32026].
 
 ### Log events with useful context
 
@@ -298,7 +298,7 @@ Apply inexpensive checks early and boundary-specific checks before publishing.
 | Volume | Is row count within a plausible range? | Source delivers 5% of normal volume |
 | Reconciliation | Do source and target totals agree? | Revenue changes during transformation |
 
-A failed hard contract should stop publication. A warning-level check may allow the run to continue, but it must be visible and assigned for follow-up.
+A failed hard contract should stop publication. A warning-level check may allow the run to continue, but it must be visible and assigned for follow-up. At the database boundary, `NOT NULL`, `UNIQUE`, `PRIMARY KEY`, `FOREIGN KEY`, and `CHECK` constraints provide enforceable safeguards rather than relying only on application-side validation [@postgresqlConstraints2026].
 
 ## Pipeline execution checklist
 
@@ -381,7 +381,7 @@ For a backfill:
 
 ## Observability and incident triage
 
-Monitor the pipeline from three complementary views:
+Monitor the pipeline from three complementary views. Logs record events, metrics capture runtime measurements, and traces connect work across components; using these signals together makes diagnosis stronger than relying on any one signal alone [@opentelemetrySignals2026; @googleSREMonitoring2018].
 
 | Signal | Examples | Diagnostic value |
 |---|---|---|
@@ -389,7 +389,7 @@ Monitor the pipeline from three complementary views:
 | Metrics | Duration, rows processed, failure rate, data freshness | Reveals trends and threshold breaches |
 | Lineage and run metadata | Input version, code version, output partition | Connects a result to its causes |
 
-When an alert fires:
+When an alert fires, preserve a working record of diagnosis and mitigation and keep ownership of the response clear [@googleSREIncidentResponse2018]:
 
 1. Identify the affected environment, pipeline, run, stage, and data interval.
 2. Determine whether the failure is active and whether bad data was published.
@@ -401,6 +401,8 @@ When an alert fires:
 8. Document the timeline, impact, cause, and preventive action.
 
 ## Security and governance checklist
+
+The checklist below is a concise project-level interpretation of established access-control, audit, incident-response, contingency-planning, and data-protection control families [@nistSP80053r5].
 
 - Grant each service account only the permissions it needs.
 - Separate development, staging, and production credentials.
@@ -450,7 +452,7 @@ Pause the affected writer, identify which partitions changed, restore or rebuild
 
 ### Quarto reports a missing citation
 
-Confirm that the citation key exists in `library/references.bib`, that the bibliography path is configured in `_quarto.yml`, and that the key matches exactly. Section identifiers should use the `{#sec-*}` convention, such as `{#sec-appendix}`.
+Confirm that the citation key exists in `library/references.bib`, that the bibliography path is configured in `_quarto.yml`, and that the key matches exactly. Quarto accepts BibTeX and several other bibliography formats through the `bibliography` YAML field [@quartoCitations2026]. Section identifiers should use the `{#sec-*}` convention, such as `{#sec-appendix}`.
 
 ### Generated figures do not appear
 
