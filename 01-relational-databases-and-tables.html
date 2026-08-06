@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Relational Databases and Tables – Data Pipelines</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./02-querying-data-with-sql.html" rel="next">
+<link href="./00-preface.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-485d01fc63b59abcd3ee1bf1e8e2748d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="assets/css/cdi.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-relational-databases-and-tables.html">Databases and SQL Foundations</a></li><li class="breadcrumb-item"><a href="./01-relational-databases-and-tables.html"><span class="chapter-title">Relational Databases and Tables</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Data Pipelines</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">index.html</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00-preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Databases and SQL Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-relational-databases-and-tables.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Relational Databases and Tables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-querying-data-with-sql.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Querying Data with SQL</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-filtering-aggregation-and-grouping.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Filtering, Aggregation, and Grouping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-joins-and-relational-thinking.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Joins and Relational Thinking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-database-design-and-normalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Database Design and Normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-sql-and-python-integration.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">SQL and Python Integration</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">From Queries to Pipelines</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-from-scripts-to-data-pipelines.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">From Scripts to Data Pipelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-pipeline-case-study-and-architecture.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Pipeline Case Study and Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-data-sources-and-ingestion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Data Sources and Ingestion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-extraction-patterns-and-apis.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Extraction Patterns and APIs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-transformation-and-data-quality.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Transformation and Data Quality</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-storage-formats-and-partitioning.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Storage Formats and Partitioning</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Orchestration and Reliable Operations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-orchestration-and-scheduling.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Orchestration and Scheduling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-testing-monitoring-and-observability.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Testing, Monitoring, and Observability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-recovery-idempotency-and-backfills.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Recovery, Idempotency, and Backfills</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Production Data Systems</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-security-governance-and-lineage.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Security, Governance, and Lineage</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-ci-cd-and-pipeline-environments.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">CI/CD and Pipeline Environments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-end-to-end-pipeline-case-study.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">End-to-End Pipeline Case Study</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-appendix.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-01-learning-objectives" id="toc-sec-01-learning-objectives" class="nav-link active" data-scroll-target="#sec-01-learning-objectives">Learning objectives</a></li>
+  <li><a href="#sec-01-files-to-managed-data" id="toc-sec-01-files-to-managed-data" class="nav-link" data-scroll-target="#sec-01-files-to-managed-data">From files to managed data</a></li>
+  <li><a href="#sec-01-relational-vocabulary" id="toc-sec-01-relational-vocabulary" class="nav-link" data-scroll-target="#sec-01-relational-vocabulary">The relational vocabulary</a></li>
+  <li><a href="#sec-01-tables-rows-columns" id="toc-sec-01-tables-rows-columns" class="nav-link" data-scroll-target="#sec-01-tables-rows-columns">Tables, rows, and columns</a></li>
+  <li><a href="#sec-01-keys" id="toc-sec-01-keys" class="nav-link" data-scroll-target="#sec-01-keys">Keys create identity and relationships</a>
+  <ul class="collapse">
+  <li><a href="#sec-01-primary-keys" id="toc-sec-01-primary-keys" class="nav-link" data-scroll-target="#sec-01-primary-keys">Primary keys</a></li>
+  <li><a href="#sec-01-foreign-keys" id="toc-sec-01-foreign-keys" class="nav-link" data-scroll-target="#sec-01-foreign-keys">Foreign keys</a></li>
+  </ul></li>
+  <li><a href="#sec-01-relationship-patterns" id="toc-sec-01-relationship-patterns" class="nav-link" data-scroll-target="#sec-01-relationship-patterns">Relationship patterns</a></li>
+  <li><a href="#sec-01-constraints" id="toc-sec-01-constraints" class="nav-link" data-scroll-target="#sec-01-constraints">Constraints protect data quality</a></li>
+  <li><a href="#sec-01-practical" id="toc-sec-01-practical" class="nav-link" data-scroll-target="#sec-01-practical">Practical: build a small SQLite database</a></li>
+  <li><a href="#sec-01-inspect-database" id="toc-sec-01-inspect-database" class="nav-link" data-scroll-target="#sec-01-inspect-database">Inspect the database</a></li>
+  <li><a href="#sec-01-common-mistakes" id="toc-sec-01-common-mistakes" class="nav-link" data-scroll-target="#sec-01-common-mistakes">Common design mistakes</a>
+  <ul class="collapse">
+  <li><a href="#sec-01-repeating-groups" id="toc-sec-01-repeating-groups" class="nav-link" data-scroll-target="#sec-01-repeating-groups">Repeating groups in one row</a></li>
+  <li><a href="#sec-01-multiple-values-column" id="toc-sec-01-multiple-values-column" class="nav-link" data-scroll-target="#sec-01-multiple-values-column">Storing several values in one column</a></li>
+  <li><a href="#sec-01-mutable-keys" id="toc-sec-01-mutable-keys" class="nav-link" data-scroll-target="#sec-01-mutable-keys">Using mutable labels as keys</a></li>
+  <li><a href="#sec-01-null-empty" id="toc-sec-01-null-empty" class="nav-link" data-scroll-target="#sec-01-null-empty">Treating missing values as empty strings</a></li>
+  <li><a href="#sec-01-inferred-rules" id="toc-sec-01-inferred-rules" class="nav-link" data-scroll-target="#sec-01-inferred-rules">Assuming the database will infer every rule</a></li>
+  </ul></li>
+  <li><a href="#sec-01-check-understanding" id="toc-sec-01-check-understanding" class="nav-link" data-scroll-target="#sec-01-check-understanding">Check your understanding</a></li>
+  <li><a href="#sec-01-summary" id="toc-sec-01-summary" class="nav-link" data-scroll-target="#sec-01-summary">Chapter summary</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-relational-databases-and-tables.html">Databases and SQL Foundations</a></li><li class="breadcrumb-item"><a href="./01-relational-databases-and-tables.html"><span class="chapter-title">Relational Databases and Tables</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span id="sec-relational-databases-and-tables" class="quarto-section-identifier"><span class="chapter-title">Relational Databases and Tables</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Aug 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-001</li>
+<li><strong>Type:</strong> Foundation chapter</li>
+<li><strong>Audience:</strong> Data analysts, data scientists, and developers beginning database work</li>
+<li><strong>Theme:</strong> Organizing related data into reliable tables</li>
+</ul>
+</div>
+<section id="sec-01-learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
+<ol type="1">
+<li>explain why databases are preferable to disconnected files for many analytical systems;</li>
+<li>distinguish a database, a relational database, a table, a row, and a column;</li>
+<li>choose appropriate column types and constraints;</li>
+<li>identify primary and foreign keys;</li>
+<li>describe one-to-one, one-to-many, and many-to-many relationships;</li>
+<li>create and inspect a small SQLite database; and</li>
+<li>recognize the boundary between a table’s structure and the records stored in it.</li>
+</ol>
+</section>
+<section id="sec-01-files-to-managed-data" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-files-to-managed-data">From files to managed data</h2>
+<p>A CSV file is often an excellent starting point. It is portable, readable, and easy to load with Python. Problems emerge when several files describe the same system and must remain consistent. A customer identifier may be entered differently in two files, an order may refer to a customer who does not exist, or two people may overwrite the same file.</p>
+<p>A <strong>database</strong> is an organized collection of data managed by software called a <strong>database management system</strong> (DBMS). The DBMS provides controlled ways to store, retrieve, update, validate, and protect data. Examples include SQLite, PostgreSQL, MySQL, SQL Server, and Oracle Database.</p>
+<p>A <strong>relational database</strong> represents data in tables and connects those tables through shared keys. The relational model is valuable because it makes relationships explicit and allows the DBMS to enforce important rules.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Flat-file challenge</th>
+<th>Relational response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Customer details repeated for every order</td>
+<td>Store customers once and reference them by key</td>
+</tr>
+<tr class="even">
+<td>Unknown or inconsistent data types</td>
+<td>Declare column types</td>
+</tr>
+<tr class="odd">
+<td>Orders for nonexistent customers</td>
+<td>Enforce a foreign-key constraint</td>
+</tr>
+<tr class="even">
+<td>Accidental duplicate identifiers</td>
+<td>Enforce a primary key or unique constraint</td>
+</tr>
+<tr class="odd">
+<td>Multiple copies become inconsistent</td>
+<td>Maintain one authoritative record</td>
+</tr>
+</tbody>
+</table>
+<p>Databases do not replace every file. Files remain useful for exchange, archives, and analytical outputs. A database becomes especially useful when data is related, updated repeatedly, shared by several processes, or required to satisfy consistency rules.</p>
+</section>
+<section id="sec-01-relational-vocabulary" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-relational-vocabulary">The relational vocabulary</h2>
+<p>Consider a small retail system with two tables:</p>
+<ul>
+<li><code>customers</code> stores one row per customer;</li>
+<li><code>orders</code> stores one row per order.</li>
+</ul>
+<p>In relational terminology:</p>
+<ul>
+<li>a <strong>table</strong> represents one kind of entity or event;</li>
+<li>a <strong>row</strong> is one record;</li>
+<li>a <strong>column</strong> is one named attribute;</li>
+<li>a <strong>schema</strong> describes the database structure;</li>
+<li>a <strong>key</strong> identifies or connects records; and</li>
+<li>a <strong>constraint</strong> is a rule the database enforces.</li>
+</ul>
+<p>The schema and the data are different. The schema states that <code>customer_id</code> is an integer primary key; the data contains values such as <code>101</code> and <code>102</code>. This distinction becomes important when databases evolve and pipelines validate incoming records.</p>
+</section>
+<section id="sec-01-tables-rows-columns" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-tables-rows-columns">Tables, rows, and columns</h2>
+<p>A well-scoped table usually represents a single subject. Mixing customer, order, product, and payment attributes into one wide table creates repetition and makes updates harder to control.</p>
+<p>The example <code>customers</code> table has this logical structure:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Rule</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>customer_id</code></td>
+<td>INTEGER</td>
+<td>Primary key</td>
+<td>Stable customer identifier</td>
+</tr>
+<tr class="even">
+<td><code>customer_name</code></td>
+<td>TEXT</td>
+<td>Required</td>
+<td>Customer’s display name</td>
+</tr>
+<tr class="odd">
+<td><code>region</code></td>
+<td>TEXT</td>
+<td>Required</td>
+<td>Reporting region</td>
+</tr>
+<tr class="even">
+<td><code>signup_date</code></td>
+<td>TEXT</td>
+<td>Required</td>
+<td>ISO-formatted date in this SQLite example</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>orders</code> table records transactions:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Type</th>
+<th>Rule</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>order_id</code></td>
+<td>INTEGER</td>
+<td>Primary key</td>
+<td>Stable order identifier</td>
+</tr>
+<tr class="even">
+<td><code>customer_id</code></td>
+<td>INTEGER</td>
+<td>Foreign key</td>
+<td>Customer who placed the order</td>
+</tr>
+<tr class="odd">
+<td><code>order_date</code></td>
+<td>TEXT</td>
+<td>Required</td>
+<td>ISO-formatted order date</td>
+</tr>
+<tr class="even">
+<td><code>amount</code></td>
+<td>REAL</td>
+<td>Nonnegative check</td>
+<td>Order value</td>
+</tr>
+<tr class="odd">
+<td><code>status</code></td>
+<td>TEXT</td>
+<td>Allowed-value check</td>
+<td>Order lifecycle state</td>
+</tr>
+</tbody>
+</table>
+<p>SQLite uses a flexible type system, but declaring meaningful types still communicates intent and supports validation. Production systems such as PostgreSQL provide a wider range of strict types, including dedicated date, timestamp, numeric, JSON, and array types.</p>
+</section>
+<section id="sec-01-keys" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-keys">Keys create identity and relationships</h2>
+<section id="sec-01-primary-keys" class="level3">
+<h3 class="anchored" data-anchor-id="sec-01-primary-keys">Primary keys</h3>
+<p>A <strong>primary key</strong> uniquely identifies each row. Good primary keys are unique, never null, and stable over time. In this chapter, <code>customer_id</code> identifies customers and <code>order_id</code> identifies orders.</p>
+<p>Names are poor primary keys because two people may share a name and a person’s name can change. A generated integer or UUID is usually safer. A key made from one column is a <strong>simple key</strong>; one made from several columns is a <strong>composite key</strong>.</p>
+</section>
+<section id="sec-01-foreign-keys" class="level3">
+<h3 class="anchored" data-anchor-id="sec-01-foreign-keys">Foreign keys</h3>
+<p>A <strong>foreign key</strong> is a column, or group of columns, whose values refer to a candidate key in another table. <code>orders.customer_id</code> refers to <code>customers.customer_id</code>.</p>
+<pre class="text"><code>customers.customer_id  1 ───────&lt; many  orders.customer_id</code></pre>
+<p>With foreign-key enforcement enabled, the database rejects an order for a customer that does not exist. This rule is called <strong>referential integrity</strong>.</p>
+</section>
+</section>
+<section id="sec-01-relationship-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-relationship-patterns">Relationship patterns</h2>
+<p>Relational designs commonly express three patterns:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Relationship</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>One-to-one</td>
+<td>One row relates to at most one row</td>
+<td>One employee and one current security badge</td>
+</tr>
+<tr class="even">
+<td>One-to-many</td>
+<td>One parent relates to many children</td>
+<td>One customer and many orders</td>
+</tr>
+<tr class="odd">
+<td>Many-to-many</td>
+<td>Many rows relate to many rows</td>
+<td>Many orders containing many products</td>
+</tr>
+</tbody>
+</table>
+<p>A many-to-many relationship is implemented through an intermediate table. For example, <code>order_items(order_id, product_id, quantity)</code> links orders and products. Its primary key may combine <code>order_id</code> and <code>product_id</code>, while each column is also a foreign key.</p>
+</section>
+<section id="sec-01-constraints" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-constraints">Constraints protect data quality</h2>
+<p>Constraints convert business rules into checks performed by the database:</p>
+<ul>
+<li><code>PRIMARY KEY</code> prevents missing or duplicated row identities;</li>
+<li><code>FOREIGN KEY</code> protects relationships;</li>
+<li><code>NOT NULL</code> requires a value;</li>
+<li><code>UNIQUE</code> prevents duplicates in a candidate key;</li>
+<li><code>CHECK</code> restricts acceptable values; and</li>
+<li><code>DEFAULT</code> supplies a value when one is omitted.</li>
+</ul>
+<p>For example:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> orders (</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    order_id    <span class="dt">INTEGER</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    customer_id <span class="dt">INTEGER</span> <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    order_date  TEXT <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    amount      <span class="dt">REAL</span> <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">CHECK</span> (amount <span class="op">&gt;=</span> <span class="dv">0</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    status      TEXT <span class="kw">NOT</span> <span class="kw">NULL</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                <span class="kw">CHECK</span> (status <span class="kw">IN</span> (<span class="st">'pending'</span>, <span class="st">'completed'</span>, <span class="st">'cancelled'</span>)),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (customer_id) <span class="kw">REFERENCES</span> customers(customer_id)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Constraints do not eliminate the need for pipeline validation. They form the final defensive boundary that prevents invalid records from entering the stored system.</p>
+</section>
+<section id="sec-01-practical" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-practical">Practical: build a small SQLite database</h2>
+<p>SQLite stores a complete relational database in one file and is included with Python. It is therefore ideal for learning, local analysis, tests, and embedded applications.</p>
+<p>The chapter package contains:</p>
+<ul>
+<li><code>data/raw/01-customers.csv</code> and <code>data/raw/01-orders.csv</code> as source data;</li>
+<li><code>scripts/sql/01-create-retail-schema.sql</code> as the schema definition;</li>
+<li><code>scripts/python/01-build-retail-database.py</code> as the reproducible build and validation workflow; and</li>
+<li><code>scripts/bash/01-build-retail-database.sh</code> as a convenient command-line entry point.</li>
+</ul>
+<p>From the repository root, run:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/01-build-retail-database.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The workflow recreates <code>data/processed/01-retail-demo.sqlite</code>, loads both CSV files in one transaction, validates the relationship, and writes <code>results/01-table-summary.csv</code> plus <code>results/figures/01-relational-table-profile.png</code>.</p>
+<p>The validation query summarizes customers and their orders:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    c.customer_id,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    c.customer_name,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(o.order_id) <span class="kw">AS</span> order_count,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COALESCE</span>(<span class="fu">SUM</span>(o.amount), <span class="dv">0</span>) <span class="kw">AS</span> total_amount</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> customers <span class="kw">AS</span> c</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">LEFT</span> <span class="kw">JOIN</span> orders <span class="kw">AS</span> o</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">ON</span> c.customer_id <span class="op">=</span> o.customer_id</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> c.customer_id, c.customer_name</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> c.customer_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>LEFT JOIN</code> retains customers even when they have no orders. Joins are developed fully in <a href="04-joins-and-relational-thinking.html" class="quarto-xref"><span>Joins and Relational Thinking</span></a>; here, the query simply verifies that the two-table design behaves as intended.</p>
+<div id="fig-01-relational-table-profile" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Two horizontal bar charts showing the number of orders per customer and one overall bar comparing customer and order row counts.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-01-relational-table-profile-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="results/figures/01-relational-table-profile.png" class="img-fluid figure-img" alt="Two horizontal bar charts showing the number of orders per customer and one overall bar comparing customer and order row counts.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-01-relational-table-profile-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.1: Customer and order counts in the generated SQLite database.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="sec-01-inspect-database" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-inspect-database">Inspect the database</h2>
+<p>If the SQLite command-line program is installed, inspect the generated database with:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">sqlite3</span> data/processed/01-retail-demo.sqlite</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Then run:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>.<span class="kw">tables</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>.<span class="kw">schema</span> customers</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>.<span class="kw">schema</span> orders</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> customers;</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> orders;</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>PRAGMA foreign_key_check;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>An empty result from <code>PRAGMA foreign_key_check</code> means SQLite found no broken foreign-key relationships.</p>
+<p>The same inspection is available from Python:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sqlite3</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> sqlite3.<span class="ex">connect</span>(<span class="st">"data/processed/01-retail-demo.sqlite"</span>) <span class="im">as</span> connection:</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    connection.execute(<span class="st">"PRAGMA foreign_keys = ON"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    tables <span class="op">=</span> connection.execute(</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    ).fetchall()</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(tables)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Always enable foreign-key enforcement explicitly for each SQLite connection. Other relational database systems commonly enforce it by default.</p>
+</section>
+<section id="sec-01-common-mistakes" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-common-mistakes">Common design mistakes</h2>
+<section id="sec-01-repeating-groups" class="level3">
+<h3 class="anchored" data-anchor-id="sec-01-repeating-groups">Repeating groups in one row</h3>
+<p>Columns such as <code>product_1</code>, <code>product_2</code>, and <code>product_3</code> impose an artificial limit and complicate queries. Store repeated items as rows in a related table.</p>
+</section>
+<section id="sec-01-multiple-values-column" class="level3">
+<h3 class="anchored" data-anchor-id="sec-01-multiple-values-column">Storing several values in one column</h3>
+<p>A value such as <code>"SQL,Python,Git"</code> is difficult to validate and join. If skills are meaningful entities, create a <code>skills</code> table and an employee-skills bridge table.</p>
+</section>
+<section id="sec-01-mutable-keys" class="level3">
+<h3 class="anchored" data-anchor-id="sec-01-mutable-keys">Using mutable labels as keys</h3>
+<p>Names, email addresses, and product descriptions can change. Use stable identifiers and place human-readable labels in separate columns.</p>
+</section>
+<section id="sec-01-null-empty" class="level3">
+<h3 class="anchored" data-anchor-id="sec-01-null-empty">Treating missing values as empty strings</h3>
+<p><code>NULL</code>, an empty string, and zero have different meanings. Decide what absence means for each attribute and represent it consistently.</p>
+</section>
+<section id="sec-01-inferred-rules" class="level3">
+<h3 class="anchored" data-anchor-id="sec-01-inferred-rules">Assuming the database will infer every rule</h3>
+<p>A declared data type alone cannot express every business rule. Add suitable constraints and validate requirements that span multiple tables in the application or pipeline layer.</p>
+</section>
+</section>
+<section id="sec-01-check-understanding" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-check-understanding">Check your understanding</h2>
+<ol type="1">
+<li>Why is <code>customer_name</code> a weaker primary key than <code>customer_id</code>?</li>
+<li>Which constraint prevents an order from referencing an unknown customer?</li>
+<li>How would you represent products that appear in many orders?</li>
+<li>What is the difference between a database schema and the rows stored in it?</li>
+<li>When might a CSV file still be preferable to a database table?</li>
+</ol>
+</section>
+<section id="sec-01-summary" class="level2">
+<h2 class="anchored" data-anchor-id="sec-01-summary">Chapter summary</h2>
+<p>A relational database organizes data into focused tables and links those tables through keys. Primary keys establish row identity; foreign keys establish valid relationships; and constraints protect essential rules. The resulting structure reduces unnecessary repetition and provides a dependable foundation for SQL queries and data pipelines.</p>
+<p>The next chapter introduces SQL as the language for retrieving and shaping data from these tables.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./00-preface.html" class="pagination-link" aria-label="Preface">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./02-querying-data-with-sql.html" class="pagination-link" aria-label="Querying Data with SQL">
+        <span class="nav-page-text"><span class="chapter-title">Querying Data with SQL</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

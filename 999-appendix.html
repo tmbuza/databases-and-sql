@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Appendix A — Appendix – Data Pipelines</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./999-references.html" rel="next">
+<link href="./18-end-to-end-pipeline-case-study.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-485d01fc63b59abcd3ee1bf1e8e2748d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="assets/css/cdi.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./999-appendix.html">Appendices</a></li><li class="breadcrumb-item"><a href="./999-appendix.html"><span class="chapter-title">Appendix</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Data Pipelines</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">index.html</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00-preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Databases and SQL Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-relational-databases-and-tables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Relational Databases and Tables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-querying-data-with-sql.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Querying Data with SQL</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-filtering-aggregation-and-grouping.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Filtering, Aggregation, and Grouping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-joins-and-relational-thinking.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Joins and Relational Thinking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-database-design-and-normalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Database Design and Normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-sql-and-python-integration.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">SQL and Python Integration</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">From Queries to Pipelines</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-from-scripts-to-data-pipelines.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">From Scripts to Data Pipelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-pipeline-case-study-and-architecture.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Pipeline Case Study and Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-data-sources-and-ingestion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Data Sources and Ingestion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-extraction-patterns-and-apis.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Extraction Patterns and APIs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-transformation-and-data-quality.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Transformation and Data Quality</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-storage-formats-and-partitioning.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Storage Formats and Partitioning</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Orchestration and Reliable Operations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-orchestration-and-scheduling.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Orchestration and Scheduling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-testing-monitoring-and-observability.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Testing, Monitoring, and Observability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-recovery-idempotency-and-backfills.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Recovery, Idempotency, and Backfills</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Production Data Systems</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-security-governance-and-lineage.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Security, Governance, and Lineage</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-ci-cd-and-pipeline-environments.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">CI/CD and Pipeline Environments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-end-to-end-pipeline-case-study.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">End-to-End Pipeline Case Study</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-appendix.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#environment-setup" id="toc-environment-setup" class="nav-link active" data-scroll-target="#environment-setup">Environment setup</a></li>
+  <li><a href="#repository-map" id="toc-repository-map" class="nav-link" data-scroll-target="#repository-map">Repository map</a></li>
+  <li><a href="#configuration-conventions" id="toc-configuration-conventions" class="nav-link" data-scroll-target="#configuration-conventions">Configuration conventions</a></li>
+  <li><a href="#sql-quick-reference" id="toc-sql-quick-reference" class="nav-link" data-scroll-target="#sql-quick-reference">SQL quick reference</a>
+  <ul class="collapse">
+  <li><a href="#inspect-and-filter-rows" id="toc-inspect-and-filter-rows" class="nav-link" data-scroll-target="#inspect-and-filter-rows">Inspect and filter rows</a></li>
+  <li><a href="#aggregate-at-an-explicit-grain" id="toc-aggregate-at-an-explicit-grain" class="nav-link" data-scroll-target="#aggregate-at-an-explicit-grain">Aggregate at an explicit grain</a></li>
+  <li><a href="#join-without-accidental-duplication" id="toc-join-without-accidental-duplication" class="nav-link" data-scroll-target="#join-without-accidental-duplication">Join without accidental duplication</a></li>
+  <li><a href="#handle-missing-values-deliberately" id="toc-handle-missing-values-deliberately" class="nav-link" data-scroll-target="#handle-missing-values-deliberately">Handle missing values deliberately</a></li>
+  <li><a href="#deduplicate-deterministically" id="toc-deduplicate-deterministically" class="nav-link" data-scroll-target="#deduplicate-deterministically">Deduplicate deterministically</a></li>
+  <li><a href="#use-transactions-for-related-writes" id="toc-use-transactions-for-related-writes" class="nav-link" data-scroll-target="#use-transactions-for-related-writes">Use transactions for related writes</a></li>
+  <li><a href="#parameterize-values" id="toc-parameterize-values" class="nav-link" data-scroll-target="#parameterize-values">Parameterize values</a></li>
+  </ul></li>
+  <li><a href="#python-pipeline-patterns" id="toc-python-pipeline-patterns" class="nav-link" data-scroll-target="#python-pipeline-patterns">Python pipeline patterns</a>
+  <ul class="collapse">
+  <li><a href="#use-a-clear-entry-point" id="toc-use-a-clear-entry-point" class="nav-link" data-scroll-target="#use-a-clear-entry-point">Use a clear entry point</a></li>
+  <li><a href="#manage-database-resources-safely" id="toc-manage-database-resources-safely" class="nav-link" data-scroll-target="#manage-database-resources-safely">Manage database resources safely</a></li>
+  <li><a href="#log-events-with-useful-context" id="toc-log-events-with-useful-context" class="nav-link" data-scroll-target="#log-events-with-useful-context">Log events with useful context</a></li>
+  <li><a href="#write-outputs-atomically" id="toc-write-outputs-atomically" class="nav-link" data-scroll-target="#write-outputs-atomically">Write outputs atomically</a></li>
+  </ul></li>
+  <li><a href="#data-contracts-and-quality-checks" id="toc-data-contracts-and-quality-checks" class="nav-link" data-scroll-target="#data-contracts-and-quality-checks">Data contracts and quality checks</a></li>
+  <li><a href="#pipeline-execution-checklist" id="toc-pipeline-execution-checklist" class="nav-link" data-scroll-target="#pipeline-execution-checklist">Pipeline execution checklist</a>
+  <ul class="collapse">
+  <li><a href="#before-a-run" id="toc-before-a-run" class="nav-link" data-scroll-target="#before-a-run">Before a run</a></li>
+  <li><a href="#during-a-run" id="toc-during-a-run" class="nav-link" data-scroll-target="#during-a-run">During a run</a></li>
+  <li><a href="#after-a-run" id="toc-after-a-run" class="nav-link" data-scroll-target="#after-a-run">After a run</a></li>
+  </ul></li>
+  <li><a href="#testing-reference" id="toc-testing-reference" class="nav-link" data-scroll-target="#testing-reference">Testing reference</a></li>
+  <li><a href="#idempotency-retries-and-backfills" id="toc-idempotency-retries-and-backfills" class="nav-link" data-scroll-target="#idempotency-retries-and-backfills">Idempotency, retries, and backfills</a></li>
+  <li><a href="#observability-and-incident-triage" id="toc-observability-and-incident-triage" class="nav-link" data-scroll-target="#observability-and-incident-triage">Observability and incident triage</a></li>
+  <li><a href="#security-and-governance-checklist" id="toc-security-and-governance-checklist" class="nav-link" data-scroll-target="#security-and-governance-checklist">Security and governance checklist</a></li>
+  <li><a href="#troubleshooting-guide" id="toc-troubleshooting-guide" class="nav-link" data-scroll-target="#troubleshooting-guide">Troubleshooting guide</a>
+  <ul class="collapse">
+  <li><a href="#the-virtual-environment-is-active-but-imports-fail" id="toc-the-virtual-environment-is-active-but-imports-fail" class="nav-link" data-scroll-target="#the-virtual-environment-is-active-but-imports-fail">The virtual environment is active, but imports fail</a></li>
+  <li><a href="#a-sql-query-returns-too-many-rows" id="toc-a-sql-query-returns-too-many-rows" class="nav-link" data-scroll-target="#a-sql-query-returns-too-many-rows">A SQL query returns too many rows</a></li>
+  <li><a href="#a-pipeline-succeeds-but-publishes-no-data" id="toc-a-pipeline-succeeds-but-publishes-no-data" class="nav-link" data-scroll-target="#a-pipeline-succeeds-but-publishes-no-data">A pipeline succeeds but publishes no data</a></li>
+  <li><a href="#a-retry-creates-duplicates" id="toc-a-retry-creates-duplicates" class="nav-link" data-scroll-target="#a-retry-creates-duplicates">A retry creates duplicates</a></li>
+  <li><a href="#a-backfill-overwrites-current-data" id="toc-a-backfill-overwrites-current-data" class="nav-link" data-scroll-target="#a-backfill-overwrites-current-data">A backfill overwrites current data</a></li>
+  <li><a href="#quarto-reports-a-missing-citation" id="toc-quarto-reports-a-missing-citation" class="nav-link" data-scroll-target="#quarto-reports-a-missing-citation">Quarto reports a missing citation</a></li>
+  <li><a href="#generated-figures-do-not-appear" id="toc-generated-figures-do-not-appear" class="nav-link" data-scroll-target="#generated-figures-do-not-appear">Generated figures do not appear</a></li>
+  </ul></li>
+  <li><a href="#exit-codes" id="toc-exit-codes" class="nav-link" data-scroll-target="#exit-codes">Exit codes</a></li>
+  <li><a href="#glossary" id="toc-glossary" class="nav-link" data-scroll-target="#glossary">Glossary</a></li>
+  <li><a href="#final-release-check" id="toc-final-release-check" class="nav-link" data-scroll-target="#final-release-check">Final release check</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./999-appendix.html">Appendices</a></li><li class="breadcrumb-item"><a href="./999-appendix.html"><span class="chapter-title">Appendix</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span id="sec-appendix" class="quarto-section-identifier">Appendix A — Appendix</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Aug 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-999</li>
+<li><strong>Type:</strong> Reference appendix</li>
+<li><strong>Audience:</strong> Data practitioners building and operating SQL-backed data pipelines</li>
+<li><strong>Theme:</strong> Commands, conventions, checklists, and troubleshooting patterns</li>
+</ul>
+</div>
+<p>This appendix is the quick-reference companion to the guide. Use it when you need to set up the repository, recall a SQL or Python pattern, validate a pipeline run, recover safely, or diagnose a failure. Run commands from the repository root unless a section says otherwise.</p>
+<section id="environment-setup" class="level2">
+<h2 class="anchored" data-anchor-id="environment-setup">Environment setup</h2>
+<p>Create and activate the repository-specific Python environment:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3.12</span> <span class="at">-m</span> venv .venv</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> .venv/bin/activate</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip install <span class="at">--upgrade</span> pip</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip install <span class="at">-r</span> requirements.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>On Windows PowerShell, activate the environment with:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode powershell code-with-copy"><code class="sourceCode powershell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">.</span><span class="fu">venv</span>\Scripts\Activate<span class="op">.</span><span class="fu">ps1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Confirm that the expected tools are available:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">--version</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip <span class="at">--version</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> <span class="at">--version</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">--version</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Render the complete guide:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Render only this appendix during editing:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render 999-appendix.qmd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Deactivate the Python environment when finished:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">deactivate</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="repository-map" class="level2">
+<h2 class="anchored" data-anchor-id="repository-map">Repository map</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Path</th>
+<th>Purpose</th>
+<th>Version-control convention</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>data/raw/</code></td>
+<td>Immutable source extracts or local input samples</td>
+<td>Keep large or sensitive data out of Git</td>
+</tr>
+<tr class="even">
+<td><code>data/processed/</code></td>
+<td>Validated, transformed, analysis-ready outputs</td>
+<td>Retain <code>.gitkeep</code>; regenerate outputs</td>
+</tr>
+<tr class="odd">
+<td><code>src/data_pipelines/</code></td>
+<td>Reusable pipeline package</td>
+<td>Track source code</td>
+</tr>
+<tr class="even">
+<td><code>scripts/python/</code></td>
+<td>Focused Python entry points and demonstrations</td>
+<td>Track scripts</td>
+</tr>
+<tr class="odd">
+<td><code>scripts/bash/</code></td>
+<td>Repeatable command-line wrappers</td>
+<td>Track executable scripts</td>
+</tr>
+<tr class="even">
+<td><code>scripts/sql/</code></td>
+<td>Schema, query, join, aggregation, and extraction SQL</td>
+<td>Track SQL files</td>
+</tr>
+<tr class="odd">
+<td><code>tests/</code></td>
+<td>Unit, integration, contract, and data-quality tests</td>
+<td>Track tests and fixtures</td>
+</tr>
+<tr class="even">
+<td><code>results/</code></td>
+<td>Small run summaries and generated evidence</td>
+<td>Track only intentional artifacts</td>
+</tr>
+<tr class="odd">
+<td><code>results/figures/</code></td>
+<td>Figures generated by chapter scripts</td>
+<td>Track publication-ready figures</td>
+</tr>
+<tr class="even">
+<td><code>logs/</code></td>
+<td>Local operational records</td>
+<td>Retain <code>.gitkeep</code>; ignore run logs</td>
+</tr>
+<tr class="odd">
+<td><code>docs/</code></td>
+<td>Rendered Quarto site</td>
+<td>Generate through <code>quarto render</code></td>
+</tr>
+<tr class="even">
+<td><code>.github/workflows/</code></td>
+<td>Continuous-integration and delivery definitions</td>
+<td>Track workflow files</td>
+</tr>
+<tr class="odd">
+<td><code>.githooks/</code></td>
+<td>Repository-specific Git hooks</td>
+<td>Track hooks and activate locally</td>
+</tr>
+<tr class="even">
+<td><code>library/</code></td>
+<td>Bibliography and supporting reference files</td>
+<td>Track curated references</td>
+</tr>
+</tbody>
+</table>
+<p>Activate the repository hooks after cloning:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> config core.hooksPath .githooks</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> config <span class="at">--get</span> core.hooksPath</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="configuration-conventions" class="level2">
+<h2 class="anchored" data-anchor-id="configuration-conventions">Configuration conventions</h2>
+<p>Keep configuration separate from code. Store safe defaults in tracked configuration files, local overrides in ignored files, and secrets in environment variables or a managed secret store.</p>
+<p>Typical environment variables include:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">PIPELINE_ENV</span><span class="op">=</span>development</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">DATABASE_URL</span><span class="op">=</span><span class="st">'postgresql://user:password@localhost:5432/analytics'</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">PIPELINE_RUN_ID</span><span class="op">=</span><span class="st">'manual-2026-08-06'</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">LOG_LEVEL</span><span class="op">=</span>INFO</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Read configuration explicitly in Python:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>database_url <span class="op">=</span> os.environ[<span class="st">"DATABASE_URL"</span>]</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>pipeline_env <span class="op">=</span> os.getenv(<span class="st">"PIPELINE_ENV"</span>, <span class="st">"development"</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>log_level <span class="op">=</span> os.getenv(<span class="st">"LOG_LEVEL"</span>, <span class="st">"INFO"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Use <code>os.environ[...]</code> for required values so the process fails immediately when one is missing. Use <code>os.getenv(...)</code> only when a safe default exists. Never print credentials, tokens, or complete connection strings to logs.</p>
+</section>
+<section id="sql-quick-reference" class="level2">
+<h2 class="anchored" data-anchor-id="sql-quick-reference">SQL quick reference</h2>
+<section id="inspect-and-filter-rows" class="level3">
+<h3 class="anchored" data-anchor-id="inspect-and-filter-rows">Inspect and filter rows</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> customer_id, order_date, order_total</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> order_date <span class="op">&gt;=</span> <span class="dt">DATE</span> <span class="st">'2026-01-01'</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">AND</span> order_total <span class="op">&gt;</span> <span class="dv">0</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> order_date <span class="kw">DESC</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="aggregate-at-an-explicit-grain" class="level3">
+<h3 class="anchored" data-anchor-id="aggregate-at-an-explicit-grain">Aggregate at an explicit grain</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    customer_id,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> order_count,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(order_total) <span class="kw">AS</span> lifetime_value</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> customer_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>State the intended grain before writing the query. In this example, the result must contain one row per <code>customer_id</code>.</p>
+</section>
+<section id="join-without-accidental-duplication" class="level3">
+<h3 class="anchored" data-anchor-id="join-without-accidental-duplication">Join without accidental duplication</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    o.order_id,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    o.order_date,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    c.customer_name</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders <span class="kw">AS</span> o</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="kw">JOIN</span> customers <span class="kw">AS</span> c</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> o.customer_id <span class="op">=</span> c.customer_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Before and after a join, compare row counts and key uniqueness. A one-to-many relationship legitimately expands rows; an unexpected expansion usually signals a duplicate key or an incomplete join condition.</p>
+</section>
+<section id="handle-missing-values-deliberately" class="level3">
+<h3 class="anchored" data-anchor-id="handle-missing-values-deliberately">Handle missing values deliberately</h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    order_id,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">COALESCE</span>(discount_amount, <span class="dv">0</span>) <span class="kw">AS</span> discount_amount</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> cancelled_at <span class="kw">IS</span> <span class="kw">NULL</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>NULL</code> means unknown or absent; it is not equal to zero or an empty string. Use <code>IS NULL</code> and <code>IS NOT NULL</code>, not <code>= NULL</code>.</p>
+</section>
+<section id="deduplicate-deterministically" class="level3">
+<h3 class="anchored" data-anchor-id="deduplicate-deterministically">Deduplicate deterministically</h3>
+<div class="sourceCode" id="cb14"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">WITH</span> ranked <span class="kw">AS</span> (</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">SELECT</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ROW_NUMBER</span>() <span class="kw">OVER</span> (</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>            <span class="kw">PARTITION</span> <span class="kw">BY</span> customer_id</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>            <span class="kw">ORDER</span> <span class="kw">BY</span> updated_at <span class="kw">DESC</span>, source_record_id <span class="kw">DESC</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        ) <span class="kw">AS</span> <span class="fu">row_number</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">FROM</span> customer_updates</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="op">*</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> ranked</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> <span class="fu">row_number</span> <span class="op">=</span> <span class="dv">1</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Always include a stable tie-breaker. Without one, repeated executions may select different records.</p>
+</section>
+<section id="use-transactions-for-related-writes" class="level3">
+<h3 class="anchored" data-anchor-id="use-transactions-for-related-writes">Use transactions for related writes</h3>
+<div class="sourceCode" id="cb15"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">BEGIN</span>;</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="kw">DELETE</span> <span class="kw">FROM</span> daily_sales</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> sales_date <span class="op">=</span> <span class="dt">DATE</span> <span class="st">'2026-08-05'</span>;</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="kw">INSERT</span> <span class="kw">INTO</span> daily_sales (sales_date, store_id, revenue)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> sales_date, store_id, <span class="fu">SUM</span>(order_total)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> sales_date <span class="op">=</span> <span class="dt">DATE</span> <span class="st">'2026-08-05'</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> sales_date, store_id;</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="kw">COMMIT</span>;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If validation fails before the commit, execute <code>ROLLBACK;</code>. Transaction behavior varies by database, statement type, and isolation level, so verify the target platform’s guarantees <span class="citation" data-cites="postgresqlTransactions2026">(<a href="999-references.html#ref-postgresqlTransactions2026" role="doc-biblioref">PostgreSQL Global Development Group 2026b</a>)</span>.</p>
+</section>
+<section id="parameterize-values" class="level3">
+<h3 class="anchored" data-anchor-id="parameterize-values">Parameterize values</h3>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>cursor.execute(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"SELECT * FROM orders WHERE order_date &gt;= </span><span class="sc">%s</span><span class="st">"</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    (start_date,),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Use the placeholder style required by the database driver. Never construct SQL by concatenating untrusted values.</p>
+</section>
+</section>
+<section id="python-pipeline-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="python-pipeline-patterns">Python pipeline patterns</h2>
+<section id="use-a-clear-entry-point" class="level3">
+<h3 class="anchored" data-anchor-id="use-a-clear-entry-point">Use a clear entry point</h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> main() <span class="op">-&gt;</span> <span class="bu">int</span>:</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Run the pipeline and return a process exit code."""</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    extract()</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    transform()</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    load()</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">SystemExit</span>(main())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="manage-database-resources-safely" class="level3">
+<h3 class="anchored" data-anchor-id="manage-database-resources-safely">Manage database resources safely</h3>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> contextlib <span class="im">import</span> closing</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sqlite3</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> closing(sqlite3.<span class="ex">connect</span>(<span class="st">"data/pipeline.db"</span>)) <span class="im">as</span> connection:</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    connection.execute(<span class="st">"PRAGMA foreign_keys = ON"</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> connection.execute(</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"SELECT customer_id, customer_name FROM customers"</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    ).fetchall()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For writes, use the driver’s transaction context or commit explicitly only after validation. Python’s <code>sqlite3</code> documentation distinguishes resource cleanup from transaction control and documents when explicit <code>commit()</code> or <code>rollback()</code> is required <span class="citation" data-cites="pythonSqlite32026">(<a href="999-references.html#ref-pythonSqlite32026" role="doc-biblioref">Python Software Foundation 2026</a>)</span>.</p>
+</section>
+<section id="log-events-with-useful-context" class="level3">
+<h3 class="anchored" data-anchor-id="log-events-with-useful-context">Log events with useful context</h3>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> logging</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>logging.basicConfig(</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    level<span class="op">=</span><span class="st">"INFO"</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">format</span><span class="op">=</span><span class="st">"</span><span class="sc">%(asctime)s</span><span class="st"> </span><span class="sc">%(levelname)s</span><span class="st"> </span><span class="sc">%(name)s</span><span class="st"> </span><span class="sc">%(message)s</span><span class="st">"</span>,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>logger <span class="op">=</span> logging.getLogger(<span class="va">__name__</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>logger.info(</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"pipeline_stage_complete stage=</span><span class="sc">%s</span><span class="st"> rows=</span><span class="sc">%d</span><span class="st"> run_id=</span><span class="sc">%s</span><span class="st">"</span>,</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"transform"</span>,</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    row_count,</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    run_id,</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Useful fields include <code>run_id</code>, environment, stage, source, target, row count, duration, and status. Avoid logging full records when they may contain personal or confidential data.</p>
+</section>
+<section id="write-outputs-atomically" class="level3">
+<h3 class="anchored" data-anchor-id="write-outputs-atomically">Write outputs atomically</h3>
+<p>Write to a temporary path, validate the result, and then replace the destination:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> Path(<span class="st">"data/processed/customers.csv"</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>temporary <span class="op">=</span> target.with_suffix(<span class="st">".csv.tmp"</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>dataframe.to_csv(temporary, index<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>temporary.replace(target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Atomic replacement prevents readers from observing a partially written file on supported filesystems.</p>
+</section>
+</section>
+<section id="data-contracts-and-quality-checks" class="level2">
+<h2 class="anchored" data-anchor-id="data-contracts-and-quality-checks">Data contracts and quality checks</h2>
+<p>A useful data contract identifies:</p>
+<ul>
+<li>the dataset owner and consumers;</li>
+<li>the row grain and primary or business key;</li>
+<li>required columns, data types, and nullability;</li>
+<li>accepted value domains and units;</li>
+<li>freshness and completeness expectations;</li>
+<li>schema-evolution rules;</li>
+<li>handling requirements for sensitive fields.</li>
+</ul>
+<p>Apply inexpensive checks early and boundary-specific checks before publishing.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Check</th>
+<th>Question answered</th>
+<th>Example failure</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Schema</td>
+<td>Are expected columns and types present?</td>
+<td><code>order_total</code> changes from numeric to text</td>
+</tr>
+<tr class="even">
+<td>Completeness</td>
+<td>Are required values populated?</td>
+<td>Missing <code>customer_id</code></td>
+</tr>
+<tr class="odd">
+<td>Uniqueness</td>
+<td>Is the declared key unique?</td>
+<td>Duplicate <code>order_id</code></td>
+</tr>
+<tr class="even">
+<td>Validity</td>
+<td>Do values obey domain rules?</td>
+<td>Negative quantity</td>
+</tr>
+<tr class="odd">
+<td>Referential integrity</td>
+<td>Do foreign keys resolve?</td>
+<td>Order references an unknown customer</td>
+</tr>
+<tr class="even">
+<td>Freshness</td>
+<td>Is the data recent enough?</td>
+<td>Latest partition is two days late</td>
+</tr>
+<tr class="odd">
+<td>Volume</td>
+<td>Is row count within a plausible range?</td>
+<td>Source delivers 5% of normal volume</td>
+</tr>
+<tr class="even">
+<td>Reconciliation</td>
+<td>Do source and target totals agree?</td>
+<td>Revenue changes during transformation</td>
+</tr>
+</tbody>
+</table>
+<p>A failed hard contract should stop publication. A warning-level check may allow the run to continue, but it must be visible and assigned for follow-up. At the database boundary, <code>NOT NULL</code>, <code>UNIQUE</code>, <code>PRIMARY KEY</code>, <code>FOREIGN KEY</code>, and <code>CHECK</code> constraints provide enforceable safeguards rather than relying only on application-side validation <span class="citation" data-cites="postgresqlConstraints2026">(<a href="999-references.html#ref-postgresqlConstraints2026" role="doc-biblioref">PostgreSQL Global Development Group 2026a</a>)</span>.</p>
+</section>
+<section id="pipeline-execution-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="pipeline-execution-checklist">Pipeline execution checklist</h2>
+<section id="before-a-run" class="level3">
+<h3 class="anchored" data-anchor-id="before-a-run">Before a run</h3>
+<ul>
+<li>Confirm the environment and target database.</li>
+<li>Confirm that credentials are available without displaying them.</li>
+<li>Record the logical data interval and a unique run identifier.</li>
+<li>Verify source availability, schema, and expected freshness.</li>
+<li>Check storage capacity and target permissions.</li>
+<li>Decide whether the run is incremental, full, or a backfill.</li>
+<li>Confirm that concurrent runs cannot process the same interval unsafely.</li>
+</ul>
+</section>
+<section id="during-a-run" class="level3">
+<h3 class="anchored" data-anchor-id="during-a-run">During a run</h3>
+<ul>
+<li>Record start and finish times for every stage.</li>
+<li>Capture input, rejected, and output row counts.</li>
+<li>Preserve checkpoints needed for safe retries.</li>
+<li>Stop on contract-breaking errors.</li>
+<li>Keep logs structured and free of secrets.</li>
+</ul>
+</section>
+<section id="after-a-run" class="level3">
+<h3 class="anchored" data-anchor-id="after-a-run">After a run</h3>
+<ul>
+<li>Validate schema, uniqueness, completeness, and referential integrity.</li>
+<li>Reconcile important counts and totals with the source.</li>
+<li>Confirm that the expected partition or watermark was published.</li>
+<li>Record run status, duration, code version, and data interval.</li>
+<li>Notify downstream consumers when required.</li>
+<li>Retain evidence according to the project’s governance policy.</li>
+</ul>
+</section>
+</section>
+<section id="testing-reference" class="level2">
+<h2 class="anchored" data-anchor-id="testing-reference">Testing reference</h2>
+<p>Run the complete test suite:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pytest <span class="at">-q</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Run a specific test module or test:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pytest tests/test_transform.py <span class="at">-q</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pytest tests/test_transform.py::test_rejects_negative_quantity <span class="at">-q</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Test level</th>
+<th>Scope</th>
+<th>Typical assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Unit</td>
+<td>One transformation or helper</td>
+<td>Known input produces known output</td>
+</tr>
+<tr class="even">
+<td>Schema</td>
+<td>Dataset structure</td>
+<td>Columns, types, and nullability match contract</td>
+</tr>
+<tr class="odd">
+<td>Data quality</td>
+<td>Dataset content</td>
+<td>Keys are unique and values are valid</td>
+</tr>
+<tr class="even">
+<td>Integration</td>
+<td>Database, API, or filesystem boundary</td>
+<td>Component reads and writes correctly</td>
+</tr>
+<tr class="odd">
+<td>Contract</td>
+<td>Producer-consumer interface</td>
+<td>Required fields and semantics remain compatible</td>
+</tr>
+<tr class="even">
+<td>End-to-end</td>
+<td>Complete representative flow</td>
+<td>Published result is correct and observable</td>
+</tr>
+<tr class="odd">
+<td>Recovery</td>
+<td>Retry or backfill behavior</td>
+<td>Re-execution does not duplicate data</td>
+</tr>
+</tbody>
+</table>
+<p>Good fixtures are small, deterministic, representative, and explicit about edge cases. Include empty input, missing values, duplicated keys, boundary dates, malformed records, and late-arriving data where relevant.</p>
+</section>
+<section id="idempotency-retries-and-backfills" class="level2">
+<h2 class="anchored" data-anchor-id="idempotency-retries-and-backfills">Idempotency, retries, and backfills</h2>
+<p>An idempotent run produces the same intended target state when repeated for the same logical input. Common strategies include:</p>
+<ul>
+<li>upserting by a stable business key;</li>
+<li>replacing a complete partition inside a transaction;</li>
+<li>recording processed source identifiers;</li>
+<li>using deterministic output names;</li>
+<li>advancing a watermark only after successful publication.</li>
+</ul>
+<p>Retry only failures likely to be temporary, such as timeouts, rate limits, or brief service unavailability. Use bounded attempts with exponential backoff and jitter. Do not blindly retry invalid credentials, malformed input, contract violations, or deterministic transformation errors.</p>
+<p>For a backfill:</p>
+<ol type="1">
+<li>Define the exact historical interval.</li>
+<li>Estimate source load, target load, runtime, and storage.</li>
+<li>Isolate backfill state from the normal schedule when necessary.</li>
+<li>Process bounded partitions in a controlled order.</li>
+<li>Apply the same contracts as a normal run.</li>
+<li>Reconcile each partition and the complete interval.</li>
+<li>Confirm that current scheduled data was not overwritten or skipped.</li>
+<li>Record who initiated the backfill, why, and what changed.</li>
+</ol>
+</section>
+<section id="observability-and-incident-triage" class="level2">
+<h2 class="anchored" data-anchor-id="observability-and-incident-triage">Observability and incident triage</h2>
+<p>Monitor the pipeline from three complementary views. Logs record events, metrics capture runtime measurements, and traces connect work across components; using these signals together makes diagnosis stronger than relying on any one signal alone <span class="citation" data-cites="opentelemetrySignals2026 googleSREMonitoring2018">(<a href="999-references.html#ref-opentelemetrySignals2026" role="doc-biblioref">OpenTelemetry Authors 2026</a>; <a href="999-references.html#ref-googleSREMonitoring2018" role="doc-biblioref">Beyer et al. 2018a</a>)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Signal</th>
+<th>Examples</th>
+<th>Diagnostic value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Logs</td>
+<td>Stage transitions, validation failures, exception context</td>
+<td>Explains individual events</td>
+</tr>
+<tr class="even">
+<td>Metrics</td>
+<td>Duration, rows processed, failure rate, data freshness</td>
+<td>Reveals trends and threshold breaches</td>
+</tr>
+<tr class="odd">
+<td>Lineage and run metadata</td>
+<td>Input version, code version, output partition</td>
+<td>Connects a result to its causes</td>
+</tr>
+</tbody>
+</table>
+<p>When an alert fires, preserve a working record of diagnosis and mitigation and keep ownership of the response clear <span class="citation" data-cites="googleSREIncidentResponse2018">(<a href="999-references.html#ref-googleSREIncidentResponse2018" role="doc-biblioref">Beyer et al. 2018b</a>)</span>:</p>
+<ol type="1">
+<li>Identify the affected environment, pipeline, run, stage, and data interval.</li>
+<li>Determine whether the failure is active and whether bad data was published.</li>
+<li>Protect consumers by pausing publication or marking affected data when required.</li>
+<li>Inspect the first meaningful error and compare it with recent successful runs.</li>
+<li>Classify the problem as source, code, configuration, infrastructure, data quality, or downstream.</li>
+<li>Recover with the smallest safe action: retry, resume, roll back, or backfill.</li>
+<li>Validate the repaired output before declaring recovery.</li>
+<li>Document the timeline, impact, cause, and preventive action.</li>
+</ol>
+</section>
+<section id="security-and-governance-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="security-and-governance-checklist">Security and governance checklist</h2>
+<p>The checklist below is a concise project-level interpretation of established access-control, audit, incident-response, contingency-planning, and data-protection control families <span class="citation" data-cites="nistSP80053r5">(<a href="999-references.html#ref-nistSP80053r5" role="doc-biblioref">Force 2020</a>)</span>.</p>
+<ul>
+<li>Grant each service account only the permissions it needs.</li>
+<li>Separate development, staging, and production credentials.</li>
+<li>Encrypt sensitive data in transit and at rest.</li>
+<li>Keep secrets out of source control, logs, notebooks, and generated pages.</li>
+<li>Minimize collection and retention of personal data.</li>
+<li>Mask or tokenize sensitive fields outside approved environments.</li>
+<li>Record dataset ownership, classification, lineage, and retention rules.</li>
+<li>Review schema and access changes through version control.</li>
+<li>Test restoration procedures, not only backups.</li>
+<li>Preserve auditable evidence for production changes and backfills.</li>
+</ul>
+</section>
+<section id="troubleshooting-guide" class="level2">
+<h2 class="anchored" data-anchor-id="troubleshooting-guide">Troubleshooting guide</h2>
+<section id="the-virtual-environment-is-active-but-imports-fail" class="level3">
+<h3 class="anchored" data-anchor-id="the-virtual-environment-is-active-but-imports-fail">The virtual environment is active, but imports fail</h3>
+<p>Confirm that <code>python</code> and <code>pip</code> resolve inside <code>.venv</code>, then install dependencies through that interpreter:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">which</span> python</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip <span class="at">--version</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip install <span class="at">-r</span> requirements.txt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Using <code>python -m pip</code> avoids installing into a different interpreter by mistake.</p>
+</section>
+<section id="a-sql-query-returns-too-many-rows" class="level3">
+<h3 class="anchored" data-anchor-id="a-sql-query-returns-too-many-rows">A SQL query returns too many rows</h3>
+<p>Check the grain of each input, uniqueness of join keys, join predicates, and any many-to-many relationship. Compare these diagnostics before and after the join:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> <span class="fu">COUNT</span>(<span class="op">*</span>) <span class="kw">AS</span> <span class="kw">rows</span>, <span class="fu">COUNT</span>(<span class="kw">DISTINCT</span> order_id) <span class="kw">AS</span> distinct_orders</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> orders;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="a-pipeline-succeeds-but-publishes-no-data" class="level3">
+<h3 class="anchored" data-anchor-id="a-pipeline-succeeds-but-publishes-no-data">A pipeline succeeds but publishes no data</h3>
+<p>Inspect the configured interval, timezone, watermark, filters, source freshness, and rejected-row counts. Treat an unexpectedly empty output as a quality failure rather than automatic success.</p>
+</section>
+<section id="a-retry-creates-duplicates" class="level3">
+<h3 class="anchored" data-anchor-id="a-retry-creates-duplicates">A retry creates duplicates</h3>
+<p>The write path is not idempotent for the chosen key or interval. Stop repeated retries, identify affected partitions, remove or supersede duplicates safely, and change the load strategy to an upsert or transactional partition replacement.</p>
+</section>
+<section id="a-backfill-overwrites-current-data" class="level3">
+<h3 class="anchored" data-anchor-id="a-backfill-overwrites-current-data">A backfill overwrites current data</h3>
+<p>Pause the affected writer, identify which partitions changed, restore or rebuild those partitions from authoritative inputs, and reconcile them. Before resuming, separate backfill and scheduled-run state or enforce interval-level locking.</p>
+</section>
+<section id="quarto-reports-a-missing-citation" class="level3">
+<h3 class="anchored" data-anchor-id="quarto-reports-a-missing-citation">Quarto reports a missing citation</h3>
+<p>Confirm that the citation key exists in <code>library/references.bib</code>, that the bibliography path is configured in <code>_quarto.yml</code>, and that the key matches exactly. Quarto accepts BibTeX and several other bibliography formats through the <code>bibliography</code> YAML field <span class="citation" data-cites="quartoCitations2026">(<a href="999-references.html#ref-quartoCitations2026" role="doc-biblioref">Quarto Project 2026</a>)</span>. Section identifiers should use the <code>{#sec-*}</code> convention, such as <code>{#sec-appendix}</code>.</p>
+</section>
+<section id="generated-figures-do-not-appear" class="level3">
+<h3 class="anchored" data-anchor-id="generated-figures-do-not-appear">Generated figures do not appear</h3>
+<p>Run the producing script, confirm that it writes to the path referenced by the chapter, and verify filename capitalization. Paths are case-sensitive in many continuous-integration environments even when they appear case-insensitive locally.</p>
+</section>
+</section>
+<section id="exit-codes" class="level2">
+<h2 class="anchored" data-anchor-id="exit-codes">Exit codes</h2>
+<p>Command-line pipeline scripts should return a meaningful process status:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Exit code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;"><code>0</code></td>
+<td>Successful completion</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><code>1</code></td>
+<td>General pipeline failure</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><code>2</code></td>
+<td>Invalid command-line arguments or configuration</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><code>3</code></td>
+<td>Source unavailable or extraction failure</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><code>4</code></td>
+<td>Data-contract or transformation failure</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><code>5</code></td>
+<td>Load, publication, or reconciliation failure</td>
+</tr>
+</tbody>
+</table>
+<p>These codes are a project convention, not a universal standard. Document any different scheme beside the entry point and keep it stable for schedulers and monitoring systems.</p>
+</section>
+<section id="glossary" class="level2">
+<h2 class="anchored" data-anchor-id="glossary">Glossary</h2>
+<p><strong>Backfill</strong><br>
+A controlled run that processes a historical interval that was missed or must be recomputed.</p>
+<p><strong>Checkpoint</strong><br>
+Persisted progress that allows a failed run to resume without repeating all completed work.</p>
+<p><strong>Data contract</strong><br>
+An explicit agreement about a dataset’s structure, semantics, quality, ownership, and delivery expectations.</p>
+<p><strong>Data lineage</strong><br>
+The recorded relationships among sources, transformations, runs, and outputs.</p>
+<p><strong>Idempotency</strong><br>
+The property that repeating an operation for the same logical input leaves the target in the same intended state.</p>
+<p><strong>Orchestration</strong><br>
+Coordination of pipeline tasks, dependencies, schedules, retries, and operational state.</p>
+<p><strong>Partition</strong><br>
+A bounded subset of data, commonly organized by date, region, or another processing key.</p>
+<p><strong>Recovery point objective (RPO)</strong><br>
+The maximum acceptable amount of data loss measured in time.</p>
+<p><strong>Recovery time objective (RTO)</strong><br>
+The target time for restoring a service or pipeline after disruption.</p>
+<p><strong>Schema drift</strong><br>
+An unplanned or unmanaged change to the structure or types of source data.</p>
+<p><strong>Watermark</strong><br>
+A recorded boundary indicating how far incremental processing has progressed.</p>
+</section>
+<section id="final-release-check" class="level2">
+<h2 class="anchored" data-anchor-id="final-release-check">Final release check</h2>
+<p>Before publishing a completed version of the guide:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pytest <span class="at">-q</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> status <span class="at">--short</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Confirm that tests pass, the book renders without unresolved citations or cross-references, generated artifacts are current, no credentials or local datasets are staged, and all intentional source files are included in version control.</p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-googleSREMonitoring2018" class="csl-entry" role="listitem">
+Beyer, Betsy, Chris Jones, Jennifer Petoff, and Niall Richard Murphy. 2018a. <em>The Site Reliability Workbook: Practical Ways to Implement SRE</em>. Sebastopol, CA: O’Reilly Media. <a href="https://sre.google/workbook/monitoring/">https://sre.google/workbook/monitoring/</a>.
+</div>
+<div id="ref-googleSREIncidentResponse2018" class="csl-entry" role="listitem">
+———. 2018b. <em>The Site Reliability Workbook: Practical Ways to Implement SRE</em>. Sebastopol, CA: O’Reilly Media. <a href="https://sre.google/workbook/incident-response/">https://sre.google/workbook/incident-response/</a>.
+</div>
+<div id="ref-nistSP80053r5" class="csl-entry" role="listitem">
+Force, Joint Task. 2020. <span>“Security and Privacy Controls for Information Systems and Organizations.”</span> NIST Special Publication 800-53, Revision 5. National Institute of Standards; Technology. <a href="https://doi.org/10.6028/NIST.SP.800-53r5">https://doi.org/10.6028/NIST.SP.800-53r5</a>.
+</div>
+<div id="ref-opentelemetrySignals2026" class="csl-entry" role="listitem">
+OpenTelemetry Authors. 2026. <span>“Signals.”</span> 2026. <a href="https://opentelemetry.io/docs/concepts/signals/">https://opentelemetry.io/docs/concepts/signals/</a>.
+</div>
+<div id="ref-postgresqlConstraints2026" class="csl-entry" role="listitem">
+PostgreSQL Global Development Group. 2026a. <span>“Constraints.”</span> 2026. <a href="https://www.postgresql.org/docs/current/ddl-constraints.html">https://www.postgresql.org/docs/current/ddl-constraints.html</a>.
+</div>
+<div id="ref-postgresqlTransactions2026" class="csl-entry" role="listitem">
+———. 2026b. <span>“Transaction Isolation.”</span> 2026. <a href="https://www.postgresql.org/docs/current/transaction-iso.html">https://www.postgresql.org/docs/current/transaction-iso.html</a>.
+</div>
+<div id="ref-pythonSqlite32026" class="csl-entry" role="listitem">
+Python Software Foundation. 2026. <span>“Sqlite3 — DB-API 2.0 Interface for SQLite Databases.”</span> 2026. <a href="https://docs.python.org/3/library/sqlite3.html">https://docs.python.org/3/library/sqlite3.html</a>.
+</div>
+<div id="ref-quartoCitations2026" class="csl-entry" role="listitem">
+Quarto Project. 2026. <span>“Citations.”</span> 2026. <a href="https://quarto.org/docs/authoring/citations.html">https://quarto.org/docs/authoring/citations.html</a>.
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./18-end-to-end-pipeline-case-study.html" class="pagination-link" aria-label="End-to-End Pipeline Case Study">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">End-to-End Pipeline Case Study</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./999-references.html" class="pagination-link" aria-label="References">
+        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>End-to-End Pipeline Case Study – Data Pipelines</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./999-appendix.html" rel="next">
+<link href="./17-ci-cd-and-pipeline-environments.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-485d01fc63b59abcd3ee1bf1e8e2748d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<meta name="mermaid-theme" content="forest">
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="assets/css/cdi.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./16-security-governance-and-lineage.html">Production Data Systems</a></li><li class="breadcrumb-item"><a href="./18-end-to-end-pipeline-case-study.html"><span class="chapter-title">End-to-End Pipeline Case Study</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Data Pipelines</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">index.html</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00-preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Databases and SQL Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-relational-databases-and-tables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Relational Databases and Tables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-querying-data-with-sql.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Querying Data with SQL</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-filtering-aggregation-and-grouping.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Filtering, Aggregation, and Grouping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-joins-and-relational-thinking.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Joins and Relational Thinking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-database-design-and-normalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Database Design and Normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-sql-and-python-integration.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">SQL and Python Integration</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">From Queries to Pipelines</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-from-scripts-to-data-pipelines.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">From Scripts to Data Pipelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-pipeline-case-study-and-architecture.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Pipeline Case Study and Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-data-sources-and-ingestion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Data Sources and Ingestion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-extraction-patterns-and-apis.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Extraction Patterns and APIs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-transformation-and-data-quality.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Transformation and Data Quality</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-storage-formats-and-partitioning.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Storage Formats and Partitioning</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Orchestration and Reliable Operations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-orchestration-and-scheduling.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Orchestration and Scheduling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-testing-monitoring-and-observability.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Testing, Monitoring, and Observability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-recovery-idempotency-and-backfills.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Recovery, Idempotency, and Backfills</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Production Data Systems</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-security-governance-and-lineage.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Security, Governance, and Lineage</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-ci-cd-and-pipeline-environments.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">CI/CD and Pipeline Environments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-end-to-end-pipeline-case-study.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">End-to-End Pipeline Case Study</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-appendix.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#the-case-study" id="toc-the-case-study" class="nav-link" data-scroll-target="#the-case-study">The case study</a></li>
+  <li><a href="#repository-artifacts" id="toc-repository-artifacts" class="nav-link" data-scroll-target="#repository-artifacts">Repository artifacts</a></li>
+  <li><a href="#define-the-contract-before-moving-data" id="toc-define-the-contract-before-moving-data" class="nav-link" data-scroll-target="#define-the-contract-before-moving-data">1. Define the contract before moving data</a></li>
+  <li><a href="#extract-without-mutating-the-source" id="toc-extract-without-mutating-the-source" class="nav-link" data-scroll-target="#extract-without-mutating-the-source">2. Extract without mutating the source</a></li>
+  <li><a href="#validate-and-quarantine-explicitly" id="toc-validate-and-quarantine-explicitly" class="nav-link" data-scroll-target="#validate-and-quarantine-explicitly">3. Validate and quarantine explicitly</a></li>
+  <li><a href="#transform-valid-records" id="toc-transform-valid-records" class="nav-link" data-scroll-target="#transform-valid-records">4. Transform valid records</a></li>
+  <li><a href="#load-idempotently" id="toc-load-idempotently" class="nav-link" data-scroll-target="#load-idempotently">5. Load idempotently</a></li>
+  <li><a href="#verify-before-declaring-success" id="toc-verify-before-declaring-success" class="nav-link" data-scroll-target="#verify-before-declaring-success">6. Verify before declaring success</a></li>
+  <li><a href="#observe-the-run" id="toc-observe-the-run" class="nav-link" data-scroll-target="#observe-the-run">7. Observe the run</a></li>
+  <li><a href="#running-the-case-study" id="toc-running-the-case-study" class="nav-link" data-scroll-target="#running-the-case-study">Running the case study</a></li>
+  <li><a href="#inspecting-the-warehouse" id="toc-inspecting-the-warehouse" class="nav-link" data-scroll-target="#inspecting-the-warehouse">Inspecting the warehouse</a></li>
+  <li><a href="#failure-and-recovery-exercises" id="toc-failure-and-recovery-exercises" class="nav-link" data-scroll-target="#failure-and-recovery-exercises">Failure and recovery exercises</a>
+  <ul class="collapse">
+  <li><a href="#exercise-1-schema-drift" id="toc-exercise-1-schema-drift" class="nav-link" data-scroll-target="#exercise-1-schema-drift">Exercise 1: Schema drift</a></li>
+  <li><a href="#exercise-2-correct-and-replay-quarantine" id="toc-exercise-2-correct-and-replay-quarantine" class="nav-link" data-scroll-target="#exercise-2-correct-and-replay-quarantine">Exercise 2: Correct and replay quarantine</a></li>
+  <li><a href="#exercise-3-prove-idempotency" id="toc-exercise-3-prove-idempotency" class="nav-link" data-scroll-target="#exercise-3-prove-idempotency">Exercise 3: Prove idempotency</a></li>
+  <li><a href="#exercise-4-add-an-operational-threshold" id="toc-exercise-4-add-an-operational-threshold" class="nav-link" data-scroll-target="#exercise-4-add-an-operational-threshold">Exercise 4: Add an operational threshold</a></li>
+  </ul></li>
+  <li><a href="#production-hardening-decisions" id="toc-production-hardening-decisions" class="nav-link" data-scroll-target="#production-hardening-decisions">Production hardening decisions</a></li>
+  <li><a href="#governance-review" id="toc-governance-review" class="nav-link" data-scroll-target="#governance-review">Governance review</a></li>
+  <li><a href="#reliability-acceptance-checklist" id="toc-reliability-acceptance-checklist" class="nav-link" data-scroll-target="#reliability-acceptance-checklist">Reliability acceptance checklist</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
+  <li><a href="#chapter-summary" id="toc-chapter-summary" class="nav-link" data-scroll-target="#chapter-summary">Chapter summary</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./16-security-governance-and-lineage.html">Production Data Systems</a></li><li class="breadcrumb-item"><a href="./18-end-to-end-pipeline-case-study.html"><span class="chapter-title">End-to-End Pipeline Case Study</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span id="sec-end-to-end-case-study" class="quarto-section-identifier"><span class="chapter-title">End-to-End Pipeline Case Study</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Aug 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-018</li>
+<li><strong>Type:</strong> Applied case study</li>
+<li><strong>Audience:</strong> Data practitioners completing the Databases, SQL, and Data Pipelines guide</li>
+<li><strong>Theme:</strong> A reliable batch pipeline from raw input to an auditable analytical table</li>
+</ul>
+</div>
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
+<ul>
+<li>assemble extraction, validation, transformation, and loading stages;</li>
+<li>make a batch pipeline deterministic, idempotent, and observable;</li>
+<li>quarantine invalid records without silently losing evidence;</li>
+<li>verify warehouse outputs and operational metadata;</li>
+<li>evaluate the pipeline against reliability and governance requirements; and</li>
+<li>distinguish a successful process exit from a trustworthy data product.</li>
+</ul>
+</section>
+<section id="the-case-study" class="level2">
+<h2 class="anchored" data-anchor-id="the-case-study">The case study</h2>
+<p>The CDI Learning Platform receives a daily export of course transactions. Analysts need a table that reports net revenue by transaction, course, customer segment, and transaction date. The source is deliberately small enough to inspect, but it contains conditions that production pipelines must handle:</p>
+<ul>
+<li>duplicate transaction identifiers;</li>
+<li>malformed timestamps;</li>
+<li>missing customer identifiers;</li>
+<li>unsupported transaction statuses;</li>
+<li>negative quantities; and</li>
+<li>reruns of the same input file.</li>
+</ul>
+<p>The pipeline treats the raw file as immutable evidence. Valid rows are standardized and loaded into SQLite; invalid rows are written to a quarantine file with explicit reasons. Every run also emits a machine-readable manifest and appends one record to an operational run ledger.</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    A["Raw CSV extract"] --&gt; B["Extract and fingerprint"]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    B --&gt; C["Validate contract"]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    C --&gt;|valid| D["Transform fields"]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    C --&gt;|invalid| E["Quarantine CSV"]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    D --&gt; F["Idempotent SQLite load"]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    F --&gt; G["Reconciliation and checks"]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    G --&gt; H["Run manifest and metrics"]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A["Raw CSV extract"] --&gt; B["Extract and fingerprint"]
+    B --&gt; C["Validate contract"]
+    C --&gt;|valid| D["Transform fields"]
+    C --&gt;|invalid| E["Quarantine CSV"]
+    D --&gt; F["Idempotent SQLite load"]
+    F --&gt; G["Reconciliation and checks"]
+    G --&gt; H["Run manifest and metrics"]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="repository-artifacts" class="level2">
+<h2 class="anchored" data-anchor-id="repository-artifacts">Repository artifacts</h2>
+<p>The chapter package follows repository-relative paths.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>data/raw/18-course-transactions.csv</code></td>
+<td>Immutable example source export</td>
+</tr>
+<tr class="even">
+<td><code>configs/18-pipeline.json</code></td>
+<td>Dataset contract and runtime paths</td>
+</tr>
+<tr class="odd">
+<td><code>scripts/python/18-run-end-to-end-pipeline.py</code></td>
+<td>Extract, validate, transform, load, and verify</td>
+</tr>
+<tr class="even">
+<td><code>scripts/bash/18-run-end-to-end-pipeline.sh</code></td>
+<td>Repository-root-aware execution wrapper</td>
+</tr>
+<tr class="odd">
+<td><code>tests/test_18_end_to_end_pipeline.py</code></td>
+<td>Unit and integration tests</td>
+</tr>
+<tr class="even">
+<td><code>data/processed/18-valid-transactions.csv</code></td>
+<td>Valid standardized rows</td>
+</tr>
+<tr class="odd">
+<td><code>data/quarantine/18-invalid-transactions.csv</code></td>
+<td>Rejected rows and reasons</td>
+</tr>
+<tr class="even">
+<td><code>data/warehouse/18-learning-platform.sqlite</code></td>
+<td>SQLite analytical warehouse</td>
+</tr>
+<tr class="odd">
+<td><code>results/18-pipeline-run.json</code></td>
+<td>Latest run manifest</td>
+</tr>
+<tr class="even">
+<td><code>results/18-pipeline-run-history.csv</code></td>
+<td>Append-only operational ledger</td>
+</tr>
+<tr class="odd">
+<td><code>results/figures/18-pipeline-run-summary.svg</code></td>
+<td>Portable run-summary plot</td>
+</tr>
+</tbody>
+</table>
+<p>Generated outputs are included so the chapter can be read immediately. Running the pipeline recreates them from the source data.</p>
+</section>
+<section id="define-the-contract-before-moving-data" class="level2">
+<h2 class="anchored" data-anchor-id="define-the-contract-before-moving-data">1. Define the contract before moving data</h2>
+<p>The configuration file separates business rules from control flow. It declares the required columns, accepted statuses, currency, input location, and output locations. The pipeline still validates the configuration itself: a missing key should fail early rather than produce a partially correct dataset.</p>
+<p>The transaction contract is:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Rule</th>
+<th>Standardized representation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>transaction_id</code></td>
+<td>Required and unique within the extract</td>
+<td>Text</td>
+</tr>
+<tr class="even">
+<td><code>transaction_at</code></td>
+<td>ISO 8601 timestamp</td>
+<td>UTC timestamp text</td>
+</tr>
+<tr class="odd">
+<td><code>customer_id</code></td>
+<td>Required</td>
+<td>Text</td>
+</tr>
+<tr class="even">
+<td><code>course_id</code></td>
+<td>Required</td>
+<td>Text</td>
+</tr>
+<tr class="odd">
+<td><code>customer_segment</code></td>
+<td>One of <code>individual</code>, <code>organization</code></td>
+<td>Lowercase text</td>
+</tr>
+<tr class="even">
+<td><code>status</code></td>
+<td>One of <code>completed</code>, <code>refunded</code></td>
+<td>Lowercase text</td>
+</tr>
+<tr class="odd">
+<td><code>quantity</code></td>
+<td>Positive integer</td>
+<td>Integer</td>
+</tr>
+<tr class="even">
+<td><code>unit_price</code></td>
+<td>Non-negative decimal</td>
+<td>Decimal text rounded to two places</td>
+</tr>
+</tbody>
+</table>
+<p>Completed transactions produce positive net revenue. Refunds produce negative net revenue:</p>
+<p><span class="math display">\[
+\text{net revenue} =
+\begin{cases}
+q \times p, &amp; \text{status = completed} \\
+-q \times p, &amp; \text{status = refunded}
+\end{cases}
+\]</span></p>
+<p>Money is parsed with <code>Decimal</code>, not binary floating-point arithmetic. The warehouse stores integer cents, which makes reconciliation exact.</p>
+</section>
+<section id="extract-without-mutating-the-source" class="level2">
+<h2 class="anchored" data-anchor-id="extract-without-mutating-the-source">2. Extract without mutating the source</h2>
+<p>Extraction performs three control tasks before parsing business fields:</p>
+<ol type="1">
+<li>confirm that the input exists;</li>
+<li>compute its SHA-256 fingerprint; and</li>
+<li>confirm that its header matches the required schema.</li>
+</ol>
+<p>The fingerprint is a compact identity for the exact source bytes. It connects the manifest, warehouse run ledger, and input file without renaming or editing the raw export. An identical rerun therefore has the same fingerprint.</p>
+</section>
+<section id="validate-and-quarantine-explicitly" class="level2">
+<h2 class="anchored" data-anchor-id="validate-and-quarantine-explicitly">3. Validate and quarantine explicitly</h2>
+<p>Validation is row-oriented so that one bad record does not hide the state of the rest of the batch. Each row is either accepted once or quarantined once. A rejected row carries one or more pipe-separated reason codes such as:</p>
+<ul>
+<li><code>missing_customer_id</code>;</li>
+<li><code>invalid_transaction_at</code>;</li>
+<li><code>quantity_must_be_positive</code>; or</li>
+<li><code>duplicate_transaction_id</code>.</li>
+</ul>
+<p>This creates an important reconciliation invariant:</p>
+<p><span class="math display">\[
+\text{source rows} = \text{valid rows} + \text{quarantined rows}
+\]</span></p>
+<p>Quarantine is not deletion. It is an evidence-preserving workflow for investigation, correction, and controlled replay.</p>
+</section>
+<section id="transform-valid-records" class="level2">
+<h2 class="anchored" data-anchor-id="transform-valid-records">4. Transform valid records</h2>
+<p>Transformation normalizes categorical values, converts timestamps to UTC, derives <code>transaction_date</code>, and calculates <code>net_revenue_cents</code>. It also records <code>source_row_number</code>, <code>source_sha256</code>, and <code>pipeline_run_id</code>. These lineage fields make it possible to trace a warehouse record to a precise source row and execution.</p>
+<p>The processed CSV provides a transparent interchange artifact. The SQLite table provides typed storage and SQL access. Both are produced from the same validated in-memory records, avoiding divergent business logic.</p>
+</section>
+<section id="load-idempotently" class="level2">
+<h2 class="anchored" data-anchor-id="load-idempotently">5. Load idempotently</h2>
+<p>The target table uses <code>transaction_id</code> as its primary key and an upsert as its load strategy. Reprocessing the same batch updates the same business keys instead of appending duplicates. The load occurs inside a database transaction, so either the batch and its run metadata commit together or neither does.</p>
+<p>Idempotency does <strong>not</strong> mean that every metric stays unchanged. The second execution has a different run identifier and timestamp, and its manifest records a new operational event. The business table, however, converges to the same state for the same input.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    transaction_date,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    course_id,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">SUM</span>(net_revenue_cents) <span class="op">/</span> <span class="fl">100.0</span> <span class="kw">AS</span> net_revenue</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> fact_course_transactions</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">GROUP</span> <span class="kw">BY</span> transaction_date, course_id</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">ORDER</span> <span class="kw">BY</span> transaction_date, course_id;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="verify-before-declaring-success" class="level2">
+<h2 class="anchored" data-anchor-id="verify-before-declaring-success">6. Verify before declaring success</h2>
+<p>The pipeline checks the following conditions after loading:</p>
+<ul>
+<li>extracted rows equal valid plus quarantined rows;</li>
+<li>distinct valid transaction identifiers equal valid rows;</li>
+<li>all loaded transaction identifiers are present in the target;</li>
+<li>the source net-revenue total equals the corresponding warehouse total; and</li>
+<li>no null business keys exist in the loaded records.</li>
+</ul>
+<p>A process that exits with code zero but fails reconciliation is not successful. The script raises an exception, rolls back when appropriate, and returns a non-zero exit status when an invariant fails.</p>
+<p>The supplied run produces the following expected results:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th style="text-align: right;">Expected value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Source rows</td>
+<td style="text-align: right;">12</td>
+</tr>
+<tr class="even">
+<td>Valid rows</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr class="odd">
+<td>Quarantined rows</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="even">
+<td>Validity rate</td>
+<td style="text-align: right;">66.7%</td>
+</tr>
+<tr class="odd">
+<td>Net revenue</td>
+<td style="text-align: right;">$734.50</td>
+</tr>
+<tr class="even">
+<td>Warehouse rows after load</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr class="odd">
+<td>Reconciliation status</td>
+<td style="text-align: right;"><code>passed</code></td>
+</tr>
+</tbody>
+</table>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="results/figures/18-pipeline-run-summary.svg" class="img-fluid figure-img" alt="Four horizontal indicators summarize eight valid records, four quarantined records, a 66.7 percent validity rate, and 734 dollars and 50 cents net revenue."></p>
+<figcaption>Pipeline run summary: accepted and quarantined records, validity rate, and signed net revenue.</figcaption>
+</figure>
+</div>
+</section>
+<section id="observe-the-run" class="level2">
+<h2 class="anchored" data-anchor-id="observe-the-run">7. Observe the run</h2>
+<p>The manifest records the facts needed by both people and monitoring systems:</p>
+<ul>
+<li>run ID, start time, finish time, and duration;</li>
+<li>pipeline and schema versions;</li>
+<li>source path, byte size, and SHA-256 fingerprint;</li>
+<li>extracted, valid, quarantined, and loaded counts;</li>
+<li>validity rate and net revenue;</li>
+<li>reconciliation checks; and</li>
+<li>final status.</li>
+</ul>
+<p>The latest-run JSON supports dashboards and incident diagnosis. The CSV history supports trend analysis across runs. In a production orchestrator, the same metrics would also be emitted to centralized logs and monitoring infrastructure.</p>
+</section>
+<section id="running-the-case-study" class="level2">
+<h2 class="anchored" data-anchor-id="running-the-case-study">Running the case study</h2>
+<p>From the repository root:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/18-run-end-to-end-pipeline.sh</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pytest <span class="at">-q</span> tests/test_18_end_to_end_pipeline.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>To run the Python entry point directly:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/python/18-run-end-to-end-pipeline.py <span class="dt">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--config</span> configs/18-pipeline.json</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The script accepts <code>--run-id</code> for reproducible demonstrations and <code>--no-history</code> for tests or disposable runs.</p>
+</section>
+<section id="inspecting-the-warehouse" class="level2">
+<h2 class="anchored" data-anchor-id="inspecting-the-warehouse">Inspecting the warehouse</h2>
+<p>Use Python when the SQLite command-line client is unavailable:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sqlite3</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> sqlite3.<span class="ex">connect</span>(<span class="st">"data/warehouse/18-learning-platform.sqlite"</span>) <span class="im">as</span> connection:</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> connection.execute(<span class="st">"""</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">        SELECT customer_segment,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="st">               ROUND(SUM(net_revenue_cents) / 100.0, 2) AS net_revenue</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="st">        FROM fact_course_transactions</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="st">        GROUP BY customer_segment</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="st">        ORDER BY customer_segment</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="st">    """</span>).fetchall()</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(rows)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Expected result:</p>
+<pre class="text"><code>[('individual', 314.5), ('organization', 420.0)]</code></pre>
+</section>
+<section id="failure-and-recovery-exercises" class="level2">
+<h2 class="anchored" data-anchor-id="failure-and-recovery-exercises">Failure and recovery exercises</h2>
+<section id="exercise-1-schema-drift" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-1-schema-drift">Exercise 1: Schema drift</h3>
+<p>Rename <code>unit_price</code> in a copy of the raw file. Run the pipeline against the copy and confirm that extraction fails before the warehouse is modified. Explain why guessing a replacement column would be unsafe.</p>
+</section>
+<section id="exercise-2-correct-and-replay-quarantine" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-2-correct-and-replay-quarantine">Exercise 2: Correct and replay quarantine</h3>
+<p>Correct one invalid row in a new source file, give it a unique transaction identifier, and rerun. Confirm that the business table gains exactly one row and that reconciliation still passes.</p>
+</section>
+<section id="exercise-3-prove-idempotency" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-3-prove-idempotency">Exercise 3: Prove idempotency</h3>
+<p>Run the original batch twice. Query the fact-table count after each run. The run ledger should grow, but the fact table should remain at eight rows.</p>
+</section>
+<section id="exercise-4-add-an-operational-threshold" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-4-add-an-operational-threshold">Exercise 4: Add an operational threshold</h3>
+<p>Fail the pipeline when the validity rate falls below a configurable threshold. Decide whether that rule belongs before or after loading and justify the transaction boundary.</p>
+</section>
+</section>
+<section id="production-hardening-decisions" class="level2">
+<h2 class="anchored" data-anchor-id="production-hardening-decisions">Production hardening decisions</h2>
+<p>This local pipeline demonstrates the reliability pattern, but scale changes the implementation choices.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concern</th>
+<th>Case-study choice</th>
+<th>Production extension</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Source</td>
+<td>Local CSV</td>
+<td>Object storage, API, CDC, or message stream</td>
+</tr>
+<tr class="even">
+<td>Execution</td>
+<td>One Python process</td>
+<td>Managed orchestrator with retries and SLAs</td>
+</tr>
+<tr class="odd">
+<td>Storage</td>
+<td>SQLite</td>
+<td>Transactional warehouse or lakehouse</td>
+</tr>
+<tr class="even">
+<td>Secrets</td>
+<td>None required</td>
+<td>Secret manager and workload identity</td>
+</tr>
+<tr class="odd">
+<td>Schema</td>
+<td>JSON contract</td>
+<td>Versioned schema registry and compatibility policy</td>
+</tr>
+<tr class="even">
+<td>Quality</td>
+<td>Deterministic row rules</td>
+<td>Dataset-level expectations and anomaly detection</td>
+</tr>
+<tr class="odd">
+<td>Observability</td>
+<td>JSON, CSV, SVG</td>
+<td>Central logs, metrics, traces, alerts, and dashboards</td>
+</tr>
+<tr class="even">
+<td>Recovery</td>
+<td>Safe rerun</td>
+<td>Checkpoints, partition replay, and backfill controls</td>
+</tr>
+</tbody>
+</table>
+<p>The invariant stays the same: a pipeline must make data movement explainable, repeatable, and verifiable.</p>
+</section>
+<section id="governance-review" class="level2">
+<h2 class="anchored" data-anchor-id="governance-review">Governance review</h2>
+<p>Before promoting the pipeline, answer these questions:</p>
+<ol type="1">
+<li>Who owns the source contract and approves changes?</li>
+<li>How long should raw, quarantine, and run-history artifacts be retained?</li>
+<li>Which fields contain personal or sensitive information?</li>
+<li>Who may query the warehouse and who may inspect quarantine?</li>
+<li>How are corrections approved and replayed?</li>
+<li>Which run evidence is required for an audit?</li>
+</ol>
+<p>This case study uses synthetic identifiers and contains no direct personal data. Real customer data would require documented classification, least-privilege access, encryption, retention limits, and deletion procedures.</p>
+</section>
+<section id="reliability-acceptance-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="reliability-acceptance-checklist">Reliability acceptance checklist</h2>
+<ul class="task-list">
+<li><label><input type="checkbox">The source is immutable and fingerprinted.</label></li>
+<li><label><input type="checkbox">Required columns and field rules are explicit.</label></li>
+<li><label><input type="checkbox">Invalid records retain reasons and lineage.</label></li>
+<li><label><input type="checkbox">The transform is deterministic for the same source and configuration.</label></li>
+<li><label><input type="checkbox">The business load is idempotent.</label></li>
+<li><label><input type="checkbox">Database writes use a transaction.</label></li>
+<li><label><input type="checkbox">Counts and monetary totals reconcile.</label></li>
+<li><label><input type="checkbox">Run metadata identifies code, schema, source, and outcome.</label></li>
+<li><label><input type="checkbox">Automated tests cover valid data, invalid data, and reruns.</label></li>
+<li><label><input type="checkbox">Recovery and ownership procedures are documented.</label></li>
+</ul>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<ol type="1">
+<li>End-to-end reliability comes from connected controls, not from any single tool.</li>
+<li>A source fingerprint and row-level lineage make results traceable.</li>
+<li>Quarantine preserves evidence while allowing valid data to progress.</li>
+<li>Primary keys and upserts make business-state reruns idempotent.</li>
+<li>Reconciliation converts pipeline completion into a testable claim.</li>
+<li>Operational metadata is part of the data product, not an afterthought.</li>
+</ol>
+</section>
+<section id="chapter-summary" class="level2">
+<h2 class="anchored" data-anchor-id="chapter-summary">Chapter summary</h2>
+<p>This case study assembled a complete batch pipeline around a small transaction dataset. The implementation fingerprints the source, validates a declared contract, quarantines invalid rows, transforms money and timestamps deterministically, loads SQLite with idempotent upserts, and verifies record counts and revenue. Tests, a run manifest, a history ledger, and a summary plot demonstrate how engineering, observability, and governance work together. The same control pattern can be carried from a local teaching pipeline to a production platform even when the underlying storage and orchestration technologies change.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./17-ci-cd-and-pipeline-environments.html" class="pagination-link" aria-label="CI/CD and Pipeline Environments">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">CI/CD and Pipeline Environments</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./999-appendix.html" class="pagination-link" aria-label="Appendix">
+        <span class="nav-page-text"><span class="chapter-title">Appendix</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

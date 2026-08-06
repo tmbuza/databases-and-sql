@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="235" viewBox="0 0 880 235" role="img" aria-labelledby="title desc">
+<title id="title">DSDP 18 pipeline run summary</title>
+<desc id="desc">Eight valid records, four quarantined records, 66.7 percent validity, and 734 dollars 50 cents net revenue.</desc>
+<style>.title{font:700 22px system-ui,sans-serif;fill:#172B4D}.label{font:14px system-ui,sans-serif;fill:#52616B}.value{font:700 27px system-ui,sans-serif}</style>
+<rect width="880" height="235" fill="#F5F7FA"/>
+<text x="35" y="42" class="title">Course-transactions pipeline: verified run</text>
+<rect x="35" y="78" width="180" height="112" rx="10" fill="white" stroke="#D7DEE7"/><rect x="35" y="78" width="7" height="112" rx="3" fill="#167D6D"/><text x="55" y="118" class="label">Valid records</text><text x="55" y="160" class="value" fill="#167D6D">8</text><rect x="240" y="78" width="180" height="112" rx="10" fill="white" stroke="#D7DEE7"/><rect x="240" y="78" width="7" height="112" rx="3" fill="#C75146"/><text x="260" y="118" class="label">Quarantined records</text><text x="260" y="160" class="value" fill="#C75146">4</text><rect x="445" y="78" width="180" height="112" rx="10" fill="white" stroke="#D7DEE7"/><rect x="445" y="78" width="7" height="112" rx="3" fill="#3D5A80"/><text x="465" y="118" class="label">Validity rate</text><text x="465" y="160" class="value" fill="#3D5A80">66.7%</text><rect x="650" y="78" width="180" height="112" rx="10" fill="white" stroke="#D7DEE7"/><rect x="650" y="78" width="7" height="112" rx="3" fill="#7A5195"/><text x="670" y="118" class="label">Net revenue</text><text x="670" y="160" class="value" fill="#7A5195">$734.50</text>
+<text x="35" y="218" class="label">Source rows reconcile; target keys and revenue checks passed.</text>
+</svg>

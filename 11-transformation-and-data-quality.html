@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Transformation and Data Quality – Data Pipelines</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./12-storage-formats-and-partitioning.html" rel="next">
+<link href="./10-extraction-patterns-and-apis.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-485d01fc63b59abcd3ee1bf1e8e2748d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<meta name="mermaid-theme" content="forest">
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="assets/css/cdi.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-from-scripts-to-data-pipelines.html">From Queries to Pipelines</a></li><li class="breadcrumb-item"><a href="./11-transformation-and-data-quality.html"><span class="chapter-title">Transformation and Data Quality</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Data Pipelines</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">index.html</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00-preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Databases and SQL Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-relational-databases-and-tables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Relational Databases and Tables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-querying-data-with-sql.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Querying Data with SQL</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-filtering-aggregation-and-grouping.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Filtering, Aggregation, and Grouping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-joins-and-relational-thinking.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Joins and Relational Thinking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-database-design-and-normalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Database Design and Normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-sql-and-python-integration.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">SQL and Python Integration</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">From Queries to Pipelines</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-from-scripts-to-data-pipelines.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">From Scripts to Data Pipelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-pipeline-case-study-and-architecture.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Pipeline Case Study and Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-data-sources-and-ingestion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Data Sources and Ingestion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-extraction-patterns-and-apis.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Extraction Patterns and APIs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-transformation-and-data-quality.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Transformation and Data Quality</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-storage-formats-and-partitioning.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Storage Formats and Partitioning</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Orchestration and Reliable Operations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-orchestration-and-scheduling.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Orchestration and Scheduling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-testing-monitoring-and-observability.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Testing, Monitoring, and Observability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-recovery-idempotency-and-backfills.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Recovery, Idempotency, and Backfills</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Production Data Systems</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-security-governance-and-lineage.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Security, Governance, and Lineage</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-ci-cd-and-pipeline-environments.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">CI/CD and Pipeline Environments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-end-to-end-pipeline-case-study.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">End-to-End Pipeline Case Study</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-appendix.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-transformation-data-quality" id="toc-sec-transformation-data-quality" class="nav-link active" data-scroll-target="#sec-transformation-data-quality">Transformation and Data Quality</a>
+  <ul class="collapse">
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#from-raw-records-to-a-trusted-dataset" id="toc-from-raw-records-to-a-trusted-dataset" class="nav-link" data-scroll-target="#from-raw-records-to-a-trusted-dataset">From raw records to a trusted dataset</a></li>
+  <li><a href="#the-chapter-case-study" id="toc-the-chapter-case-study" class="nav-link" data-scroll-target="#the-chapter-case-study">The chapter case study</a></li>
+  <li><a href="#design-transformations-as-pure-steps" id="toc-design-transformations-as-pure-steps" class="nav-link" data-scroll-target="#design-transformations-as-pure-steps">Design transformations as pure steps</a>
+  <ul class="collapse">
+  <li><a href="#normalize-before-validating" id="toc-normalize-before-validating" class="nav-link" data-scroll-target="#normalize-before-validating">Normalize before validating</a></li>
+  </ul></li>
+  <li><a href="#define-the-data-contract" id="toc-define-the-data-contract" class="nav-link" data-scroll-target="#define-the-data-contract">Define the data contract</a></li>
+  <li><a href="#row-level-validation-and-quarantine" id="toc-row-level-validation-and-quarantine" class="nav-link" data-scroll-target="#row-level-validation-and-quarantine">Row-level validation and quarantine</a></li>
+  <li><a href="#dataset-level-quality-dimensions" id="toc-dataset-level-quality-dimensions" class="nav-link" data-scroll-target="#dataset-level-quality-dimensions">Dataset-level quality dimensions</a>
+  <ul class="collapse">
+  <li><a href="#completeness" id="toc-completeness" class="nav-link" data-scroll-target="#completeness">Completeness</a></li>
+  <li><a href="#validity" id="toc-validity" class="nav-link" data-scroll-target="#validity">Validity</a></li>
+  <li><a href="#uniqueness" id="toc-uniqueness" class="nav-link" data-scroll-target="#uniqueness">Uniqueness</a></li>
+  <li><a href="#consistency" id="toc-consistency" class="nav-link" data-scroll-target="#consistency">Consistency</a></li>
+  <li><a href="#acceptance-rate" id="toc-acceptance-rate" class="nav-link" data-scroll-target="#acceptance-rate">Acceptance rate</a></li>
+  </ul></li>
+  <li><a href="#quality-gates" id="toc-quality-gates" class="nav-link" data-scroll-target="#quality-gates">Quality gates</a></li>
+  <li><a href="#failure-semantics" id="toc-failure-semantics" class="nav-link" data-scroll-target="#failure-semantics">Failure semantics</a></li>
+  <li><a href="#inspecting-the-outputs" id="toc-inspecting-the-outputs" class="nav-link" data-scroll-target="#inspecting-the-outputs">Inspecting the outputs</a></li>
+  <li><a href="#testing-strategy" id="toc-testing-strategy" class="nav-link" data-scroll-target="#testing-strategy">Testing strategy</a></li>
+  <li><a href="#operational-checklist" id="toc-operational-checklist" class="nav-link" data-scroll-target="#operational-checklist">Operational checklist</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-from-scripts-to-data-pipelines.html">From Queries to Pipelines</a></li><li class="breadcrumb-item"><a href="./11-transformation-and-data-quality.html"><span class="chapter-title">Transformation and Data Quality</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Transformation and Data Quality</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Aug 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="sec-transformation-data-quality" class="level1">
+<h1>Transformation and Data Quality</h1>
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-011</li>
+<li><strong>Type:</strong> Guide chapter</li>
+<li><strong>Audience:</strong> Data analysts, analytics engineers, and data engineers</li>
+<li><strong>Theme:</strong> Turning raw records into trustworthy, analysis-ready data</li>
+</ul>
+</div>
+<p>Ingestion makes data available. Transformation makes it usable, and data-quality controls make it trustworthy. A pipeline is therefore incomplete when it merely copies records from a source into storage. It must also make assumptions explicit, preserve lineage, identify invalid records, and produce evidence that the resulting dataset satisfies its contract.</p>
+<p>This chapter builds a small but production-shaped transformation workflow. The example starts with deliberately imperfect order data, standardizes it, validates row-level rules, quarantines rejected records, and publishes both a clean dataset and a quality report.</p>
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>After completing this chapter, you will be able to:</p>
+<ol type="1">
+<li>separate raw, staged, validated, and published transformation states;</li>
+<li>express transformations as deterministic and testable functions;</li>
+<li>define schema, completeness, validity, uniqueness, and consistency checks;</li>
+<li>quarantine invalid records without silently discarding evidence;</li>
+<li>calculate quality metrics and enforce release thresholds; and</li>
+<li>distinguish data-quality failures from pipeline execution failures.</li>
+</ol>
+</section>
+<section id="from-raw-records-to-a-trusted-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="from-raw-records-to-a-trusted-dataset">From raw records to a trusted dataset</h2>
+<p>A useful transformation pipeline creates explicit boundaries between states.</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    A["Raw orders&lt;br/&gt;immutable input"] --&gt; B["Staged orders&lt;br/&gt;normalized fields"]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    B --&gt; C{"Row rules&lt;br/&gt;and contracts"}</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    C --&gt;|valid| D["Published orders&lt;br/&gt;analysis-ready"]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    C --&gt;|invalid| E["Quarantine&lt;br/&gt;reason retained"]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    D --&gt; F["Quality report&lt;br/&gt;metrics and decision"]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    E --&gt; F</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A["Raw orders&lt;br/&gt;immutable input"] --&gt; B["Staged orders&lt;br/&gt;normalized fields"]
+    B --&gt; C{"Row rules&lt;br/&gt;and contracts"}
+    C --&gt;|valid| D["Published orders&lt;br/&gt;analysis-ready"]
+    C --&gt;|invalid| E["Quarantine&lt;br/&gt;reason retained"]
+    D --&gt; F["Quality report&lt;br/&gt;metrics and decision"]
+    E --&gt; F
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>The boundaries serve different purposes:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>State</th>
+<th>Purpose</th>
+<th>Typical operations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Raw</td>
+<td>Preserve source evidence</td>
+<td>Append, checksum, timestamp, source metadata</td>
+</tr>
+<tr class="even">
+<td>Staged</td>
+<td>Normalize representation</td>
+<td>Rename columns, parse dates, standardize text and types</td>
+</tr>
+<tr class="odd">
+<td>Validated</td>
+<td>Evaluate contracts</td>
+<td>Required-field, domain, range, uniqueness, and consistency checks</td>
+</tr>
+<tr class="even">
+<td>Published</td>
+<td>Serve downstream users</td>
+<td>Select stable columns, calculate derived fields, partition and document</td>
+</tr>
+<tr class="odd">
+<td>Quarantined</td>
+<td>Preserve rejected records</td>
+<td>Retain original values, failure reasons, run identifier, and remediation status</td>
+</tr>
+</tbody>
+</table>
+<p>The raw layer should be treated as immutable. Corrections belong in transformation logic or in a new source delivery—not in an undocumented edit to historical input.</p>
+</section>
+<section id="the-chapter-case-study" class="level2">
+<h2 class="anchored" data-anchor-id="the-chapter-case-study">The chapter case study</h2>
+<p>The practical dataset represents orders received from a transactional system. It intentionally includes:</p>
+<ul>
+<li>inconsistent customer identifiers and status capitalization;</li>
+<li>malformed timestamps;</li>
+<li>missing product identifiers;</li>
+<li>zero or negative quantities;</li>
+<li>negative unit prices;</li>
+<li>duplicate order identifiers; and</li>
+<li>a row whose reported total disagrees with quantity multiplied by unit price.</li>
+</ul>
+<p>The supporting program is:</p>
+<pre class="text"><code>scripts/python/11-transform-and-validate-orders.py</code></pre>
+<p>Run it from the repository root:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/11-run-transformation-and-quality.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The command creates the following artifacts:</p>
+<pre class="text"><code>data/processed/11-orders-clean.csv
+data/processed/11-orders-quarantine.csv
+results/11-data-quality-metrics.csv
+results/11-data-quality-summary.json
+results/figures/11-data-quality-dashboard.png</code></pre>
+</section>
+<section id="design-transformations-as-pure-steps" class="level2">
+<h2 class="anchored" data-anchor-id="design-transformations-as-pure-steps">Design transformations as pure steps</h2>
+<p>A transformation is easier to test when its output depends only on its declared input. Instead of one large function that reads files, mutates global state, transforms records, and writes results, separate orchestration from data logic:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>raw <span class="op">=</span> load_orders(input_path)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>staged <span class="op">=</span> stage_orders(raw)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>evaluated <span class="op">=</span> evaluate_rules(staged)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>clean, quarantine <span class="op">=</span> split_by_validity(evaluated)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>metrics <span class="op">=</span> calculate_quality_metrics(evaluated)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>publish(clean, quarantine, metrics)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This structure provides three advantages:</p>
+<ul>
+<li>each function can be tested with a small in-memory table;</li>
+<li>failures can be located at a specific boundary; and</li>
+<li>rerunning the pipeline with the same input produces the same logical output.</li>
+</ul>
+<section id="normalize-before-validating" class="level3">
+<h3 class="anchored" data-anchor-id="normalize-before-validating">Normalize before validating</h3>
+<p>Validation should evaluate canonical representations. For example, whitespace around <code>customer_id</code> is a representation problem, whereas a missing identifier after trimming is a completeness problem. The staging function therefore:</p>
+<ul>
+<li>strips surrounding whitespace;</li>
+<li>converts status values to lowercase;</li>
+<li>parses timestamps with invalid values converted to missing values;</li>
+<li>converts numeric fields with non-numeric values coerced to missing; and</li>
+<li>calculates <code>expected_total</code> from quantity and unit price.</li>
+</ul>
+<p>Normalization must not conceal meaning. A negative price should not be converted to its absolute value because that changes the source claim. It should fail a rule and enter quarantine.</p>
+</section>
+</section>
+<section id="define-the-data-contract" class="level2">
+<h2 class="anchored" data-anchor-id="define-the-data-contract">Define the data contract</h2>
+<p>A data contract records the assumptions downstream consumers are allowed to make. For the order dataset, the contract is:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type after staging</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>order_id</code></td>
+<td>string</td>
+<td>Required and unique</td>
+</tr>
+<tr class="even">
+<td><code>customer_id</code></td>
+<td>string</td>
+<td>Required after trimming</td>
+</tr>
+<tr class="odd">
+<td><code>product_id</code></td>
+<td>string</td>
+<td>Required after trimming</td>
+</tr>
+<tr class="even">
+<td><code>order_timestamp</code></td>
+<td>datetime</td>
+<td>Must parse successfully</td>
+</tr>
+<tr class="odd">
+<td><code>quantity</code></td>
+<td>numeric</td>
+<td>Integer-like and greater than zero</td>
+</tr>
+<tr class="even">
+<td><code>unit_price</code></td>
+<td>numeric</td>
+<td>Greater than or equal to zero</td>
+</tr>
+<tr class="odd">
+<td><code>status</code></td>
+<td>string</td>
+<td>One of <code>pending</code>, <code>paid</code>, <code>shipped</code>, <code>cancelled</code></td>
+</tr>
+<tr class="even">
+<td><code>reported_total</code></td>
+<td>numeric</td>
+<td>Must equal <code>quantity × unit_price</code> within tolerance</td>
+</tr>
+</tbody>
+</table>
+<p>Contracts should be versioned with pipeline code. A new allowed status or a revised interpretation of totals is a contract change, not an incidental implementation detail.</p>
+</section>
+<section id="row-level-validation-and-quarantine" class="level2">
+<h2 class="anchored" data-anchor-id="row-level-validation-and-quarantine">Row-level validation and quarantine</h2>
+<p>The example evaluates each rule as a Boolean column and then combines failed rule names into <code>quality_issues</code>. A record is valid only if every rule passes.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>checks <span class="op">=</span> {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"missing_order_id"</span>: orders[<span class="st">"order_id"</span>].isna(),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"duplicate_order_id"</span>: orders[<span class="st">"order_id"</span>].duplicated(keep<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"missing_customer_id"</span>: orders[<span class="st">"customer_id"</span>].isna(),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"invalid_timestamp"</span>: orders[<span class="st">"order_timestamp"</span>].isna(),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"nonpositive_quantity"</span>: orders[<span class="st">"quantity"</span>].isna() <span class="op">|</span> (orders[<span class="st">"quantity"</span>] <span class="op">&lt;=</span> <span class="dv">0</span>),</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Quarantine is preferable to silent deletion because it retains evidence needed to answer:</p>
+<ul>
+<li>Which records failed?</li>
+<li>Which rules failed for each record?</li>
+<li>Did the source deteriorate or did a new value expose an incomplete contract?</li>
+<li>Can the records be corrected and replayed?</li>
+</ul>
+<p>The quarantine dataset in this chapter retains <code>quality_issues</code> as a pipe-separated list. In a larger system, a separate long-form violations table—one row per record and rule—can support more detailed monitoring.</p>
+</section>
+<section id="dataset-level-quality-dimensions" class="level2">
+<h2 class="anchored" data-anchor-id="dataset-level-quality-dimensions">Dataset-level quality dimensions</h2>
+<p>Row rules feed several dataset-level dimensions.</p>
+<section id="completeness" class="level3">
+<h3 class="anchored" data-anchor-id="completeness">Completeness</h3>
+<p>Completeness measures whether required values are present:</p>
+<p><span class="math display">\[
+\text{completeness} = 1 - \frac{\text{missing required values}}{\text{required value opportunities}}
+\]</span></p>
+</section>
+<section id="validity" class="level3">
+<h3 class="anchored" data-anchor-id="validity">Validity</h3>
+<p>Validity measures whether values satisfy their declared domains, types, ranges, and relationships:</p>
+<p><span class="math display">\[
+\text{validity} = \frac{\text{rows passing all validity rules}}{\text{rows evaluated}}
+\]</span></p>
+</section>
+<section id="uniqueness" class="level3">
+<h3 class="anchored" data-anchor-id="uniqueness">Uniqueness</h3>
+<p>For a required key, uniqueness can be expressed as the share of records not involved in duplication:</p>
+<p><span class="math display">\[
+\text{uniqueness} = 1 - \frac{\text{rows with duplicated keys}}{\text{rows evaluated}}
+\]</span></p>
+</section>
+<section id="consistency" class="level3">
+<h3 class="anchored" data-anchor-id="consistency">Consistency</h3>
+<p>Consistency evaluates relationships between fields. Here, a row is consistent when the reported total agrees with the calculated total within one cent.</p>
+</section>
+<section id="acceptance-rate" class="level3">
+<h3 class="anchored" data-anchor-id="acceptance-rate">Acceptance rate</h3>
+<p>The final acceptance rate is:</p>
+<p><span class="math display">\[
+\text{acceptance rate} = \frac{\text{published rows}}{\text{input rows}}
+\]</span></p>
+<p>This is operationally useful but should not replace dimension-specific measures. The same acceptance rate can result from very different underlying problems.</p>
+</section>
+</section>
+<section id="quality-gates" class="level2">
+<h2 class="anchored" data-anchor-id="quality-gates">Quality gates</h2>
+<p>A quality gate converts metrics into a release decision. The example requires:</p>
+<ul>
+<li>at least 70% of input rows to pass all rules;</li>
+<li>100% completeness in the published dataset; and</li>
+<li>100% uniqueness of the published order key.</li>
+</ul>
+<p>The intentionally imperfect demonstration input passes because invalid rows are quarantined before publication and enough valid rows remain. In production, thresholds should be tied to consumer risk. A financial settlement table may require zero rejected rows, while an exploratory feed may tolerate a small, monitored rejection rate.</p>
+<p>Quality gates should distinguish three outcomes:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Outcome</th>
+<th>Meaning</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Pass</td>
+<td>Dataset satisfies the release contract</td>
+<td>Publish and record metrics</td>
+</tr>
+<tr class="even">
+<td>Warn</td>
+<td>Dataset is usable but degradation requires attention</td>
+<td>Publish with alert and investigation</td>
+</tr>
+<tr class="odd">
+<td>Fail</td>
+<td>Consumer risk exceeds tolerance</td>
+<td>Stop publication, retain evidence, alert owner</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="failure-semantics" class="level2">
+<h2 class="anchored" data-anchor-id="failure-semantics">Failure semantics</h2>
+<p>Not every quality problem should crash the pipeline, and not every successful program run should publish data.</p>
+<ul>
+<li><strong>Execution failure:</strong> the file cannot be read, required columns are absent, or output cannot be written. The job should fail.</li>
+<li><strong>Record-quality failure:</strong> individual rows violate known rules. They may be quarantined while valid rows continue.</li>
+<li><strong>Dataset-quality failure:</strong> aggregate metrics breach a release threshold. Outputs may be retained for diagnosis, but publication should fail.</li>
+<li><strong>Contract drift:</strong> new source fields or values are structurally valid but not recognized by the current contract. The owner must decide whether to reject them or revise the contract.</li>
+</ul>
+<p>The chapter script exits with a nonzero status when a dataset-level gate fails, allowing an orchestrator or CI workflow to block downstream publication.</p>
+</section>
+<section id="inspecting-the-outputs" class="level2">
+<h2 class="anchored" data-anchor-id="inspecting-the-outputs">Inspecting the outputs</h2>
+<p>The clean output contains only contract-compliant records and adds lineage fields:</p>
+<ul>
+<li><code>transformation_run_id</code> identifies the run;</li>
+<li><code>transformed_at_utc</code> records when transformation occurred; and</li>
+<li><code>expected_total</code> makes the derived calculation explicit.</li>
+</ul>
+<p>The JSON summary records counts, thresholds, metrics, and the release decision. The dashboard visualizes metric values against the thresholds used by the gate.</p>
+</section>
+<section id="testing-strategy" class="level2">
+<h2 class="anchored" data-anchor-id="testing-strategy">Testing strategy</h2>
+<p>Transformation tests should cover both expected behavior and failure boundaries.</p>
+<ol type="1">
+<li><strong>Unit tests:</strong> verify trimming, status normalization, timestamp parsing, and total calculation.</li>
+<li><strong>Rule tests:</strong> provide one invalid example for each rule and confirm its failure reason.</li>
+<li><strong>Schema tests:</strong> confirm required columns and output types.</li>
+<li><strong>Idempotency tests:</strong> run the logical transformation twice on identical input and compare business columns.</li>
+<li><strong>Integration tests:</strong> execute the command and verify clean, quarantine, metrics, and figure outputs.</li>
+<li><strong>Regression tests:</strong> retain representative edge cases so corrected defects cannot silently return.</li>
+</ol>
+<p>Run identifiers and processing timestamps are expected to vary, so idempotency comparisons should exclude operational metadata or derive it from a fixed run context during tests.</p>
+</section>
+<section id="operational-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="operational-checklist">Operational checklist</h2>
+<p>Before publishing a transformed dataset, confirm that:</p>
+<ul>
+<li>raw input remains reproducible and unchanged;</li>
+<li>the contract and threshold versions are recorded;</li>
+<li>transformations are deterministic for business fields;</li>
+<li>rejected records retain their original identifiers and failure reasons;</li>
+<li>metrics use stable denominators and definitions;</li>
+<li>the quality decision is machine-readable;</li>
+<li>sensitive values are not exposed in logs or dashboards;</li>
+<li>downstream publication occurs only after the gate passes; and</li>
+<li>reruns do not duplicate published data.</li>
+</ul>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">Exercises</h2>
+<ol type="1">
+<li>Add a rule requiring <code>cancelled</code> orders to have a zero reported total. Decide whether the rule expresses validity or cross-field consistency.</li>
+<li>Convert the violation output to long form with one row per <code>order_id</code> and failed rule.</li>
+<li>Add a warning band when acceptance is between 70% and 85%, while keeping failure below 70%.</li>
+<li>Parameterize the script to accept an external CSV input and an output directory.</li>
+<li>Write tests for a duplicated order, an unknown status, a malformed date, and a rounding difference of less than one cent.</li>
+</ol>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<ul>
+<li>Transformation and quality validation are one controlled workflow, not unrelated cleanup steps.</li>
+<li>Raw input should remain immutable while staged and published states have explicit contracts.</li>
+<li>Normalize representation before evaluating semantic rules.</li>
+<li>Quarantine preserves invalid records and failure reasons without contaminating published data.</li>
+<li>Dimension-specific metrics explain quality better than a single pass rate.</li>
+<li>A machine-readable quality gate determines whether downstream publication is allowed.</li>
+<li>Trust comes from reproducible evidence: code, contracts, metrics, lineage, and retained failures.</li>
+</ul>
+<p>The next chapter builds on these trusted outputs by examining storage formats and partitioning strategies for efficient, maintainable data access.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./10-extraction-patterns-and-apis.html" class="pagination-link" aria-label="Extraction Patterns and APIs">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Extraction Patterns and APIs</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./12-storage-formats-and-partitioning.html" class="pagination-link" aria-label="Storage Formats and Partitioning">
+        <span class="nav-page-text"><span class="chapter-title">Storage Formats and Partitioning</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

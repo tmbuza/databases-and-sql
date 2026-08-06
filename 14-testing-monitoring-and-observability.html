@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Testing, Monitoring, and Observability – Data Pipelines</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./15-recovery-idempotency-and-backfills.html" rel="next">
+<link href="./13-orchestration-and-scheduling.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-485d01fc63b59abcd3ee1bf1e8e2748d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="assets/css/cdi.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./13-orchestration-and-scheduling.html">Orchestration and Reliable Operations</a></li><li class="breadcrumb-item"><a href="./14-testing-monitoring-and-observability.html"><span class="chapter-title">Testing, Monitoring, and Observability</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Data Pipelines</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">index.html</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00-preface.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Databases and SQL Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-relational-databases-and-tables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Relational Databases and Tables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-querying-data-with-sql.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Querying Data with SQL</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-filtering-aggregation-and-grouping.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Filtering, Aggregation, and Grouping</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-joins-and-relational-thinking.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Joins and Relational Thinking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-database-design-and-normalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Database Design and Normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-sql-and-python-integration.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">SQL and Python Integration</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">From Queries to Pipelines</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-from-scripts-to-data-pipelines.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">From Scripts to Data Pipelines</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-pipeline-case-study-and-architecture.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Pipeline Case Study and Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-data-sources-and-ingestion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Data Sources and Ingestion</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-extraction-patterns-and-apis.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Extraction Patterns and APIs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-transformation-and-data-quality.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Transformation and Data Quality</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-storage-formats-and-partitioning.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Storage Formats and Partitioning</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Orchestration and Reliable Operations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-orchestration-and-scheduling.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Orchestration and Scheduling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-testing-monitoring-and-observability.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Testing, Monitoring, and Observability</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-recovery-idempotency-and-backfills.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Recovery, Idempotency, and Backfills</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Production Data Systems</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-security-governance-and-lineage.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Security, Governance, and Lineage</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-ci-cd-and-pipeline-environments.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">CI/CD and Pipeline Environments</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-end-to-end-pipeline-case-study.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">End-to-End Pipeline Case Study</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-appendix.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Appendix</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./999-references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#a-layered-testing-strategy" id="toc-a-layered-testing-strategy" class="nav-link" data-scroll-target="#a-layered-testing-strategy">A layered testing strategy</a>
+  <ul class="collapse">
+  <li><a href="#test-behaviour-not-implementation-details" id="toc-test-behaviour-not-implementation-details" class="nav-link" data-scroll-target="#test-behaviour-not-implementation-details">Test behaviour, not implementation details</a></li>
+  <li><a href="#test-the-unhappy-paths" id="toc-test-the-unhappy-paths" class="nav-link" data-scroll-target="#test-the-unhappy-paths">Test the unhappy paths</a></li>
+  </ul></li>
+  <li><a href="#data-contracts-at-stage-boundaries" id="toc-data-contracts-at-stage-boundaries" class="nav-link" data-scroll-target="#data-contracts-at-stage-boundaries">Data contracts at stage boundaries</a></li>
+  <li><a href="#what-to-monitor" id="toc-what-to-monitor" class="nav-link" data-scroll-target="#what-to-monitor">What to monitor</a>
+  <ul class="collapse">
+  <li><a href="#freshness" id="toc-freshness" class="nav-link" data-scroll-target="#freshness">Freshness</a></li>
+  <li><a href="#volume" id="toc-volume" class="nav-link" data-scroll-target="#volume">Volume</a></li>
+  <li><a href="#quality" id="toc-quality" class="nav-link" data-scroll-target="#quality">Quality</a></li>
+  <li><a href="#duration-and-throughput" id="toc-duration-and-throughput" class="nav-link" data-scroll-target="#duration-and-throughput">Duration and throughput</a></li>
+  <li><a href="#failures-and-retries" id="toc-failures-and-retries" class="nav-link" data-scroll-target="#failures-and-retries">Failures and retries</a></li>
+  </ul></li>
+  <li><a href="#from-metrics-to-service-level-objectives" id="toc-from-metrics-to-service-level-objectives" class="nav-link" data-scroll-target="#from-metrics-to-service-level-objectives">From metrics to service-level objectives</a></li>
+  <li><a href="#structured-run-metadata" id="toc-structured-run-metadata" class="nav-link" data-scroll-target="#structured-run-metadata">Structured run metadata</a></li>
+  <li><a href="#practical-generate-and-inspect-monitoring-evidence" id="toc-practical-generate-and-inspect-monitoring-evidence" class="nav-link" data-scroll-target="#practical-generate-and-inspect-monitoring-evidence">Practical: generate and inspect monitoring evidence</a></li>
+  <li><a href="#diagnose-with-symptoms-causes-and-evidence" id="toc-diagnose-with-symptoms-causes-and-evidence" class="nav-link" data-scroll-target="#diagnose-with-symptoms-causes-and-evidence">Diagnose with symptoms, causes, and evidence</a></li>
+  <li><a href="#alert-design-and-common-failure-modes" id="toc-alert-design-and-common-failure-modes" class="nav-link" data-scroll-target="#alert-design-and-common-failure-modes">Alert design and common failure modes</a></li>
+  <li><a href="#production-hardening" id="toc-production-hardening" class="nav-link" data-scroll-target="#production-hardening">Production hardening</a></li>
+  <li><a href="#chapter-checklist" id="toc-chapter-checklist" class="nav-link" data-scroll-target="#chapter-checklist">Chapter checklist</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./13-orchestration-and-scheduling.html">Orchestration and Reliable Operations</a></li><li class="breadcrumb-item"><a href="./14-testing-monitoring-and-observability.html"><span class="chapter-title">Testing, Monitoring, and Observability</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span id="sec-testing-monitoring-observability" class="quarto-section-identifier"><span class="chapter-title">Testing, Monitoring, and Observability</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">Aug 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-014</li>
+<li><strong>Type:</strong> Guide chapter</li>
+<li><strong>Audience:</strong> Data practitioners building reliable batch pipelines</li>
+<li><strong>Theme:</strong> Detect failures early and diagnose them quickly</li>
+</ul>
+</div>
+<p>Data pipelines rarely fail only by crashing. A run can finish successfully and still publish stale, incomplete, duplicated, or implausible data. Reliable pipelines therefore need three related capabilities:</p>
+<ul>
+<li><strong>Testing</strong> checks expected behaviour before and during execution.</li>
+<li><strong>Monitoring</strong> measures known operational and data-health signals over time.</li>
+<li><strong>Observability</strong> preserves enough evidence to explain an unexpected state.</li>
+</ul>
+<p>This chapter builds those capabilities around a small orders pipeline. The example produces structured run metadata, evaluates service-level objectives (SLOs), and creates a monitoring dashboard from multiple simulated runs.</p>
+<section id="learning-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
+<ol type="1">
+<li>test functions, stage boundaries, data contracts, and complete runs;</li>
+<li>monitor freshness, volume, quality, duration, and failures;</li>
+<li>define actionable SLOs and alert conditions;</li>
+<li>emit structured run metadata that supports fast diagnosis; and</li>
+<li>distinguish symptoms, causes, and debugging evidence.</li>
+</ol>
+</section>
+<section id="a-layered-testing-strategy" class="level2">
+<h2 class="anchored" data-anchor-id="a-layered-testing-strategy">A layered testing strategy</h2>
+<p>No single test answers every reliability question. A useful test suite moves from fast, isolated checks to broader workflow validation.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Main question</th>
+<th>Example</th>
+<th>Typical frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Unit</td>
+<td>Does one function behave correctly?</td>
+<td>Revenue equals <code>quantity * unit_price</code></td>
+<td>Every change</td>
+</tr>
+<tr class="even">
+<td>Contract</td>
+<td>Does data match the expected interface?</td>
+<td>Required columns and types exist</td>
+<td>Every run and change</td>
+</tr>
+<tr class="odd">
+<td>Integration</td>
+<td>Do adjacent stages work together?</td>
+<td>Extracted rows load into the target schema</td>
+<td>Every change</td>
+</tr>
+<tr class="even">
+<td>Data quality</td>
+<td>Is this run’s data fit for use?</td>
+<td>IDs are unique and prices are non-negative</td>
+<td>Every run</td>
+</tr>
+<tr class="odd">
+<td>End-to-end</td>
+<td>Does the complete workflow produce the expected output?</td>
+<td>Raw orders become a valid summary</td>
+<td>Before release; scheduled smoke test</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>test pyramid</strong> still applies: keep many deterministic unit and contract tests, fewer integration tests, and a small number of end-to-end tests. Broad tests are valuable, but they are slower and usually identify a larger area rather than the exact faulty function.</p>
+<section id="test-behaviour-not-implementation-details" class="level3">
+<h3 class="anchored" data-anchor-id="test-behaviour-not-implementation-details">Test behaviour, not implementation details</h3>
+<p>A durable test describes an invariant. For example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> test_revenue_is_quantity_times_price():</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    row <span class="op">=</span> {<span class="st">"quantity"</span>: <span class="dv">3</span>, <span class="st">"unit_price"</span>: <span class="fl">12.50</span>}</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> calculate_revenue(row) <span class="op">==</span> <span class="fl">37.50</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This test remains useful if the internal implementation changes. A test that mocks every internal call may pass while the real stage boundary is broken.</p>
+</section>
+<section id="test-the-unhappy-paths" class="level3">
+<h3 class="anchored" data-anchor-id="test-the-unhappy-paths">Test the unhappy paths</h3>
+<p>Production incidents usually live outside the ideal sample. Include cases such as:</p>
+<ul>
+<li>empty extracts;</li>
+<li>missing or extra columns;</li>
+<li>null business keys;</li>
+<li>duplicate records;</li>
+<li>invalid timestamps and late-arriving data;</li>
+<li>negative quantities or prices;</li>
+<li>partial writes and retries; and</li>
+<li>upstream timeouts or malformed responses.</li>
+</ul>
+<p>The included test file covers transformation behaviour, contract violations, duplicate detection, and an end-to-end run. Run it from the repository root:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pytest <span class="at">-q</span> tests/test_14_observable_pipeline.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="data-contracts-at-stage-boundaries" class="level2">
+<h2 class="anchored" data-anchor-id="data-contracts-at-stage-boundaries">Data contracts at stage boundaries</h2>
+<p>A data contract makes assumptions explicit. At minimum, it should describe:</p>
+<ul>
+<li>required fields;</li>
+<li>accepted data types and formats;</li>
+<li>nullability;</li>
+<li>uniqueness or key constraints;</li>
+<li>allowed ranges or categories; and</li>
+<li>ownership and change expectations.</li>
+</ul>
+<p>In the example pipeline, an order must have <code>order_id</code>, <code>customer_id</code>, <code>order_ts</code>, <code>quantity</code>, and <code>unit_price</code>. Contract validation happens before transformation so that a malformed input cannot quietly contaminate downstream tables.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>REQUIRED_COLUMNS <span class="op">=</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"order_id"</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"customer_id"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"order_ts"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"quantity"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"unit_price"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Schema validation and semantic validation solve different problems. A value such as <code>-20.00</code> can be a valid number while still being an invalid unit price. Both checks are needed.</p>
+</section>
+<section id="what-to-monitor" class="level2">
+<h2 class="anchored" data-anchor-id="what-to-monitor">What to monitor</h2>
+<p>Monitoring begins with the consumer’s expectations, not with every metric the system can emit. Five signal groups cover most batch pipelines.</p>
+<section id="freshness" class="level3">
+<h3 class="anchored" data-anchor-id="freshness">Freshness</h3>
+<p>Freshness measures how far the newest usable event is behind the observation time:</p>
+<p><span class="math display">\[
+\text{freshness lag} = t_{\text{observed}} - \max(t_{\text{event}})
+\]</span></p>
+<p>A successful run that republishes yesterday’s extract is operationally successful but not fresh.</p>
+</section>
+<section id="volume" class="level3">
+<h3 class="anchored" data-anchor-id="volume">Volume</h3>
+<p>Track input rows, output rows, rejected rows, and changes from a recent baseline. Volume alerts should allow normal business variation. A zero-row result may be valid for one dataset and a critical failure for another.</p>
+</section>
+<section id="quality" class="level3">
+<h3 class="anchored" data-anchor-id="quality">Quality</h3>
+<p>Useful quality measures include:</p>
+<ul>
+<li>completeness: proportion of required values present;</li>
+<li>uniqueness: proportion of keys without duplication;</li>
+<li>validity: proportion satisfying domain rules; and</li>
+<li>consistency: agreement across related fields or tables.</li>
+</ul>
+<p>For a check with <span class="math inline">\(n_{\text{failed}}\)</span> failures among <span class="math inline">\(n_{\text{total}}\)</span> records:</p>
+<p><span class="math display">\[
+\text{pass rate} = 1 - \frac{n_{\text{failed}}}{n_{\text{total}}}
+\]</span></p>
+<p>Always store the failed count alongside the rate. A 99.9% pass rate has different consequences for one thousand and one billion records.</p>
+</section>
+<section id="duration-and-throughput" class="level3">
+<h3 class="anchored" data-anchor-id="duration-and-throughput">Duration and throughput</h3>
+<p>Record total duration and stage durations. A rising extract duration can reveal upstream throttling; a rising load duration can reveal target contention. A total duration alone cannot distinguish them.</p>
+</section>
+<section id="failures-and-retries" class="level3">
+<h3 class="anchored" data-anchor-id="failures-and-retries">Failures and retries</h3>
+<p>Track terminal status, failure stage, error category, attempt number, and retry count. Repeated successful retries are still a reliability signal: they consume time and often precede a terminal failure.</p>
+</section>
+</section>
+<section id="from-metrics-to-service-level-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="from-metrics-to-service-level-objectives">From metrics to service-level objectives</h2>
+<p>An SLO states the acceptable level of service for a defined measurement window. For this demonstration, a healthy run must meet all of these conditions:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Signal</th>
+<th style="text-align: right;">Demonstration SLO</th>
+<th>Alert meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Status</td>
+<td style="text-align: right;"><code>success</code></td>
+<td>A pipeline stage failed</td>
+</tr>
+<tr class="even">
+<td>Freshness lag</td>
+<td style="text-align: right;">at most 60 minutes</td>
+<td>Published data is too old</td>
+</tr>
+<tr class="odd">
+<td>Input volume</td>
+<td style="text-align: right;">at least 800 rows</td>
+<td>Extraction may be incomplete</td>
+</tr>
+<tr class="even">
+<td>Valid-row rate</td>
+<td style="text-align: right;">at least 98%</td>
+<td>Excessive invalid records</td>
+</tr>
+<tr class="odd">
+<td>Duration</td>
+<td style="text-align: right;">at most 90 seconds</td>
+<td>The delivery window is at risk</td>
+</tr>
+</tbody>
+</table>
+<p>Thresholds in a real project should come from consumer needs and historical behaviour. Alerts also need a clear owner, severity, notification route, and response playbook. If nobody knows what to do when an alert fires, it is only noise.</p>
+</section>
+<section id="structured-run-metadata" class="level2">
+<h2 class="anchored" data-anchor-id="structured-run-metadata">Structured run metadata</h2>
+<p>Logs explain individual events; run metadata summarizes one workflow execution. A compact run record should include:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"pipeline_name"</span><span class="fu">:</span> <span class="st">"daily-orders"</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"run_id"</span><span class="fu">:</span> <span class="st">"daily-orders-20260806T030000Z"</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"started_at"</span><span class="fu">:</span> <span class="st">"2026-08-06T03:00:00+00:00"</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"status"</span><span class="fu">:</span> <span class="st">"success"</span><span class="fu">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"input_rows"</span><span class="fu">:</span> <span class="dv">1024</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"output_rows"</span><span class="fu">:</span> <span class="dv">1011</span><span class="fu">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"freshness_lag_minutes"</span><span class="fu">:</span> <span class="fl">18.0</span><span class="fu">,</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"valid_row_rate"</span><span class="fu">:</span> <span class="fl">0.9873</span><span class="fu">,</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"duration_seconds"</span><span class="fu">:</span> <span class="fl">43.2</span><span class="fu">,</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"failed_checks"</span><span class="fu">:</span> <span class="ot">[]</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Use UTC timestamps and carry the same <code>run_id</code> through logs, metrics, lineage records, and alerts. This correlation key turns several disconnected signals into one diagnosable execution.</p>
+<p>Avoid logging secrets, tokens, or complete sensitive records. Log stable identifiers, counts, stage names, error categories, and safe samples where policy permits.</p>
+</section>
+<section id="practical-generate-and-inspect-monitoring-evidence" class="level2">
+<h2 class="anchored" data-anchor-id="practical-generate-and-inspect-monitoring-evidence">Practical: generate and inspect monitoring evidence</h2>
+<p>The script <code>scripts/python/14-monitor-observable-pipeline.py</code> creates 30 deterministic pipeline runs. It introduces four controlled incidents: low volume, stale data, poor quality, and excessive duration. Each run is evaluated against the SLOs.</p>
+<p>Run:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/python/14-monitor-observable-pipeline.py</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The script writes:</p>
+<ul>
+<li><code>results/14-pipeline-run-metadata.csv</code> — one row per run;</li>
+<li><code>results/14-monitoring-summary.json</code> — aggregate health and alert counts; and</li>
+<li><code>results/figures/14-pipeline-observability-dashboard.png</code> — an operational view of the monitored signals.</li>
+</ul>
+<div id="fig-pipeline-observability-dashboard" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A four-panel pipeline monitoring dashboard. Most runs are healthy; four highlighted runs breach duration, volume, quality, or freshness thresholds.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-pipeline-observability-dashboard-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="results/figures/14-pipeline-observability-dashboard.png" class="img-fluid figure-img" alt="A four-panel pipeline monitoring dashboard. Most runs are healthy; four highlighted runs breach duration, volume, quality, or freshness thresholds.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pipeline-observability-dashboard-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;15.1: Thirty pipeline runs with thresholds for duration, volume, valid-row rate, and freshness.
+</figcaption>
+</figure>
+</div>
+<p>The dashboard in <a href="#fig-pipeline-observability-dashboard" class="quarto-xref">Figure&nbsp;<span>15.1</span></a> deliberately separates the signals. A single green “pipeline succeeded” indicator would conceal three of the four data incidents.</p>
+</section>
+<section id="diagnose-with-symptoms-causes-and-evidence" class="level2">
+<h2 class="anchored" data-anchor-id="diagnose-with-symptoms-causes-and-evidence">Diagnose with symptoms, causes, and evidence</h2>
+<p>Monitoring tells you that a known condition changed. Observability helps you investigate why.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Symptom</th>
+<th>Possible causes</th>
+<th>Evidence to inspect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Low input volume</td>
+<td>Partial extract, upstream delay, real business change</td>
+<td>Source count, extraction window, API pages, historical baseline</td>
+</tr>
+<tr class="even">
+<td>High freshness lag</td>
+<td>Late source, stale cache, wrong watermark</td>
+<td>Maximum event time, watermark, source update time</td>
+</tr>
+<tr class="odd">
+<td>Falling valid-row rate</td>
+<td>Source schema drift, parsing bug, new category</td>
+<td>Failed-rule counts, quarantined samples, deployed version</td>
+</tr>
+<tr class="even">
+<td>Rising duration</td>
+<td>Throttling, data growth, lock contention</td>
+<td>Stage timings, retries, query plan, resource metrics</td>
+</tr>
+<tr class="odd">
+<td>Output exceeds input</td>
+<td>Join fan-out, replay, duplicate load</td>
+<td>Key cardinality, join diagnostics, idempotency key</td>
+</tr>
+</tbody>
+</table>
+<p>A productive incident workflow is:</p>
+<ol type="1">
+<li>identify the breached SLO and affected runs;</li>
+<li>locate the first abnormal stage or metric;</li>
+<li>correlate evidence by <code>run_id</code>, dataset, and code version;</li>
+<li>contain the impact, for example by stopping publication or using the last known good table;</li>
+<li>correct and safely rerun the affected interval; and</li>
+<li>add a regression test or monitor that detects the failure earlier.</li>
+</ol>
+</section>
+<section id="alert-design-and-common-failure-modes" class="level2">
+<h2 class="anchored" data-anchor-id="alert-design-and-common-failure-modes">Alert design and common failure modes</h2>
+<p>Prefer alerts that are actionable and close to user impact. Page immediately for a failed critical delivery; route a small baseline deviation to a lower-priority review queue.</p>
+<p>Common mistakes include:</p>
+<ul>
+<li><strong>Monitoring only infrastructure.</strong> Healthy CPU and memory do not imply healthy data.</li>
+<li><strong>Alerting on every fluctuation.</strong> Static thresholds without business context create alert fatigue.</li>
+<li><strong>Recording only failures.</strong> Healthy-run history is required to establish baselines.</li>
+<li><strong>Using averages alone.</strong> Averages can hide tail latency and concentrated data-quality failures.</li>
+<li><strong>Discarding rejected records.</strong> Quarantine them with reason codes and retention controls.</li>
+<li><strong>Treating retries as harmless.</strong> Retry trends can expose degrading dependencies.</li>
+<li><strong>Keeping dashboards without ownership.</strong> Every critical SLO needs an accountable owner and response path.</li>
+</ul>
+</section>
+<section id="production-hardening" class="level2">
+<h2 class="anchored" data-anchor-id="production-hardening">Production hardening</h2>
+<p>The chapter example stores metadata in local files so the workflow is transparent. In production, preserve the same concepts while changing the destination:</p>
+<ul>
+<li>send structured logs to a searchable log platform;</li>
+<li>export metrics to a time-series monitoring system;</li>
+<li>store run history in an orchestration metadata database;</li>
+<li>retain lineage between input, transformation, and published dataset;</li>
+<li>version contracts and validate compatibility during deployment;</li>
+<li>maintain runbooks for critical alerts; and</li>
+<li>test alert delivery periodically, not only the alert rule.</li>
+</ul>
+</section>
+<section id="chapter-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="chapter-checklist">Chapter checklist</h2>
+<p>Before calling a pipeline observable, confirm that:</p>
+<ul class="task-list">
+<li><label><input type="checkbox">pure transformation functions have deterministic unit tests;</label></li>
+<li><label><input type="checkbox">schemas and semantic rules are validated at boundaries;</label></li>
+<li><label><input type="checkbox">a small end-to-end test exercises the real stage sequence;</label></li>
+<li><label><input type="checkbox">freshness, volume, quality, duration, status, and retries are recorded;</label></li>
+<li><label><input type="checkbox">each run has a unique correlation identifier and UTC timestamps;</label></li>
+<li><label><input type="checkbox">SLOs reflect consumer expectations;</label></li>
+<li><label><input type="checkbox">alerts identify an owner and a response action;</label></li>
+<li><label><input type="checkbox">rejected data is quarantined safely;</label></li>
+<li><label><input type="checkbox">dashboards show trends and thresholds, not only current values; and</label></li>
+<li><label><input type="checkbox">incidents produce regression tests or improved monitors.</label></li>
+</ul>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<p>Testing prevents known defects from reaching production. Monitoring detects known unhealthy conditions during operation. Observability supplies the contextual evidence needed to explain conditions that were not predicted in advance. A reliable pipeline uses all three: layered tests, consumer-centred SLOs, and correlated run evidence that makes recovery faster and safer.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./13-orchestration-and-scheduling.html" class="pagination-link" aria-label="Orchestration and Scheduling">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Orchestration and Scheduling</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./15-recovery-idempotency-and-backfills.html" class="pagination-link" aria-label="Recovery, Idempotency, and Backfills">
+        <span class="nav-page-text"><span class="chapter-title">Recovery, Idempotency, and Backfills</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<script src="site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
