@@ -1,0 +1,25 @@
+{
+  "pipeline_name": "course-transactions-daily",
+  "pipeline_version": "1.0.0",
+  "schema_version": "1.0.0",
+  "currency": "USD",
+  "input_path": "data/raw/18-course-transactions.csv",
+  "processed_path": "data/processed/18-valid-transactions.csv",
+  "quarantine_path": "data/quarantine/18-invalid-transactions.csv",
+  "database_path": "data/warehouse/18-learning-platform.sqlite",
+  "manifest_path": "results/18-pipeline-run.json",
+  "history_path": "results/18-pipeline-run-history.csv",
+  "figure_path": "results/figures/18-pipeline-run-summary.svg",
+  "required_columns": [
+    "transaction_id",
+    "transaction_at",
+    "customer_id",
+    "course_id",
+    "customer_segment",
+    "status",
+    "quantity",
+    "unit_price"
+  ],
+  "allowed_segments": ["individual", "organization"],
+  "allowed_statuses": ["completed", "refunded"]
+}

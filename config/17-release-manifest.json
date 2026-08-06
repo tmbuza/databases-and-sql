@@ -1,0 +1,22 @@
+{
+  "release_id": "dsdp-orders-17.3.0",
+  "commit_sha": "8b45d6f",
+  "schema_version": 3,
+  "minimum_reader_schema": 2,
+  "artifact_digest": "sha256:174b9b779f4dd4f066d6d3358fb8459d4c63803c31c243d3eaa2e75c840e73bc",
+  "staged_artifact_digest": "sha256:174b9b779f4dd4f066d6d3358fb8459d4c63803c31c243d3eaa2e75c840e73bc",
+  "controls": {
+    "unit_tests": true,
+    "integration_tests": true,
+    "schema_backward_compatible": true,
+    "staging_smoke_test": true,
+    "artifact_digest_match": true,
+    "recovery_plan_reviewed": true
+  },
+  "environment_evidence": {
+    "development": ["unit_tests"],
+    "test": ["unit_tests", "integration_tests", "schema_backward_compatible"],
+    "staging": ["unit_tests", "integration_tests", "schema_backward_compatible", "staging_smoke_test", "artifact_digest_match"],
+    "production": ["unit_tests", "integration_tests", "schema_backward_compatible", "staging_smoke_test", "artifact_digest_match", "recovery_plan_reviewed"]
+  }
+}

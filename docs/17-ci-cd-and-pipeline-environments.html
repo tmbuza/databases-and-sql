@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -70,6 +105,10 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
+<meta name="mermaid-theme" content="forest">
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 <link rel="stylesheet" href="assets/css/cdi.css">
@@ -287,6 +326,51 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#from-a-working-pipeline-to-a-releasable-pipeline" id="toc-from-a-working-pipeline-to-a-releasable-pipeline" class="nav-link" data-scroll-target="#from-a-working-pipeline-to-a-releasable-pipeline">From a working pipeline to a releasable pipeline</a></li>
+  <li><a href="#the-four-environments" id="toc-the-four-environments" class="nav-link" data-scroll-target="#the-four-environments">The four environments</a></li>
+  <li><a href="#configuration-without-code-drift" id="toc-configuration-without-code-drift" class="nav-link" data-scroll-target="#configuration-without-code-drift">Configuration without code drift</a></li>
+  <li><a href="#version-the-complete-release-unit" id="toc-version-the-complete-release-unit" class="nav-link" data-scroll-target="#version-the-complete-release-unit">Version the complete release unit</a></li>
+  <li><a href="#what-ci-must-test-for-a-data-pipeline" id="toc-what-ci-must-test-for-a-data-pipeline" class="nav-link" data-scroll-target="#what-ci-must-test-for-a-data-pipeline">What CI must test for a data pipeline</a>
+  <ul class="collapse">
+  <li><a href="#static-and-unit-checks" id="toc-static-and-unit-checks" class="nav-link" data-scroll-target="#static-and-unit-checks">Static and unit checks</a></li>
+  <li><a href="#integration-tests" id="toc-integration-tests" class="nav-link" data-scroll-target="#integration-tests">Integration tests</a></li>
+  <li><a href="#data-contract-tests" id="toc-data-contract-tests" class="nav-link" data-scroll-target="#data-contract-tests">Data-contract tests</a></li>
+  <li><a href="#migration-and-idempotency-tests" id="toc-migration-and-idempotency-tests" class="nav-link" data-scroll-target="#migration-and-idempotency-tests">Migration and idempotency tests</a></li>
+  <li><a href="#security-and-supply-chain-checks" id="toc-security-and-supply-chain-checks" class="nav-link" data-scroll-target="#security-and-supply-chain-checks">Security and supply-chain checks</a></li>
+  </ul></li>
+  <li><a href="#a-promotion-readiness-case-study" id="toc-a-promotion-readiness-case-study" class="nav-link" data-scroll-target="#a-promotion-readiness-case-study">A promotion-readiness case study</a></li>
+  <li><a href="#designing-the-ci-workflow" id="toc-designing-the-ci-workflow" class="nav-link" data-scroll-target="#designing-the-ci-workflow">Designing the CI workflow</a></li>
+  <li><a href="#staging-as-a-release-rehearsal" id="toc-staging-as-a-release-rehearsal" class="nav-link" data-scroll-target="#staging-as-a-release-rehearsal">Staging as a release rehearsal</a></li>
+  <li><a href="#production-gates" id="toc-production-gates" class="nav-link" data-scroll-target="#production-gates">Production gates</a></li>
+  <li><a href="#deployment-strategies-for-pipelines" id="toc-deployment-strategies-for-pipelines" class="nav-link" data-scroll-target="#deployment-strategies-for-pipelines">Deployment strategies for pipelines</a>
+  <ul class="collapse">
+  <li><a href="#shadow-execution" id="toc-shadow-execution" class="nav-link" data-scroll-target="#shadow-execution">Shadow execution</a></li>
+  <li><a href="#canary-execution" id="toc-canary-execution" class="nav-link" data-scroll-target="#canary-execution">Canary execution</a></li>
+  <li><a href="#blue-green-release" id="toc-blue-green-release" class="nav-link" data-scroll-target="#blue-green-release">Blue-green release</a></li>
+  <li><a href="#scheduled-cutover" id="toc-scheduled-cutover" class="nav-link" data-scroll-target="#scheduled-cutover">Scheduled cutover</a></li>
+  </ul></li>
+  <li><a href="#schema-evolution-as-a-release-sequence" id="toc-schema-evolution-as-a-release-sequence" class="nav-link" data-scroll-target="#schema-evolution-as-a-release-sequence">Schema evolution as a release sequence</a></li>
+  <li><a href="#secrets-and-environment-identity" id="toc-secrets-and-environment-identity" class="nav-link" data-scroll-target="#secrets-and-environment-identity">Secrets and environment identity</a></li>
+  <li><a href="#observability-during-promotion" id="toc-observability-during-promotion" class="nav-link" data-scroll-target="#observability-during-promotion">Observability during promotion</a></li>
+  <li><a href="#common-failure-patterns" id="toc-common-failure-patterns" class="nav-link" data-scroll-target="#common-failure-patterns">Common failure patterns</a>
+  <ul class="collapse">
+  <li><a href="#rebuilding-per-environment" id="toc-rebuilding-per-environment" class="nav-link" data-scroll-target="#rebuilding-per-environment">Rebuilding per environment</a></li>
+  <li><a href="#testing-with-production-credentials" id="toc-testing-with-production-credentials" class="nav-link" data-scroll-target="#testing-with-production-credentials">Testing with production credentials</a></li>
+  <li><a href="#environment-specific-code-branches" id="toc-environment-specific-code-branches" class="nav-link" data-scroll-target="#environment-specific-code-branches">Environment-specific code branches</a></li>
+  <li><a href="#treating-deployment-success-as-pipeline-success" id="toc-treating-deployment-success-as-pipeline-success" class="nav-link" data-scroll-target="#treating-deployment-success-as-pipeline-success">Treating deployment success as pipeline success</a></li>
+  <li><a href="#automatic-rollback-after-irreversible-writes" id="toc-automatic-rollback-after-irreversible-writes" class="nav-link" data-scroll-target="#automatic-rollback-after-irreversible-writes">Automatic rollback after irreversible writes</a></li>
+  <li><a href="#schema-checks-without-consumer-context" id="toc-schema-checks-without-consumer-context" class="nav-link" data-scroll-target="#schema-checks-without-consumer-context">Schema checks without consumer context</a></li>
+  </ul></li>
+  <li><a href="#practical-release-checklist" id="toc-practical-release-checklist" class="nav-link" data-scroll-target="#practical-release-checklist">Practical release checklist</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a>
+  <ul class="collapse">
+  <li><a href="#exercise-1-classify-configuration" id="toc-exercise-1-classify-configuration" class="nav-link" data-scroll-target="#exercise-1-classify-configuration">Exercise 1: Classify configuration</a></li>
+  <li><a href="#exercise-2-break-the-gate-safely" id="toc-exercise-2-break-the-gate-safely" class="nav-link" data-scroll-target="#exercise-2-break-the-gate-safely">Exercise 2: Break the gate safely</a></li>
+  <li><a href="#exercise-3-plan-an-expand-and-contract-migration" id="toc-exercise-3-plan-an-expand-and-contract-migration" class="nav-link" data-scroll-target="#exercise-3-plan-an-expand-and-contract-migration">Exercise 3: Plan an expand-and-contract migration</a></li>
+  <li><a href="#exercise-4-define-the-observation-window" id="toc-exercise-4-define-the-observation-window" class="nav-link" data-scroll-target="#exercise-4-define-the-observation-window">Exercise 4: Define the observation window</a></li>
+  </ul></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key takeaways</a></li>
+  <li><a href="#repository-artifacts" id="toc-repository-artifacts" class="nav-link" data-scroll-target="#repository-artifacts">Repository artifacts</a></li>
   </ul>
 </nav>
     </div>
@@ -318,13 +402,458 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-017</li>
+<li><strong>Type:</strong> Core chapter</li>
+<li><strong>Audience:</strong> Data practitioners moving reliable pipelines from local development into production</li>
+<li><strong>Theme:</strong> Release controls, environment separation, and immutable promotion</li>
+</ul>
+</div>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
 <ul>
-<li>Validate pipeline changes before merging.</li>
-<li>Separate development, test, staging, and production configuration.</li>
-<li>Promote versioned code and schemas through controlled releases.</li>
+<li>validate pipeline changes before merging;</li>
+<li>separate development, test, staging, and production configuration;</li>
+<li>promote versioned code and schemas through controlled releases;</li>
+<li>design CI checks and CD gates around data-specific failure modes; and</li>
+<li>produce auditable evidence that a release is ready for promotion.</li>
 </ul>
+</section>
+<section id="from-a-working-pipeline-to-a-releasable-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="from-a-working-pipeline-to-a-releasable-pipeline">From a working pipeline to a releasable pipeline</h2>
+<p>A pipeline that runs successfully on a laptop is not automatically safe to release. Production delivery must answer a wider set of questions:</p>
+<ul>
+<li>Does the code pass unit, integration, and data-contract tests?</li>
+<li>Is the database migration compatible with the currently deployed version?</li>
+<li>Are credentials and endpoints selected at runtime rather than embedded in code?</li>
+<li>Can the exact artifact tested in staging be promoted to production?</li>
+<li>Is there a rollback or roll-forward path if the release fails?</li>
+<li>Can an operator reconstruct who approved the release and what evidence they saw?</li>
+</ul>
+<p>Continuous integration (CI) supplies fast evidence about every proposed change. Continuous delivery (CD) packages a validated change and keeps it ready for controlled release. Continuous deployment goes one step further and releases every qualifying change automatically. Data pipelines often use continuous delivery with explicit production approval because schema evolution, backfills, external dependencies, and irreversible writes increase the cost of an unsafe release.</p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    A["Commit and pull request"] --&gt; B["Static checks and tests"]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    B --&gt; C["Build immutable release"]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    C --&gt; D["Deploy to staging"]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    D --&gt; E["Smoke and contract checks"]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    E --&gt; F{"Production gate"}</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    F --&gt;|Approved| G["Promote same release"]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    F --&gt;|Rejected| H["Fix or retire release"]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A["Commit and pull request"] --&gt; B["Static checks and tests"]
+    B --&gt; C["Build immutable release"]
+    C --&gt; D["Deploy to staging"]
+    D --&gt; E["Smoke and contract checks"]
+    E --&gt; F{"Production gate"}
+    F --&gt;|Approved| G["Promote same release"]
+    F --&gt;|Rejected| H["Fix or retire release"]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>The central principle is <strong>build once, promote many</strong>. Rebuilding separately for staging and production creates two artifacts with the same apparent version but potentially different dependencies or bytes. Promotion should change environment configuration, not application code or the release artifact.</p>
+</section>
+<section id="the-four-environments" class="level2">
+<h2 class="anchored" data-anchor-id="the-four-environments">The four environments</h2>
+<p>Environment separation limits blast radius and makes validation progressive. The environment names matter less than their distinct purposes and controls.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Environment</th>
+<th>Main purpose</th>
+<th>Data profile</th>
+<th>Typical trigger</th>
+<th>Primary controls</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Development</td>
+<td>Rapid iteration and debugging</td>
+<td>Small, synthetic, or masked</td>
+<td>Local command or feature branch</td>
+<td>Developer credentials; disposable resources</td>
+</tr>
+<tr class="even">
+<td>Test</td>
+<td>Repeatable automated verification</td>
+<td>Deterministic fixtures</td>
+<td>Pull request or push</td>
+<td>Isolated services; no manual edits</td>
+</tr>
+<tr class="odd">
+<td>Staging</td>
+<td>Production-like release validation</td>
+<td>Representative, protected test data</td>
+<td>Successful CI on the release branch</td>
+<td>Restricted access; smoke and contract tests</td>
+</tr>
+<tr class="even">
+<td>Production</td>
+<td>Deliver trusted data products</td>
+<td>Authoritative operational data</td>
+<td>Approved promotion</td>
+<td>Least privilege; monitoring; audit trail; recovery plan</td>
+</tr>
+</tbody>
+</table>
+<p>Separation must be real. Renaming four configuration files while all four environments share one database and one powerful credential does not provide isolation. Each environment should have its own resource identifiers, secrets, access policies, state, and retention rules.</p>
+</section>
+<section id="configuration-without-code-drift" class="level2">
+<h2 class="anchored" data-anchor-id="configuration-without-code-drift">Configuration without code drift</h2>
+<p>Code defines pipeline behavior. Configuration supplies values that legitimately vary by environment: storage locations, database endpoints, schedules, concurrency limits, alert routes, and feature flags. Secrets are configuration values, but they require a dedicated secret manager and must never be committed.</p>
+<p>The following environment variables illustrate a minimal runtime contract:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">PIPELINE_ENV</span><span class="op">=</span>staging</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">PIPELINE_INPUT_URI</span><span class="op">=</span>s3://cdi-dsdp-staging/raw/orders/</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="va">PIPELINE_OUTPUT_URI</span><span class="op">=</span>s3://cdi-dsdp-staging/curated/orders/</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="va">PIPELINE_SCHEMA_VERSION</span><span class="op">=</span>3</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="va">PIPELINE_MAX_WORKERS</span><span class="op">=</span>4</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The application should validate this contract at startup and fail before processing if a required value is absent or invalid. A useful configuration layer follows three rules:</p>
+<ol type="1">
+<li>Safe defaults are limited to local development.</li>
+<li>Environment-specific values enter through runtime configuration.</li>
+<li>Secrets are referenced by identifier and resolved only inside the target environment.</li>
+</ol>
+<p>Avoid a growing collection of conditionals such as <code>if production</code>. Those branches create behaviors that cannot be exercised faithfully before production. Prefer one code path with validated parameters.</p>
+</section>
+<section id="version-the-complete-release-unit" class="level2">
+<h2 class="anchored" data-anchor-id="version-the-complete-release-unit">Version the complete release unit</h2>
+<p>A pipeline release is more than a Python file. It may include:</p>
+<ul>
+<li>source code and locked dependencies;</li>
+<li>transformation definitions;</li>
+<li>schema and data-contract versions;</li>
+<li>database migrations;</li>
+<li>infrastructure or orchestration definitions;</li>
+<li>runbooks and rollback instructions; and</li>
+<li>the commit SHA, build timestamp, and artifact digest.</li>
+</ul>
+<p>A release manifest connects these elements. For example:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"release_id"</span><span class="fu">:</span> <span class="st">"dsdp-orders-17.3.0"</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"commit_sha"</span><span class="fu">:</span> <span class="st">"8b45d6f"</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"schema_version"</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"artifact_digest"</span><span class="fu">:</span> <span class="st">"sha256:..."</span><span class="fu">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"minimum_reader_schema"</span><span class="fu">:</span> <span class="dv">2</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Semantic versions can communicate compatibility to people, while a commit SHA and cryptographic digest identify exact source and artifact bytes. Use both when practical. A mutable label such as <code>latest</code> is convenient for exploration but inadequate for promotion or rollback.</p>
+</section>
+<section id="what-ci-must-test-for-a-data-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="what-ci-must-test-for-a-data-pipeline">What CI must test for a data pipeline</h2>
+<p>Application tests are necessary but incomplete for pipelines. CI should layer inexpensive checks before slower ones so failures arrive quickly.</p>
+<section id="static-and-unit-checks" class="level3">
+<h3 class="anchored" data-anchor-id="static-and-unit-checks">Static and unit checks</h3>
+<p>The first layer checks formatting, linting, type assumptions, imports, and deterministic transformation units. Unit tests should cover boundary values, null handling, duplicate rules, time zones, and numerical tolerances. They should not require network access or shared infrastructure.</p>
+</section>
+<section id="integration-tests" class="level3">
+<h3 class="anchored" data-anchor-id="integration-tests">Integration tests</h3>
+<p>Integration tests exercise real boundaries using isolated, temporary services. Examples include loading a fixture into a temporary PostgreSQL database, writing and rereading Parquet, or verifying object-store path construction. The test environment must be reproducible and disposable.</p>
+</section>
+<section id="data-contract-tests" class="level3">
+<h3 class="anchored" data-anchor-id="data-contract-tests">Data-contract tests</h3>
+<p>A data contract describes what downstream consumers may rely on. CI can detect:</p>
+<ul>
+<li>removed or renamed required fields;</li>
+<li>incompatible type changes;</li>
+<li>newly nullable identifiers;</li>
+<li>broken uniqueness or referential rules;</li>
+<li>changed units, time zones, or category meanings; and</li>
+<li>unacceptable distribution changes in a representative fixture.</li>
+</ul>
+<p>Schema compatibility is directional. Adding an optional field is often backward compatible; removing a required field is not. The release gate must evaluate compatibility against the deployed consumer contract, not merely confirm that the new schema parses.</p>
+</section>
+<section id="migration-and-idempotency-tests" class="level3">
+<h3 class="anchored" data-anchor-id="migration-and-idempotency-tests">Migration and idempotency tests</h3>
+<p>Database migrations should be tested from the current production version to the proposed version. Where rollback is unsafe, test a roll-forward correction. Rerun the pipeline against the same fixture and verify that it does not duplicate rows or corrupt state. This connects delivery controls to the recovery and idempotency techniques developed in <a href="15-recovery-idempotency-and-backfills.html" class="quarto-xref"><span>Recovery, Idempotency, and Backfills</span></a>.</p>
+</section>
+<section id="security-and-supply-chain-checks" class="level3">
+<h3 class="anchored" data-anchor-id="security-and-supply-chain-checks">Security and supply-chain checks</h3>
+<p>CI should scan committed content for secrets, inspect dependencies for known vulnerabilities, generate a dependency inventory where required, and build artifacts with narrowly scoped credentials. CI logs are not a safe place for tokens, connection strings, or raw production records.</p>
+</section>
+</section>
+<section id="a-promotion-readiness-case-study" class="level2">
+<h2 class="anchored" data-anchor-id="a-promotion-readiness-case-study">A promotion-readiness case study</h2>
+<p>Suppose an orders pipeline is moving from schema version 2 to version 3. The release adds an optional <code>discount_code</code>, preserves all required fields, and uses the same artifact digest across staging and production. The team defines six controls:</p>
+<ol type="1">
+<li>unit tests pass;</li>
+<li>integration tests pass;</li>
+<li>the proposed schema is backward compatible;</li>
+<li>staging smoke tests pass;</li>
+<li>the artifact digest matches the staged artifact; and</li>
+<li>the recovery plan has been reviewed.</li>
+</ol>
+<p>Run the companion script from the repository root:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/17-run-promotion-readiness.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>It reads an explicit case-study manifest, evaluates the release controls, writes a machine-readable report, and generates <a href="#fig-promotion-readiness" class="quarto-xref">Figure&nbsp;<span>18.1</span></a>. The script exits with a non-zero status if any required control fails, which makes it usable as a CI gate.</p>
+<div id="fig-promotion-readiness" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-promotion-readiness-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="results/figures/17-promotion-readiness.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-promotion-readiness-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;18.1: Promotion readiness by environment. Production promotion requires every mandatory control to pass.
+</figcaption>
+</figure>
+</div>
+<p>The plot distinguishes evidence accumulated in CI and staging from the complete production gate. A high percentage is not a license to average away a critical failure: artifact identity and schema compatibility are mandatory controls. Therefore, the validator uses an all-required-controls rule rather than a weighted score to decide readiness.</p>
+<p>The generated JSON report is suitable for retention with the workflow run:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"release_id"</span><span class="fu">:</span> <span class="st">"dsdp-orders-17.3.0"</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"decision"</span><span class="fu">:</span> <span class="st">"promote"</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"required_controls_passed"</span><span class="fu">:</span> <span class="dv">6</span><span class="fu">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"required_controls_total"</span><span class="fu">:</span> <span class="dv">6</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="designing-the-ci-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="designing-the-ci-workflow">Designing the CI workflow</h2>
+<p>The companion workflow at <code>.github/workflows/17-pipeline-ci-cd.yml</code> demonstrates the control flow. A production repository would adapt dependency installation, service containers, deployment commands, and cloud identity to its platform.</p>
+<p>Key design choices include:</p>
+<ul>
+<li><strong>Minimum permissions:</strong> the workflow begins with read-only repository contents.</li>
+<li><strong>Dependency caching:</strong> caching speeds installation but never replaces version locking.</li>
+<li><strong>Separated jobs:</strong> validation, build, staging verification, and production promotion have visible boundaries.</li>
+<li><strong>Immutable artifacts:</strong> the build job records the commit SHA and artifact digest.</li>
+<li><strong>Environment protection:</strong> the production job targets a protected environment where reviewers and branch rules can be configured.</li>
+<li><strong>Concurrency:</strong> only one production promotion proceeds at a time.</li>
+</ul>
+<p>Do not treat a CI configuration file as proof that controls are active. Repository settings must actually configure required status checks, protected branches, protected environments, authorized reviewers, and secret scopes.</p>
+</section>
+<section id="staging-as-a-release-rehearsal" class="level2">
+<h2 class="anchored" data-anchor-id="staging-as-a-release-rehearsal">Staging as a release rehearsal</h2>
+<p>Staging should answer questions that CI cannot answer with isolated fixtures:</p>
+<ul>
+<li>Can the release start with target-environment configuration?</li>
+<li>Can it authenticate using staging identity and least privilege?</li>
+<li>Can it read and write expected formats and partitions?</li>
+<li>Are orchestration schedules, retries, and timeouts valid?</li>
+<li>Do lineage, metrics, logs, and alerts appear correctly?</li>
+<li>Can a representative downstream consumer read the output?</li>
+</ul>
+<p>A smoke test should be small, fast, and diagnostic. It can process a bounded input partition into an isolated output prefix, validate row counts and schema, then remove or expire the test output. A full historical backfill is not a smoke test and should have its own capacity and approval plan.</p>
+<p>Production-like does not mean copying unrestricted production data. Use synthetic, masked, tokenized, or carefully sampled data according to governance requirements. Preserve the shapes and edge cases required for meaningful validation without expanding sensitive-data exposure.</p>
+</section>
+<section id="production-gates" class="level2">
+<h2 class="anchored" data-anchor-id="production-gates">Production gates</h2>
+<p>An effective gate asks for evidence, not confidence. Before approval, reviewers should see:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Evidence</th>
+<th>Question answered</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Test summary</td>
+<td>Did automated verification pass?</td>
+</tr>
+<tr class="even">
+<td>Schema comparison</td>
+<td>Is the change compatible with deployed readers?</td>
+</tr>
+<tr class="odd">
+<td>Artifact digest</td>
+<td>Is this the same artifact tested in staging?</td>
+</tr>
+<tr class="even">
+<td>Migration plan</td>
+<td>How will state move safely?</td>
+</tr>
+<tr class="odd">
+<td>Recovery plan</td>
+<td>How will the team contain and recover from failure?</td>
+</tr>
+<tr class="even">
+<td>Observability link</td>
+<td>How will the release be watched after promotion?</td>
+</tr>
+<tr class="odd">
+<td>Change record</td>
+<td>Who approved what, and when?</td>
+</tr>
+</tbody>
+</table>
+<p>Manual approval is valuable only when the reviewer has the authority, context, and evidence to make a decision. A button that everyone clicks automatically is delay, not control.</p>
+</section>
+<section id="deployment-strategies-for-pipelines" class="level2">
+<h2 class="anchored" data-anchor-id="deployment-strategies-for-pipelines">Deployment strategies for pipelines</h2>
+<p>Pipeline releases require strategies suited to scheduled work and persistent data.</p>
+<section id="shadow-execution" class="level3">
+<h3 class="anchored" data-anchor-id="shadow-execution">Shadow execution</h3>
+<p>Run the new version against a bounded copy or mirrored stream without publishing its output. Compare row-level results, aggregates, latency, and resource use. Shadow runs provide strong evidence when transformation logic changes, but they increase compute cost and require careful isolation.</p>
+</section>
+<section id="canary-execution" class="level3">
+<h3 class="anchored" data-anchor-id="canary-execution">Canary execution</h3>
+<p>Send a limited partition, tenant, region, or percentage of input to the new version. Define success criteria and an automatic stop condition before starting. Canary boundaries must prevent two versions from writing conflicting state.</p>
+</section>
+<section id="blue-green-release" class="level3">
+<h3 class="anchored" data-anchor-id="blue-green-release">Blue-green release</h3>
+<p>Maintain old and new pipeline environments or output locations, validate the new one, then switch a pointer or consumer view. This supports rapid reversal but requires duplicate capacity and careful handling of writes that arrive during the transition.</p>
+</section>
+<section id="scheduled-cutover" class="level3">
+<h3 class="anchored" data-anchor-id="scheduled-cutover">Scheduled cutover</h3>
+<p>Pause at a safe watermark, deploy, validate state, and resume from an explicit checkpoint. This is common for batch pipelines. The acceptable pause duration and catch-up capacity must be known beforehand.</p>
+<p>Whatever strategy is chosen, separate <strong>code rollback</strong> from <strong>data recovery</strong>. Restoring old code does not automatically reverse schema changes, emitted events, overwritten partitions, or downstream decisions. Sometimes the safest response is to stop writes, repair forward, and replay from a trusted checkpoint.</p>
+</section>
+</section>
+<section id="schema-evolution-as-a-release-sequence" class="level2">
+<h2 class="anchored" data-anchor-id="schema-evolution-as-a-release-sequence">Schema evolution as a release sequence</h2>
+<p>Breaking schema changes should be decomposed into compatible releases. An expand-and-contract sequence is safer than changing producers and consumers simultaneously:</p>
+<ol type="1">
+<li>Expand the schema with the new optional field or table.</li>
+<li>Deploy consumers that understand both old and new representations.</li>
+<li>Deploy producers that populate the new representation.</li>
+<li>Backfill and verify historical state if required.</li>
+<li>Observe until old readers and data are no longer present.</li>
+<li>Contract by removing the deprecated representation in a later release.</li>
+</ol>
+<p>This sequence turns one tightly coupled deployment into observable, reversible stages. Compatibility tests in CI should enforce the allowed transition at each stage.</p>
+</section>
+<section id="secrets-and-environment-identity" class="level2">
+<h2 class="anchored" data-anchor-id="secrets-and-environment-identity">Secrets and environment identity</h2>
+<p>Use workload identity or short-lived credentials where the platform supports them. Avoid long-lived cloud keys stored as repository secrets. Each job and environment should receive only the permissions needed for its task:</p>
+<ul>
+<li>CI can read source and publish a release artifact.</li>
+<li>Staging deployment can update staging resources only.</li>
+<li>Production promotion can deploy the approved artifact but should not modify CI history.</li>
+<li>The pipeline runtime can access its defined inputs, outputs, checkpoints, and monitoring endpoints.</li>
+</ul>
+<p>Prevent untrusted pull-request code from gaining access to protected secrets. Review how forked contributions, reusable workflows, shell interpolation, and third-party actions interact with credentials.</p>
+</section>
+<section id="observability-during-promotion" class="level2">
+<h2 class="anchored" data-anchor-id="observability-during-promotion">Observability during promotion</h2>
+<p>A release is not complete when deployment succeeds. Define a post-promotion observation window and compare at least:</p>
+<ul>
+<li>run success and retry rates;</li>
+<li>freshness and end-to-end latency;</li>
+<li>input, accepted, rejected, and output row counts;</li>
+<li>contract and quality-rule failures;</li>
+<li>checkpoint or watermark movement;</li>
+<li>cost and resource saturation; and</li>
+<li>downstream consumer errors.</li>
+</ul>
+<p>Annotate dashboards and logs with <code>release_id</code>, commit SHA, schema version, and environment. Without release metadata, an operator may see a regression but struggle to connect it to the change that caused it.</p>
+</section>
+<section id="common-failure-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="common-failure-patterns">Common failure patterns</h2>
+<section id="rebuilding-per-environment" class="level3">
+<h3 class="anchored" data-anchor-id="rebuilding-per-environment">Rebuilding per environment</h3>
+<p>The production artifact differs from the staged artifact even though both use the same version label. Build once, calculate a digest, and verify the digest at every promotion boundary.</p>
+</section>
+<section id="testing-with-production-credentials" class="level3">
+<h3 class="anchored" data-anchor-id="testing-with-production-credentials">Testing with production credentials</h3>
+<p>CI becomes a path into authoritative data and expands the blast radius of a compromised dependency or workflow. Give tests disposable resources and constrained identities.</p>
+</section>
+<section id="environment-specific-code-branches" class="level3">
+<h3 class="anchored" data-anchor-id="environment-specific-code-branches">Environment-specific code branches</h3>
+<p>Production-only behavior remains untested. Keep one implementation and inject validated configuration.</p>
+</section>
+<section id="treating-deployment-success-as-pipeline-success" class="level3">
+<h3 class="anchored" data-anchor-id="treating-deployment-success-as-pipeline-success">Treating deployment success as pipeline success</h3>
+<p>The scheduler accepted the new definition, but the first run produces late or invalid data. Add staging smoke tests and a production observation window with data-level signals.</p>
+</section>
+<section id="automatic-rollback-after-irreversible-writes" class="level3">
+<h3 class="anchored" data-anchor-id="automatic-rollback-after-irreversible-writes">Automatic rollback after irreversible writes</h3>
+<p>Old code is restored while partially transformed data remains. Classify release actions by reversibility, stop unsafe writes, and use an explicit recovery or roll-forward procedure.</p>
+</section>
+<section id="schema-checks-without-consumer-context" class="level3">
+<h3 class="anchored" data-anchor-id="schema-checks-without-consumer-context">Schema checks without consumer context</h3>
+<p>The proposed schema is internally valid but breaks an active reader. Compare changes against registered contracts and minimum supported reader versions.</p>
+</section>
+</section>
+<section id="practical-release-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="practical-release-checklist">Practical release checklist</h2>
+<p>Before merging:</p>
+<ul class="task-list">
+<li><label><input type="checkbox">Static, unit, integration, contract, and idempotency checks pass.</label></li>
+<li><label><input type="checkbox">The change has no committed secrets or environment-specific endpoints.</label></li>
+<li><label><input type="checkbox">Schema and migration compatibility are understood.</label></li>
+<li><label><input type="checkbox">Dependencies and workflow actions are pinned according to project policy.</label></li>
+</ul>
+<p>Before production promotion:</p>
+<ul class="task-list">
+<li><label><input type="checkbox">The staged artifact digest matches the approved release digest.</label></li>
+<li><label><input type="checkbox">Staging smoke tests and representative consumer checks pass.</label></li>
+<li><label><input type="checkbox">Runtime configuration and least-privilege identity are verified.</label></li>
+<li><label><input type="checkbox">Recovery, replay, and communication responsibilities are explicit.</label></li>
+<li><label><input type="checkbox">Monitoring views and post-release success criteria are ready.</label></li>
+</ul>
+<p>After promotion:</p>
+<ul class="task-list">
+<li><label><input type="checkbox">The first scheduled or triggered runs are observed through completion.</label></li>
+<li><label><input type="checkbox">Freshness, volume, quality, latency, and consumer signals remain within limits.</label></li>
+<li><label><input type="checkbox">Release evidence and approvals are retained.</label></li>
+<li><label><input type="checkbox">Temporary compatibility paths are assigned an owner and removal date.</label></li>
+</ul>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">Exercises</h2>
+<section id="exercise-1-classify-configuration" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-1-classify-configuration">Exercise 1: Classify configuration</h3>
+<p>For a pipeline you know, classify each value as code, non-secret configuration, secret, or release metadata. Explain where it should be stored and who should be allowed to change it.</p>
+</section>
+<section id="exercise-2-break-the-gate-safely" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-2-break-the-gate-safely">Exercise 2: Break the gate safely</h3>
+<p>Copy <code>config/17-release-manifest.json</code>, set one required control to <code>false</code>, and run the readiness script against the copy:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> scripts/python/17-validate-promotion.py <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--manifest</span> path/to/modified-manifest.json <span class="dt">\</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--report</span> results/17-modified-readiness.json <span class="dt">\</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--figure</span> results/figures/17-modified-readiness.png</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Confirm that the decision becomes <code>block</code> and the process exits unsuccessfully. Identify which CI job should surface this failure.</p>
+</section>
+<section id="exercise-3-plan-an-expand-and-contract-migration" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-3-plan-an-expand-and-contract-migration">Exercise 3: Plan an expand-and-contract migration</h3>
+<p>Choose one breaking schema change, then describe the producer, consumer, backfill, observation, and cleanup releases required to deliver it compatibly.</p>
+</section>
+<section id="exercise-4-define-the-observation-window" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-4-define-the-observation-window">Exercise 4: Define the observation window</h3>
+<p>Write five measurable success criteria for the first production run after promotion. Include at least one freshness measure, one data-quality measure, and one downstream-consumer measure.</p>
+</section>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key takeaways</h2>
+<ul>
+<li>CI for pipelines must test data contracts, migrations, and idempotency in addition to application code.</li>
+<li>Development, test, staging, and production need genuinely isolated resources, identities, and state.</li>
+<li>Build a release once and promote the same versioned, digest-identified artifact.</li>
+<li>Production gates should require concrete evidence about compatibility, recovery, identity, and staging behavior.</li>
+<li>Deployment is complete only after the promoted pipeline processes data successfully under observation.</li>
+<li>Code rollback and data recovery are different operations and must be planned separately.</li>
+</ul>
+</section>
+<section id="repository-artifacts" class="level2">
+<h2 class="anchored" data-anchor-id="repository-artifacts">Repository artifacts</h2>
+<p>This chapter adds the following executable and generated artifacts:</p>
+<pre class="text"><code>17-ci-cd-and-pipeline-environments.qmd
+.github/workflows/17-pipeline-ci-cd.yml
+config/17-release-manifest.json
+scripts/bash/17-run-promotion-readiness.sh
+scripts/python/17-validate-promotion.py
+results/17-promotion-readiness.json
+results/figures/17-promotion-readiness.png</code></pre>
 
 
 </section>

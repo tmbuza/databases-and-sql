@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -71,6 +106,35 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="assets/css/cdi.css">
 </head>
@@ -287,6 +351,31 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#why-these-concerns-belong-together" id="toc-why-these-concerns-belong-together" class="nav-link" data-scroll-target="#why-these-concerns-belong-together">Why these concerns belong together</a></li>
+  <li><a href="#start-with-data-classification" id="toc-start-with-data-classification" class="nav-link" data-scroll-target="#start-with-data-classification">Start with data classification</a></li>
+  <li><a href="#protect-credentials-and-sensitive-data" id="toc-protect-credentials-and-sensitive-data" class="nav-link" data-scroll-target="#protect-credentials-and-sensitive-data">Protect credentials and sensitive data</a>
+  <ul class="collapse">
+  <li><a href="#keep-secrets-outside-source-code" id="toc-keep-secrets-outside-source-code" class="nav-link" data-scroll-target="#keep-secrets-outside-source-code">Keep secrets outside source code</a></li>
+  <li><a href="#reduce-exposure-at-every-stage" id="toc-reduce-exposure-at-every-stage" class="nav-link" data-scroll-target="#reduce-exposure-at-every-stage">Reduce exposure at every stage</a></li>
+  </ul></li>
+  <li><a href="#apply-least-privilege" id="toc-apply-least-privilege" class="nav-link" data-scroll-target="#apply-least-privilege">Apply least privilege</a>
+  <ul class="collapse">
+  <li><a href="#evaluate-access-as-a-policy-decision" id="toc-evaluate-access-as-a-policy-decision" class="nav-link" data-scroll-target="#evaluate-access-as-a-policy-decision">Evaluate access as a policy decision</a></li>
+  </ul></li>
+  <li><a href="#retention-and-defensible-deletion" id="toc-retention-and-defensible-deletion" class="nav-link" data-scroll-target="#retention-and-defensible-deletion">Retention and defensible deletion</a></li>
+  <li><a href="#design-useful-audit-events" id="toc-design-useful-audit-events" class="nav-link" data-scroll-target="#design-useful-audit-events">Design useful audit events</a></li>
+  <li><a href="#record-lineage" id="toc-record-lineage" class="nav-link" data-scroll-target="#record-lineage">Record lineage</a>
+  <ul class="collapse">
+  <li><a href="#dataset-level-lineage" id="toc-dataset-level-lineage" class="nav-link" data-scroll-target="#dataset-level-lineage">Dataset-level lineage</a></li>
+  <li><a href="#column-level-lineage" id="toc-column-level-lineage" class="nav-link" data-scroll-target="#column-level-lineage">Column-level lineage</a></li>
+  </ul></li>
+  <li><a href="#governance-as-executable-controls" id="toc-governance-as-executable-controls" class="nav-link" data-scroll-target="#governance-as-executable-controls">Governance as executable controls</a></li>
+  <li><a href="#worked-example-generate-a-governance-evidence-bundle" id="toc-worked-example-generate-a-governance-evidence-bundle" class="nav-link" data-scroll-target="#worked-example-generate-a-governance-evidence-bundle">Worked example: generate a governance evidence bundle</a></li>
+  <li><a href="#review-and-incident-workflow" id="toc-review-and-incident-workflow" class="nav-link" data-scroll-target="#review-and-incident-workflow">Review and incident workflow</a></li>
+  <li><a href="#security-and-governance-checklist" id="toc-security-and-governance-checklist" class="nav-link" data-scroll-target="#security-and-governance-checklist">Security and governance checklist</a></li>
+  <li><a href="#common-failure-modes" id="toc-common-failure-modes" class="nav-link" data-scroll-target="#common-failure-modes">Common failure modes</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
   </ul>
 </nav>
     </div>
@@ -318,13 +407,436 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-016</li>
+<li><strong>Type:</strong> Guide chapter</li>
+<li><strong>Audience:</strong> Data practitioners building production data pipelines</li>
+<li><strong>Theme:</strong> Secure, governed, and traceable data delivery</li>
+</ul>
+</div>
+<p>Security, governance, and lineage are not separate layers added after a pipeline works. They define whether the pipeline is allowed to run, which data it may process, how its actions can be reviewed, and whether a published value can be traced back to its origin.</p>
+<p>This chapter develops a compact control model for a customer-order pipeline. The example is intentionally local and reproducible, but the same reasoning applies to cloud object stores, warehouses, orchestrators, and streaming systems.</p>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>By the end of this chapter, you will be able to:</p>
 <ul>
-<li>Protect credentials and sensitive data across pipeline stages.</li>
-<li>Apply least privilege, retention, and audit controls.</li>
-<li>Record lineage from source fields to published outputs.</li>
+<li>protect credentials and sensitive data across pipeline stages;</li>
+<li>apply least privilege, retention, and audit controls;</li>
+<li>distinguish authentication, authorization, encryption, masking, and deletion;</li>
+<li>record dataset- and column-level lineage from source fields to published outputs;</li>
+<li>turn governance requirements into testable pipeline controls; and</li>
+<li>generate an evidence bundle that supports operational review.</li>
 </ul>
+</section>
+<section id="why-these-concerns-belong-together" class="level2">
+<h2 class="anchored" data-anchor-id="why-these-concerns-belong-together">Why these concerns belong together</h2>
+<p>A reliable pipeline answers more than <em>did the job succeed?</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concern</th>
+<th>Question</th>
+<th>Typical evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Security</td>
+<td>Who or what may access the data?</td>
+<td>roles, policies, secret references, access logs</td>
+</tr>
+<tr class="even">
+<td>Privacy</td>
+<td>How is sensitive data minimized and protected?</td>
+<td>classification, masking rules, retention rules</td>
+</tr>
+<tr class="odd">
+<td>Governance</td>
+<td>Who owns the data and which rules apply?</td>
+<td>catalog metadata, control results, approvals</td>
+</tr>
+<tr class="even">
+<td>Lineage</td>
+<td>Where did this output come from?</td>
+<td>source-to-target mappings, run identifiers</td>
+</tr>
+<tr class="odd">
+<td>Auditability</td>
+<td>Can an independent reviewer reconstruct events?</td>
+<td>immutable events, timestamps, actor and outcome</td>
+</tr>
+</tbody>
+</table>
+<p>These concerns reinforce one another. Classification determines access and retention rules. Lineage identifies every downstream asset affected by a sensitive source. Audit events show whether controls ran and whether exceptions were approved.</p>
+</section>
+<section id="start-with-data-classification" class="level2">
+<h2 class="anchored" data-anchor-id="start-with-data-classification">Start with data classification</h2>
+<p>Controls should be proportional to the data. A practical classification scheme is small enough to be used consistently.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Class</th>
+<th>Example</th>
+<th>Default handling</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Public</td>
+<td>published aggregate statistics</td>
+<td>broad read access; integrity controls</td>
+</tr>
+<tr class="even">
+<td>Internal</td>
+<td>pipeline run metrics</td>
+<td>authenticated organizational access</td>
+</tr>
+<tr class="odd">
+<td>Confidential</td>
+<td>customer identifiers and order details</td>
+<td>restricted roles, encryption, auditing</td>
+</tr>
+<tr class="even">
+<td>Restricted</td>
+<td>passwords, access tokens, regulated identifiers</td>
+<td>avoid collection where possible; strongest controls</td>
+</tr>
+</tbody>
+</table>
+<p>Classification should be attached to fields, not only datasets. A table can contain public aggregates alongside confidential identifiers. Field-level labels make masking, projection, and lineage checks more precise.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dataset</span><span class="kw">:</span><span class="at"> raw.customer_orders</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">owner</span><span class="kw">:</span><span class="at"> data-platform</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">fields</span><span class="kw">:</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">customer_id</span><span class="kw">:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">classification</span><span class="kw">:</span><span class="at"> confidential</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">email</span><span class="kw">:</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">classification</span><span class="kw">:</span><span class="at"> confidential</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">purpose</span><span class="kw">:</span><span class="at"> order-notification</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">order_total</span><span class="kw">:</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">classification</span><span class="kw">:</span><span class="at"> internal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="protect-credentials-and-sensitive-data" class="level2">
+<h2 class="anchored" data-anchor-id="protect-credentials-and-sensitive-data">Protect credentials and sensitive data</h2>
+<section id="keep-secrets-outside-source-code" class="level3">
+<h3 class="anchored" data-anchor-id="keep-secrets-outside-source-code">Keep secrets outside source code</h3>
+<p>Credentials must not be embedded in Python files, notebooks, shell scripts, container images, or committed configuration. Code should receive a <em>reference</em> at runtime and fail clearly when it is unavailable.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>database_url <span class="op">=</span> os.environ.get(<span class="st">"PIPELINE_DATABASE_URL"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="kw">not</span> database_url:</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">raise</span> <span class="pp">RuntimeError</span>(<span class="st">"PIPELINE_DATABASE_URL is required"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Environment variables are an interface, not a complete secret-management system. In production, use the platform’s managed secret store, limit who can read each secret, encrypt it, rotate it, and record access. Never print connection strings or full configuration objects to logs.</p>
+</section>
+<section id="reduce-exposure-at-every-stage" class="level3">
+<h3 class="anchored" data-anchor-id="reduce-exposure-at-every-stage">Reduce exposure at every stage</h3>
+<p>A useful sequence is:</p>
+<ol type="1">
+<li>collect only fields required for a declared purpose;</li>
+<li>restrict ingestion identities to required source objects;</li>
+<li>encrypt data in transit and at rest;</li>
+<li>remove or transform identifiers as early as practical;</li>
+<li>publish only approved columns and aggregation levels; and</li>
+<li>delete expired data and verify deletion.</li>
+</ol>
+<p>Pseudonymization replaces a direct identifier with a stable token. It reduces casual exposure but is not anonymization: linkage or auxiliary information may still identify a person.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hashlib</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hmac</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> tokenise(value: <span class="bu">str</span>, key: <span class="bu">bytes</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> hmac.new(key, value.encode(), hashlib.sha256).hexdigest()[:<span class="dv">20</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Use a secret key from a managed store when stable pseudonyms are required. A plain unkeyed hash of predictable values such as email addresses is vulnerable to guessing.</p>
+</section>
+</section>
+<section id="apply-least-privilege" class="level2">
+<h2 class="anchored" data-anchor-id="apply-least-privilege">Apply least privilege</h2>
+<p>Least privilege grants each workload only the actions and resources required for its current responsibility.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Identity</th>
+<th>Required access</th>
+<th>Access to avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Extractor</td>
+<td>read approved source tables; write raw landing area</td>
+<td>warehouse administration</td>
+</tr>
+<tr class="even">
+<td>Transformer</td>
+<td>read raw zone; write curated zone</td>
+<td>source credentials</td>
+</tr>
+<tr class="odd">
+<td>Publisher</td>
+<td>read approved curated views; write serving tables</td>
+<td>raw personal fields</td>
+</tr>
+<tr class="even">
+<td>Analyst</td>
+<td>read serving views</td>
+<td>write production data</td>
+</tr>
+<tr class="odd">
+<td>Auditor</td>
+<td>read control metadata and audit events</td>
+<td>alter data or logs</td>
+</tr>
+</tbody>
+</table>
+<p>Separate human identities from service identities. Avoid shared accounts. Prefer short-lived credentials and narrowly scoped roles. A role named <code>pipeline-admin</code> assigned to every job is convenient but destroys meaningful authorization boundaries.</p>
+<section id="evaluate-access-as-a-policy-decision" class="level3">
+<h3 class="anchored" data-anchor-id="evaluate-access-as-a-policy-decision">Evaluate access as a policy decision</h3>
+<p>An access decision can be expressed as:</p>
+<p><span class="math display">\[
+\operatorname{allow}(i,a,r,c) = \operatorname{roleAllows}(i,a,r) \land \operatorname{conditionsHold}(c)
+\]</span></p>
+<p>where <span class="math inline">\(i\)</span> is the identity, <span class="math inline">\(a\)</span> the action, <span class="math inline">\(r\)</span> the resource, and <span class="math inline">\(c\)</span> contextual conditions such as environment or network. Default deny means the absence of a matching allow rule produces denial.</p>
+</section>
+</section>
+<section id="retention-and-defensible-deletion" class="level2">
+<h2 class="anchored" data-anchor-id="retention-and-defensible-deletion">Retention and defensible deletion</h2>
+<p>Retention is a lifecycle rule, not simply a storage setting. For each dataset, record:</p>
+<ul>
+<li>purpose and owner;</li>
+<li>retention duration and triggering event;</li>
+<li>legal or operational exceptions;</li>
+<li>deletion method;</li>
+<li>downstream copies covered by the rule; and</li>
+<li>evidence that deletion completed.</li>
+</ul>
+<p>If a record was created at time <span class="math inline">\(t_c\)</span> and retained for <span class="math inline">\(d\)</span> days, its ordinary expiration time is:</p>
+<p><span class="math display">\[
+t_e = t_c + d
+\]</span></p>
+<p>A legal hold or documented exception may suspend deletion, but the exception should have an owner, reason, approval, and review date. Backups and derived datasets must be included; deleting only the landing table does not satisfy an end-to-end retention policy.</p>
+</section>
+<section id="design-useful-audit-events" class="level2">
+<h2 class="anchored" data-anchor-id="design-useful-audit-events">Design useful audit events</h2>
+<p>An audit log should support reconstruction without leaking the protected data itself. Record metadata such as:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"event_time"</span><span class="fu">:</span> <span class="st">"2026-08-06T06:00:00Z"</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"run_id"</span><span class="fu">:</span> <span class="st">"dsdp16-demo"</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"actor"</span><span class="fu">:</span> <span class="st">"svc-transformer"</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"action"</span><span class="fu">:</span> <span class="st">"publish"</span><span class="fu">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"resource"</span><span class="fu">:</span> <span class="st">"curated.daily_sales"</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"outcome"</span><span class="fu">:</span> <span class="st">"allowed"</span><span class="fu">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"policy_id"</span><span class="fu">:</span> <span class="st">"POL-PUBLISH-004"</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Avoid logging raw rows, secrets, tokens, or unnecessary personal fields. Protect audit logs from alteration, control access separately, synchronize clocks, define retention, and monitor gaps. Application logs explain behavior; audit logs establish accountable actions. They may overlap, but they are not interchangeable.</p>
+</section>
+<section id="record-lineage" class="level2">
+<h2 class="anchored" data-anchor-id="record-lineage">Record lineage</h2>
+<p>Lineage connects a published asset to its upstream datasets, transformations, code version, and pipeline run.</p>
+<section id="dataset-level-lineage" class="level3">
+<h3 class="anchored" data-anchor-id="dataset-level-lineage">Dataset-level lineage</h3>
+<p>Dataset-level lineage shows movement between assets:</p>
+<pre class="mermaid"><code>flowchart LR
+  A["Source orders"] --&gt; B["Raw orders"]
+  B --&gt; C["Curated orders"]
+  C --&gt; D["Daily sales"]</code></pre>
+<p>This graph supports impact analysis: if <code>raw_orders</code> changes, which downstream assets may need review?</p>
+</section>
+<section id="column-level-lineage" class="level3">
+<h3 class="anchored" data-anchor-id="column-level-lineage">Column-level lineage</h3>
+<p>Column-level lineage explains individual fields.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Output field</th>
+<th>Source fields</th>
+<th>Transformation</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>customer_token</code></td>
+<td><code>customer_id</code></td>
+<td>keyed HMAC, truncated</td>
+<td>confidential</td>
+</tr>
+<tr class="even">
+<td><code>order_date</code></td>
+<td><code>ordered_at</code></td>
+<td>convert to UTC date</td>
+<td>internal</td>
+</tr>
+<tr class="odd">
+<td><code>net_amount</code></td>
+<td><code>gross_amount</code>, <code>discount</code></td>
+<td><code>gross_amount - discount</code></td>
+<td>internal</td>
+</tr>
+<tr class="even">
+<td><code>daily_net_sales</code></td>
+<td><code>order_date</code>, <code>net_amount</code></td>
+<td>sum by date</td>
+<td>internal</td>
+</tr>
+</tbody>
+</table>
+<p>Good lineage includes identifiers that connect metadata to an actual execution:</p>
+<ul>
+<li>pipeline and task names;</li>
+<li>run ID and timestamps;</li>
+<li>input and output asset versions;</li>
+<li>transformation or code version;</li>
+<li>source-to-target field mappings; and</li>
+<li>control outcomes.</li>
+</ul>
+<p>SQL parsing can automate some mappings, but dynamic code, external APIs, and business semantics often require explicit metadata. Generated lineage should be validated, not assumed complete.</p>
+</section>
+</section>
+<section id="governance-as-executable-controls" class="level2">
+<h2 class="anchored" data-anchor-id="governance-as-executable-controls">Governance as executable controls</h2>
+<p>Policies become operational when the pipeline can evaluate them and produce evidence.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Policy statement</th>
+<th>Executable control</th>
+<th>Failure response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Published data must not contain direct identifiers</td>
+<td>deny-list schema test</td>
+<td>block publication</td>
+</tr>
+<tr class="even">
+<td>Every dataset must have an owner</td>
+<td>metadata completeness test</td>
+<td>quarantine registration</td>
+</tr>
+<tr class="odd">
+<td>Restricted data expires after its approved period</td>
+<td>expiration scan</td>
+<td>delete or open exception</td>
+</tr>
+<tr class="even">
+<td>Every output field must have lineage</td>
+<td>lineage coverage test</td>
+<td>fail metadata gate</td>
+</tr>
+<tr class="odd">
+<td>Only the publisher role writes serving tables</td>
+<td>authorization policy test</td>
+<td>deny and alert</td>
+</tr>
+</tbody>
+</table>
+<p>Define the control owner, frequency, threshold, response, and evidence location. A dashboard showing a failed control without an accountable response is observation, not governance.</p>
+</section>
+<section id="worked-example-generate-a-governance-evidence-bundle" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example-generate-a-governance-evidence-bundle">Worked example: generate a governance evidence bundle</h2>
+<p>The script <code>scripts/python/16-governance-lineage-demo.py</code> models five controls, writes machine-readable audit and lineage artifacts, and creates a summary plot. Run it from the repository root:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/16-run-governance-lineage-demo.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The generated files are:</p>
+<ul>
+<li><code>results/16-control-results.csv</code> — control-level status and evidence;</li>
+<li><code>results/16-audit-events.jsonl</code> — accountable pipeline actions;</li>
+<li><code>results/16-column-lineage.json</code> — source-to-target field mappings;</li>
+<li><code>results/16-governance-summary.json</code> — aggregate counts and pass rate; and</li>
+<li><code>results/figures/16-governance-control-status.png</code> — control results by domain.</li>
+</ul>
+<div id="fig-governance-control-status" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Horizontal bars showing passed and failed governance controls across access, privacy, ownership, retention, and lineage domains.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-governance-control-status-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="results/figures/16-governance-control-status.png" class="img-fluid figure-img" alt="Horizontal bars showing passed and failed governance controls across access, privacy, ownership, retention, and lineage domains.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-governance-control-status-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;17.1: Governance controls evaluated by the worked example.
+</figcaption>
+</figure>
+</div>
+<p>The example contains one deliberate failure: a restricted raw dataset has passed its retention limit. This demonstrates an important distinction. The pipeline should not hide the failure to obtain a perfect score; it should emit evidence and trigger the defined response.</p>
+</section>
+<section id="review-and-incident-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="review-and-incident-workflow">Review and incident workflow</h2>
+<p>When a control fails:</p>
+<ol type="1">
+<li>contain exposure or stop publication when required;</li>
+<li>preserve audit evidence without copying sensitive values;</li>
+<li>identify affected assets through lineage;</li>
+<li>assign an accountable owner and remediation deadline;</li>
+<li>document any temporary exception and its expiry;</li>
+<li>rerun the control after remediation; and</li>
+<li>improve the preventive control when the same failure could recur.</li>
+</ol>
+<p>Lineage shortens the path from detection to scope. If a source field was exposed incorrectly, the lineage graph identifies downstream tables and reports that require investigation or rebuilding.</p>
+</section>
+<section id="security-and-governance-checklist" class="level2">
+<h2 class="anchored" data-anchor-id="security-and-governance-checklist">Security and governance checklist</h2>
+<p>Before promoting a pipeline, confirm that:</p>
+<ul class="task-list">
+<li><label><input type="checkbox">datasets and sensitive fields are classified;</label></li>
+<li><label><input type="checkbox">collection is limited to a documented purpose;</label></li>
+<li><label><input type="checkbox">secrets are externally managed and never logged;</label></li>
+<li><label><input type="checkbox">service roles are distinct and least-privileged;</label></li>
+<li><label><input type="checkbox">transport and storage encryption are enabled;</label></li>
+<li><label><input type="checkbox">direct identifiers are excluded from published assets unless approved;</label></li>
+<li><label><input type="checkbox">retention rules include derivatives and backups;</label></li>
+<li><label><input type="checkbox">audit events contain actor, action, resource, outcome, policy, and run ID;</label></li>
+<li><label><input type="checkbox">audit evidence is protected from alteration;</label></li>
+<li><label><input type="checkbox">dataset- and column-level lineage are recorded;</label></li>
+<li><label><input type="checkbox">every governed asset has an owner;</label></li>
+<li><label><input type="checkbox">control failures block, quarantine, alert, or open an accountable exception; and</label></li>
+<li><label><input type="checkbox">access and exceptions are reviewed periodically.</label></li>
+</ul>
+</section>
+<section id="common-failure-modes" class="level2">
+<h2 class="anchored" data-anchor-id="common-failure-modes">Common failure modes</h2>
+<p><strong>Security by obscurity.</strong> Hidden locations and obscure table names are not access controls.</p>
+<p><strong>Secrets in configuration committed to Git.</strong> Removing a secret from the latest commit does not remove it from history; revoke and rotate it.</p>
+<p><strong>Masking only in the dashboard.</strong> The serving table still exposes the value to other consumers. Apply protection at the earliest appropriate reusable layer.</p>
+<p><strong>Lineage without run identity.</strong> A static diagram documents intent but cannot prove which inputs produced a particular output.</p>
+<p><strong>Retention without downstream coverage.</strong> Copies, exports, caches, and backups silently preserve expired data.</p>
+<p><strong>Audit logs containing payloads.</strong> Evidence collection becomes a new sensitive-data store.</p>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>A trustworthy pipeline minimizes sensitive data, keeps credentials outside code, separates identities, and grants only required permissions. Governance translates ownership, retention, and publication rules into executable controls. Audit events show what occurred, while lineage connects outputs to specific inputs and transformations. Together, these practices make failures containable, reviews evidence-based, and data products defensible.</p>
+</section>
+<section id="exercises" class="level2">
+<h2 class="anchored" data-anchor-id="exercises">Exercises</h2>
+<ol type="1">
+<li>Add a <code>legal_hold</code> field to the retention control. Require an owner and review date whenever it is true.</li>
+<li>Add a schema rule that blocks <code>email</code>, <code>phone</code>, and <code>full_name</code> from the published dataset.</li>
+<li>Extend the lineage file with code version and input checksum fields.</li>
+<li>Change the deliberate retention failure to a pass, rerun the script, and compare the evidence bundle.</li>
+<li>Design least-privilege roles for a pipeline with ingestion, validation, transformation, publication, and audit tasks.</li>
+</ol>
 
 
 </section>

@@ -1,0 +1,91 @@
+name: Pipeline CI and controlled promotion
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-production-promotion
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install --requirement requirements.txt
+      - name: Run automated tests
+        run: python -m pytest -q
+      - name: Evaluate promotion controls
+        run: bash scripts/bash/17-run-promotion-readiness.sh
+      - name: Retain validation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-evidence-${{ github.sha }}
+          path: |
+            results/17-promotion-readiness.json
+            results/figures/17-promotion-readiness.png
+          retention-days: 30
+
+  build:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Build immutable release bundle
+        run: |
+          tar --create --gzip --file pipeline-${{ github.sha }}.tar.gz \
+            scripts config requirements.txt
+          sha256sum pipeline-${{ github.sha }}.tar.gz > pipeline-${{ github.sha }}.sha256
+      - name: Retain release bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-${{ github.sha }}
+          path: |
+            pipeline-${{ github.sha }}.tar.gz
+            pipeline-${{ github.sha }}.sha256
+          retention-days: 30
+
+  staging-smoke-test:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Download immutable release bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: pipeline-${{ github.sha }}
+      - name: Verify release digest
+        run: sha256sum --check pipeline-${{ github.sha }}.sha256
+      - name: Deploy and smoke-test staging
+        run: echo "Replace with platform-specific staging deployment and smoke tests"
+
+  promote-production:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: staging-smoke-test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download the staged release bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: pipeline-${{ github.sha }}
+      - name: Verify the staged release digest
+        run: sha256sum --check pipeline-${{ github.sha }}.sha256
+      - name: Promote the same release
+        run: echo "Replace with platform-specific production promotion"

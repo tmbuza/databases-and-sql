@@ -1,0 +1,5 @@
+transaction_id,transaction_at,customer_id,course_id,customer_segment,status,quantity,unit_price,source_row_number,rejection_reasons
+TXN-18009,not-a-timestamp,CUST-109,SQL-101,individual,completed,1,49.50,10,invalid_transaction_at
+TXN-18010,2026-07-04T16:00:00Z,,PIPE-201,organization,completed,1,120.00,11,missing_customer_id
+TXN-18011,2026-07-05T08:00:00Z,CUST-111,SQL-101,individual,completed,-1,49.50,12,quantity_must_be_positive
+TXN-18002,2026-07-05T09:00:00Z,CUST-112,PIPE-201,organization,pending,1,120.00,13,duplicate_transaction_id|invalid_status

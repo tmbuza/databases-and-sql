@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -71,6 +106,35 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="assets/css/cdi.css">
 </head>
@@ -287,6 +351,49 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link active" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#the-recovery-problem" id="toc-the-recovery-problem" class="nav-link" data-scroll-target="#the-recovery-problem">15.1 The recovery problem</a>
+  <ul class="collapse">
+  <li><a href="#recovery-vocabulary" id="toc-recovery-vocabulary" class="nav-link" data-scroll-target="#recovery-vocabulary">Recovery vocabulary</a></li>
+  </ul></li>
+  <li><a href="#idempotency-as-a-pipeline-contract" id="toc-idempotency-as-a-pipeline-contract" class="nav-link" data-scroll-target="#idempotency-as-a-pipeline-contract">15.2 Idempotency as a pipeline contract</a>
+  <ul class="collapse">
+  <li><a href="#stable-identity" id="toc-stable-identity" class="nav-link" data-scroll-target="#stable-identity">Stable identity</a></li>
+  <li><a href="#idempotent-write-patterns" id="toc-idempotent-write-patterns" class="nav-link" data-scroll-target="#idempotent-write-patterns">Idempotent write patterns</a></li>
+  <li><a href="#idempotency-keys-and-run-identifiers" id="toc-idempotency-keys-and-run-identifiers" class="nav-link" data-scroll-target="#idempotency-keys-and-run-identifiers">Idempotency keys and run identifiers</a></li>
+  </ul></li>
+  <li><a href="#transactions-and-commit-boundaries" id="toc-transactions-and-commit-boundaries" class="nav-link" data-scroll-target="#transactions-and-commit-boundaries">15.3 Transactions and commit boundaries</a>
+  <ul class="collapse">
+  <li><a href="#choosing-the-boundary" id="toc-choosing-the-boundary" class="nav-link" data-scroll-target="#choosing-the-boundary">Choosing the boundary</a></li>
+  </ul></li>
+  <li><a href="#checkpointing-and-safe-resume" id="toc-checkpointing-and-safe-resume" class="nav-link" data-scroll-target="#checkpointing-and-safe-resume">15.4 Checkpointing and safe resume</a>
+  <ul class="collapse">
+  <li><a href="#checkpoint-trade-offs" id="toc-checkpoint-trade-offs" class="nav-link" data-scroll-target="#checkpoint-trade-offs">Checkpoint trade-offs</a></li>
+  </ul></li>
+  <li><a href="#failure-classification-and-retry-policy" id="toc-failure-classification-and-retry-policy" class="nav-link" data-scroll-target="#failure-classification-and-retry-policy">15.5 Failure classification and retry policy</a></li>
+  <li><a href="#a-runnable-recovery-demonstration" id="toc-a-runnable-recovery-demonstration" class="nav-link" data-scroll-target="#a-runnable-recovery-demonstration">15.6 A runnable recovery demonstration</a></li>
+  <li><a href="#designing-bounded-backfills" id="toc-designing-bounded-backfills" class="nav-link" data-scroll-target="#designing-bounded-backfills">15.7 Designing bounded backfills</a>
+  <ul class="collapse">
+  <li><a href="#backfill-plan" id="toc-backfill-plan" class="nav-link" data-scroll-target="#backfill-plan">Backfill plan</a></li>
+  <li><a href="#protect-current-production-work" id="toc-protect-current-production-work" class="nav-link" data-scroll-target="#protect-current-production-work">Protect current production work</a></li>
+  <li><a href="#late-arriving-and-corrected-records" id="toc-late-arriving-and-corrected-records" class="nav-link" data-scroll-target="#late-arriving-and-corrected-records">Late-arriving and corrected records</a></li>
+  </ul></li>
+  <li><a href="#verification-after-recovery-or-backfill" id="toc-verification-after-recovery-or-backfill" class="nav-link" data-scroll-target="#verification-after-recovery-or-backfill">15.8 Verification after recovery or backfill</a>
+  <ul class="collapse">
+  <li><a href="#structural-checks" id="toc-structural-checks" class="nav-link" data-scroll-target="#structural-checks">Structural checks</a></li>
+  <li><a href="#reconciliation-checks" id="toc-reconciliation-checks" class="nav-link" data-scroll-target="#reconciliation-checks">Reconciliation checks</a></li>
+  <li><a href="#operational-checks" id="toc-operational-checks" class="nav-link" data-scroll-target="#operational-checks">Operational checks</a></li>
+  </ul></li>
+  <li><a href="#anti-patterns" id="toc-anti-patterns" class="nav-link" data-scroll-target="#anti-patterns">15.9 Anti-patterns</a>
+  <ul class="collapse">
+  <li><a href="#retry-every-exception" id="toc-retry-every-exception" class="nav-link" data-scroll-target="#retry-every-exception">Retry every exception</a></li>
+  <li><a href="#delete-before-reload" id="toc-delete-before-reload" class="nav-link" data-scroll-target="#delete-before-reload">Delete before reload</a></li>
+  <li><a href="#advance-checkpoints-before-commit" id="toc-advance-checkpoints-before-commit" class="nav-link" data-scroll-target="#advance-checkpoints-before-commit">Advance checkpoints before commit</a></li>
+  <li><a href="#use-processing-time-as-the-only-cursor" id="toc-use-processing-time-as-the-only-cursor" class="nav-link" data-scroll-target="#use-processing-time-as-the-only-cursor">Use processing time as the only cursor</a></li>
+  <li><a href="#backfill-everything-at-full-concurrency" id="toc-backfill-everything-at-full-concurrency" class="nav-link" data-scroll-target="#backfill-everything-at-full-concurrency">Backfill everything at full concurrency</a></li>
+  </ul></li>
+  <li><a href="#recovery-runbook" id="toc-recovery-runbook" class="nav-link" data-scroll-target="#recovery-runbook">15.10 Recovery runbook</a></li>
+  <li><a href="#practical-exercises" id="toc-practical-exercises" class="nav-link" data-scroll-target="#practical-exercises">15.11 Practical exercises</a></li>
+  <li><a href="#chapter-summary" id="toc-chapter-summary" class="nav-link" data-scroll-target="#chapter-summary">15.12 Chapter summary</a></li>
   </ul>
 </nav>
     </div>
@@ -295,7 +402,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./13-orchestration-and-scheduling.html">Orchestration and Reliable Operations</a></li><li class="breadcrumb-item"><a href="./15-recovery-idempotency-and-backfills.html"><span class="chapter-title">Recovery, Idempotency, and Backfills</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-recovery-backfills" class="quarto-section-identifier"><span class="chapter-title">Recovery, Idempotency, and Backfills</span></span></h1>
+<h1 class="title"><span id="sec-recovery-idempotency-backfills" class="quarto-section-identifier"><span class="chapter-title">Recovery, Idempotency, and Backfills</span></span></h1>
 </div>
 
 
@@ -318,13 +425,433 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cdi-message">
+<ul>
+<li><strong>ID:</strong> DSDP-015</li>
+<li><strong>Type:</strong> Core chapter</li>
+<li><strong>Audience:</strong> Data practitioners building production pipelines</li>
+<li><strong>Theme:</strong> Recoverable and repeatable data operations</li>
+</ul>
+</div>
+<p>Pipelines fail. Networks time out, source systems become unavailable, workers stop, and malformed records reach transformations. Reliability does not mean preventing every failure. It means making failure bounded, visible, and safe to recover from.</p>
+<p>This chapter extends the operational practices from <a href="14-testing-monitoring-and-observability.html" class="quarto-xref"><span>Testing, Monitoring, and Observability</span></a>. It uses a small SQLite order pipeline to make recovery concrete: a batch is recorded in a run ledger, rows are loaded with deterministic keys, commits occur at explicit boundaries, and bounded backfills use the same production-safe write path as scheduled runs.</p>
 <section id="learning-objectives" class="level2">
 <h2 class="anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<p>After completing this chapter, you will be able to:</p>
 <ul>
-<li>Design repeatable runs that do not duplicate outputs.</li>
-<li>Resume safely after partial failure.</li>
-<li>Plan bounded backfills without disrupting current production data.</li>
+<li>design repeatable runs that do not duplicate outputs;</li>
+<li>resume safely after partial failure;</li>
+<li>distinguish retries, replays, recovery, and backfills;</li>
+<li>select transaction and checkpoint boundaries deliberately;</li>
+<li>plan bounded backfills without disrupting current production data; and</li>
+<li>verify that recovery preserved completeness and uniqueness.</li>
 </ul>
+</section>
+<section id="the-recovery-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-recovery-problem">15.1 The recovery problem</h2>
+<p>Consider a daily pipeline with four stages:</p>
+<ol type="1">
+<li>extract source orders;</li>
+<li>validate and transform them;</li>
+<li>load a curated table; and</li>
+<li>publish completion metadata.</li>
+</ol>
+<p>If the worker stops after loading records but before publishing completion, the orchestrator sees a failed run even though some outputs exist. Blindly rerunning the batch can duplicate rows. Deleting everything first can erase valid concurrent data. Skipping the run can leave an incomplete partition.</p>
+<p>A recoverable pipeline records enough state to answer three questions:</p>
+<ul>
+<li><strong>What was intended?</strong> The batch identity and bounded source interval.</li>
+<li><strong>What completed?</strong> Durable checkpoints, run status, and row counts.</li>
+<li><strong>What may be repeated safely?</strong> Operations protected by idempotent keys, transactions, or atomic replacement.</li>
+</ul>
+<section id="recovery-vocabulary" class="level3">
+<h3 class="anchored" data-anchor-id="recovery-vocabulary">Recovery vocabulary</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Operation</th>
+<th>Purpose</th>
+<th>Typical trigger</th>
+<th>Data interval</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Retry</td>
+<td>Repeat a failed attempt</td>
+<td>Transient error</td>
+<td>Same run and interval</td>
+</tr>
+<tr class="even">
+<td>Replay</td>
+<td>Process the same input again</td>
+<td>Validation or logic check</td>
+<td>Same historical input</td>
+</tr>
+<tr class="odd">
+<td>Resume</td>
+<td>Continue after a checkpoint</td>
+<td>Partial failure</td>
+<td>Unfinished portion</td>
+</tr>
+<tr class="even">
+<td>Backfill</td>
+<td>Recompute missing or corrected history</td>
+<td>Late data or new logic</td>
+<td>Explicit historical range</td>
+</tr>
+<tr class="odd">
+<td>Rebuild</td>
+<td>Recreate a derived asset</td>
+<td>Corruption or major logic change</td>
+<td>Entire asset or large scope</td>
+</tr>
+</tbody>
+</table>
+<p>These terms describe intent, not implementation. All five still require controlled writes and verification.</p>
+</section>
+</section>
+<section id="idempotency-as-a-pipeline-contract" class="level2">
+<h2 class="anchored" data-anchor-id="idempotency-as-a-pipeline-contract">15.2 Idempotency as a pipeline contract</h2>
+<p>An operation is <strong>idempotent</strong> when applying it more than once has the same intended effect as applying it once. For a pipeline batch <span class="math inline">\(B\)</span> and target state <span class="math inline">\(T\)</span>, the desired property is:</p>
+<p><span class="math display">\[
+f_B(f_B(T)) = f_B(T).
+\]</span></p>
+<p>This does not mean the second run performs no work. It means repeated execution does not create an additional business effect.</p>
+<section id="stable-identity" class="level3">
+<h3 class="anchored" data-anchor-id="stable-identity">Stable identity</h3>
+<p>Idempotency begins with stable identifiers:</p>
+<ul>
+<li>a business key, such as <code>order_id</code>;</li>
+<li>a source event identifier;</li>
+<li>a deterministic composite key, such as <code>(customer_id, event_time, event_type)</code>; or</li>
+<li>a content hash when the source supplies no reliable identifier.</li>
+</ul>
+<p>An auto-incrementing target key alone cannot prevent duplicates because every repeated insert receives a new value.</p>
+</section>
+<section id="idempotent-write-patterns" class="level3">
+<h3 class="anchored" data-anchor-id="idempotent-write-patterns">Idempotent write patterns</h3>
+<p><strong>Upsert by business key.</strong> Insert unseen rows and update matching rows. In SQLite, <code>ON CONFLICT ... DO UPDATE</code> makes the conflict behavior explicit.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">INSERT</span> <span class="kw">INTO</span> curated_orders (order_id, order_date, customer_id, amount, source_updated_at)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">VALUES</span> (?, ?, ?, ?, ?)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">ON</span> CONFLICT(order_id) DO <span class="kw">UPDATE</span> <span class="kw">SET</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    order_date <span class="op">=</span> excluded.order_date,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    customer_id <span class="op">=</span> excluded.customer_id,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    amount <span class="op">=</span> excluded.amount,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    source_updated_at <span class="op">=</span> excluded.source_updated_at</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">WHERE</span> excluded.source_updated_at <span class="op">&gt;=</span> curated_orders.source_updated_at;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The timestamp condition prevents older replays from overwriting newer target values.</p>
+<p><strong>Replace a bounded partition.</strong> Build the replacement away from the live table, validate it, then swap or replace only the requested partition. This works well when a partition is the unit of correctness.</p>
+<p><strong>Append with deduplication.</strong> Preserve immutable events, enforce a unique event key, and treat duplicates as no-ops. This is appropriate for event histories but not for mutable snapshots.</p>
+<p><strong>Compare-and-set.</strong> Update a row only when its current version matches the version previously read. This protects concurrent state changes.</p>
+</section>
+<section id="idempotency-keys-and-run-identifiers" class="level3">
+<h3 class="anchored" data-anchor-id="idempotency-keys-and-run-identifiers">Idempotency keys and run identifiers</h3>
+<p>A <code>run_id</code> identifies an execution attempt. An <code>idempotency_key</code> identifies the logical effect. Retrying a logical batch should normally create a new attempt identifier while retaining the same idempotency key. For example:</p>
+<pre class="text"><code>run_id:            scheduled__2026-08-06T01:00:00Z__attempt_2
+idempotency_key:   orders__2026-08-05</code></pre>
+<p>Conflating the two makes it difficult to distinguish a legitimate retry from an unrelated duplicate request.</p>
+</section>
+</section>
+<section id="transactions-and-commit-boundaries" class="level2">
+<h2 class="anchored" data-anchor-id="transactions-and-commit-boundaries">15.3 Transactions and commit boundaries</h2>
+<p>A database transaction groups statements into an atomic unit: either all committed changes become visible or none do. Transactions are the first defence against partial writes.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> connection:</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    load_rows(connection, batch)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    record_batch_complete(connection, batch_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If either statement raises an exception, the context manager rolls back both operations. A run ledger must not say <code>succeeded</code> while the corresponding data remains incomplete.</p>
+<section id="choosing-the-boundary" class="level3">
+<h3 class="anchored" data-anchor-id="choosing-the-boundary">Choosing the boundary</h3>
+<p>One transaction for an entire batch gives simple all-or-nothing behavior but may hold locks, generate a large log, and make long jobs expensive to retry. Smaller transactions reduce lock duration but introduce partial completion. When chunking is necessary:</p>
+<ol type="1">
+<li>choose a stable chunk order;</li>
+<li>commit data and its checkpoint in the same transaction;</li>
+<li>make every chunk idempotent; and</li>
+<li>verify the complete batch before publishing it.</li>
+</ol>
+<p>The checkpoint describes the <strong>last durably committed unit</strong>, never the last row merely read or transformed in memory.</p>
+</section>
+</section>
+<section id="checkpointing-and-safe-resume" class="level2">
+<h2 class="anchored" data-anchor-id="checkpointing-and-safe-resume">15.4 Checkpointing and safe resume</h2>
+<p>A useful checkpoint contains enough information to reproduce the next read:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Example</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>pipeline_name</code></td>
+<td><code>daily_orders</code></td>
+<td>Names the workflow</td>
+</tr>
+<tr class="even">
+<td><code>batch_key</code></td>
+<td><code>orders__2026-08-05</code></td>
+<td>Identifies the logical batch</td>
+</tr>
+<tr class="odd">
+<td><code>last_committed_key</code></td>
+<td><code>O-00420</code></td>
+<td>Defines the resume position</td>
+</tr>
+<tr class="even">
+<td><code>source_high_watermark</code></td>
+<td><code>2026-08-06T00:00:00Z</code></td>
+<td>Freezes the source boundary</td>
+</tr>
+<tr class="odd">
+<td><code>status</code></td>
+<td><code>running</code></td>
+<td>Describes lifecycle state</td>
+</tr>
+<tr class="even">
+<td><code>updated_at</code></td>
+<td>timestamp</td>
+<td>Supports stale-run detection</td>
+</tr>
+</tbody>
+</table>
+<p>Freezing a high watermark is essential. Without it, a resumed extraction may include records that arrived after the original run began, changing the batch while it is being recovered.</p>
+<section id="checkpoint-trade-offs" class="level3">
+<h3 class="anchored" data-anchor-id="checkpoint-trade-offs">Checkpoint trade-offs</h3>
+<ul>
+<li><strong>Per batch:</strong> least metadata, most repeated work.</li>
+<li><strong>Per chunk:</strong> balanced for most batch pipelines.</li>
+<li><strong>Per record:</strong> precise but expensive and usually unnecessary.</li>
+</ul>
+<p>Checkpoint frequency should reflect the cost of repeating work and the complexity of managing partial state.</p>
+</section>
+</section>
+<section id="failure-classification-and-retry-policy" class="level2">
+<h2 class="anchored" data-anchor-id="failure-classification-and-retry-policy">15.5 Failure classification and retry policy</h2>
+<p>Retries help only when the failure may disappear without changing the input or code.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Failure</th>
+<th style="text-align: right;">Retry?</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Network timeout</td>
+<td style="text-align: right;">Yes</td>
+<td>Exponential backoff with jitter</td>
+</tr>
+<tr class="even">
+<td>Rate limit</td>
+<td style="text-align: right;">Yes</td>
+<td>Respect server delay or quota window</td>
+</tr>
+<tr class="odd">
+<td>Temporary database lock</td>
+<td style="text-align: right;">Yes</td>
+<td>Bounded retry</td>
+</tr>
+<tr class="even">
+<td>Invalid record</td>
+<td style="text-align: right;">No</td>
+<td>Quarantine or reject with context</td>
+</tr>
+<tr class="odd">
+<td>Schema incompatibility</td>
+<td style="text-align: right;">No</td>
+<td>Stop, investigate, and update contract</td>
+</tr>
+<tr class="even">
+<td>Permission denied</td>
+<td style="text-align: right;">Usually no</td>
+<td>Correct identity or policy</td>
+</tr>
+<tr class="odd">
+<td>Deterministic code defect</td>
+<td style="text-align: right;">No</td>
+<td>Fix, test, and replay</td>
+</tr>
+</tbody>
+</table>
+<p>Every retry policy needs a maximum attempt count, maximum elapsed time, retryable exception list, and terminal failure action. Unlimited retries convert a visible failure into an invisible stalled pipeline.</p>
+</section>
+<section id="a-runnable-recovery-demonstration" class="level2">
+<h2 class="anchored" data-anchor-id="a-runnable-recovery-demonstration">15.6 A runnable recovery demonstration</h2>
+<p>The companion program <code>scripts/python/15-demonstrate-recovery.py</code> creates a temporary SQLite database and evaluates three cases:</p>
+<ol type="1">
+<li>a naive append load followed by a retry;</li>
+<li>an idempotent upsert followed by the same retry; and</li>
+<li>a simulated failure after one committed chunk, followed by checkpoint-based recovery.</li>
+</ol>
+<p>Run it from the repository root:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> scripts/bash/15-run-recovery-demo.sh</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The wrapper writes the database and evidence under <code>results/</code>, then produces <a href="#fig-recovery-comparison" class="quarto-xref">Figure&nbsp;<span>16.1</span></a>.</p>
+<div id="fig-recovery-comparison" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-recovery-comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="results/figures/15-recovery-comparison.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-recovery-comparison-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;16.1: Naive retry duplicates rows, while the upsert and checkpointed recovery preserve one row per order.
+</figcaption>
+</figure>
+</div>
+<p>The result summary is machine-readable:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"naive_rows_after_retry"</span><span class="fu">:</span> <span class="dv">12</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"idempotent_rows_after_retry"</span><span class="fu">:</span> <span class="dv">6</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"recovered_rows"</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"expected_recovered_rows"</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"duplicate_business_keys_after_recovery"</span><span class="fu">:</span> <span class="dv">0</span><span class="fu">,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"checkpoint_after_recovery"</span><span class="fu">:</span> <span class="dv">10</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The demonstration deliberately commits the first chunk before raising an exception. Recovery reads the durable checkpoint, resumes at the next source position, and uses the same upsert operation for all later chunks. Repeating the recovery step remains safe.</p>
+</section>
+<section id="designing-bounded-backfills" class="level2">
+<h2 class="anchored" data-anchor-id="designing-bounded-backfills">15.7 Designing bounded backfills</h2>
+<p>A backfill is a production change, even when it targets old data. Define it with an explicit half-open interval:</p>
+<p><span class="math display">\[
+[t_{start}, t_{end})
+\]</span></p>
+<p>Half-open intervals compose without overlap: daily windows <code>[Aug 1, Aug 2)</code> and <code>[Aug 2, Aug 3)</code> cover adjacent days exactly once.</p>
+<section id="backfill-plan" class="level3">
+<h3 class="anchored" data-anchor-id="backfill-plan">Backfill plan</h3>
+<p>Before execution, record:</p>
+<ul>
+<li>the reason and owner;</li>
+<li>start and exclusive end boundaries;</li>
+<li>affected datasets and downstream consumers;</li>
+<li>code, schema, and reference-data versions;</li>
+<li>expected partitions and approximate row volume;</li>
+<li>concurrency and rate limits;</li>
+<li>validation queries;</li>
+<li>pause, rollback, or repair conditions; and</li>
+<li>how completion will be communicated.</li>
+</ul>
+</section>
+<section id="protect-current-production-work" class="level3">
+<h3 class="anchored" data-anchor-id="protect-current-production-work">Protect current production work</h3>
+<p>Use the same tested transformation and write path as the scheduled pipeline, but isolate the backfill operationally:</p>
+<ul>
+<li>assign a distinct run type and backfill identifier;</li>
+<li>cap parallelism so current runs retain capacity;</li>
+<li>process small windows in deterministic order;</li>
+<li>avoid overlapping live and backfill ownership of a partition;</li>
+<li>validate each window before advancing; and</li>
+<li>make the backfill restartable from its last successful window.</li>
+</ul>
+<p>A separate, untested “backfill script” easily drifts from production logic. Parameterize the production job with a bounded interval instead.</p>
+</section>
+<section id="late-arriving-and-corrected-records" class="level3">
+<h3 class="anchored" data-anchor-id="late-arriving-and-corrected-records">Late-arriving and corrected records</h3>
+<p>Event time describes when a business event occurred; processing time describes when the pipeline observed it. Late data makes these differ. A robust pipeline can combine:</p>
+<ul>
+<li>a moving reprocessing window for recent partitions;</li>
+<li>source update timestamps or change-data-capture positions;</li>
+<li>deterministic upserts; and</li>
+<li>a policy for reopening previously complete partitions.</li>
+</ul>
+<p>Completion should therefore mean “complete under the declared lateness policy,” not “incapable of ever changing.”</p>
+</section>
+</section>
+<section id="verification-after-recovery-or-backfill" class="level2">
+<h2 class="anchored" data-anchor-id="verification-after-recovery-or-backfill">15.8 Verification after recovery or backfill</h2>
+<p>Successful execution is not proof of correct recovery. Verify at several levels.</p>
+<section id="structural-checks" class="level3">
+<h3 class="anchored" data-anchor-id="structural-checks">Structural checks</h3>
+<ul>
+<li>expected partitions exist;</li>
+<li>primary or business keys are unique;</li>
+<li>required fields satisfy null constraints;</li>
+<li>schemas match the data contract; and</li>
+<li>no temporary tables or locks remain.</li>
+</ul>
+</section>
+<section id="reconciliation-checks" class="level3">
+<h3 class="anchored" data-anchor-id="reconciliation-checks">Reconciliation checks</h3>
+<p>For each bounded interval, compare source and target:</p>
+<p><span class="math display">\[
+\Delta_{count} = N_{source} - N_{target}
+\]</span></p>
+<p>Counts alone can agree while rows differ. Add sums for additive measures, minimum and maximum timestamps, distinct key counts, and deterministic hashes where appropriate.</p>
+</section>
+<section id="operational-checks" class="level3">
+<h3 class="anchored" data-anchor-id="operational-checks">Operational checks</h3>
+<ul>
+<li>the run ledger has one terminal status;</li>
+<li>checkpoints align with committed data;</li>
+<li>retry and error counts are plausible;</li>
+<li>current scheduled runs remained healthy; and</li>
+<li>downstream refreshes were triggered exactly once.</li>
+</ul>
+<p>The demo writes <code>results/15-recovery-verification.csv</code>, which records the expected and observed value for every acceptance check. This is evidence, not merely console output.</p>
+</section>
+</section>
+<section id="anti-patterns" class="level2">
+<h2 class="anchored" data-anchor-id="anti-patterns">15.9 Anti-patterns</h2>
+<section id="retry-every-exception" class="level3">
+<h3 class="anchored" data-anchor-id="retry-every-exception">Retry every exception</h3>
+<p>Malformed data and broken contracts do not improve with repetition. Classify failures and retry only transient conditions.</p>
+</section>
+<section id="delete-before-reload" class="level3">
+<h3 class="anchored" data-anchor-id="delete-before-reload">Delete before reload</h3>
+<p>An unconditional delete creates a period with missing data and can remove changes owned by another run. Stage and validate replacement data or perform deletion and insertion in one controlled transaction.</p>
+</section>
+<section id="advance-checkpoints-before-commit" class="level3">
+<h3 class="anchored" data-anchor-id="advance-checkpoints-before-commit">Advance checkpoints before commit</h3>
+<p>If the process stops between checkpoint advancement and data commit, recovery skips data permanently. Commit the output and checkpoint atomically.</p>
+</section>
+<section id="use-processing-time-as-the-only-cursor" class="level3">
+<h3 class="anchored" data-anchor-id="use-processing-time-as-the-only-cursor">Use processing time as the only cursor</h3>
+<p>Rows can share timestamps, clocks can differ, and late records can fall behind the cursor. Use a stable tie-breaker such as <code>(updated_at, source_id)</code> and overlap windows when the source cannot guarantee ordering.</p>
+</section>
+<section id="backfill-everything-at-full-concurrency" class="level3">
+<h3 class="anchored" data-anchor-id="backfill-everything-at-full-concurrency">Backfill everything at full concurrency</h3>
+<p>Historical work can saturate databases, APIs, and queues needed by current production runs. Bound both time range and resource consumption.</p>
+</section>
+</section>
+<section id="recovery-runbook" class="level2">
+<h2 class="anchored" data-anchor-id="recovery-runbook">15.10 Recovery runbook</h2>
+<p>When a production pipeline fails:</p>
+<ol type="1">
+<li><strong>Contain:</strong> pause unsafe downstream publication and prevent overlapping ownership.</li>
+<li><strong>Classify:</strong> determine whether the failure is transient, data-related, code-related, or infrastructure-related.</li>
+<li><strong>Inspect durable state:</strong> read the run ledger, target data, high watermark, and last committed checkpoint.</li>
+<li><strong>Select an action:</strong> retry, resume, replay, bounded backfill, or rebuild.</li>
+<li><strong>Estimate impact:</strong> identify missing, duplicated, stale, and downstream data.</li>
+<li><strong>Execute safely:</strong> reuse idempotent writes and explicit intervals with controlled concurrency.</li>
+<li><strong>Verify:</strong> reconcile source and target, check uniqueness, and confirm checkpoints.</li>
+<li><strong>Publish:</strong> release outputs only after acceptance checks pass.</li>
+<li><strong>Document:</strong> retain evidence, incident notes, and preventive actions.</li>
+</ol>
+</section>
+<section id="practical-exercises" class="level2">
+<h2 class="anchored" data-anchor-id="practical-exercises">15.11 Practical exercises</h2>
+<ol type="1">
+<li>Run the demonstration twice. Confirm that the recovery table still contains ten unique business keys.</li>
+<li>Modify one source amount and rerun the idempotent load with a newer <code>source_updated_at</code>. Confirm that the target changes without adding a row.</li>
+<li>Reverse the timestamp comparison in the upsert. Explain how an old replay can now corrupt newer data.</li>
+<li>Change the recovery chunk size from three to four. Simulate failure after the second commit and identify the correct resume position.</li>
+<li>Draft a backfill plan for seven missing daily partitions while the normal daily schedule continues.</li>
+</ol>
+</section>
+<section id="chapter-summary" class="level2">
+<h2 class="anchored" data-anchor-id="chapter-summary">15.12 Chapter summary</h2>
+<p>Reliable recovery is designed before failure occurs. Stable business keys and deterministic writes make repeated execution safe. Transactions align data with run metadata, while checkpoints reduce repeated work without pretending partial progress is complete. Backfills must be explicitly bounded, resource-aware, restartable, and verified like any other production change.</p>
+<p>The essential principle is simple: <strong>repeat the computation when necessary, but never repeat an unintended business effect.</strong></p>
 
 
 </section>

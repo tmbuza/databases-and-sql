@@ -1,0 +1,13 @@
+transaction_id,transaction_at,customer_id,course_id,customer_segment,status,quantity,unit_price
+TXN-18001,2026-07-01T08:15:00Z,CUST-101,SQL-101,individual,completed,1,49.50
+TXN-18002,2026-07-01T09:20:00Z,CUST-102,PIPE-201,organization,completed,3,120.00
+TXN-18003,2026-07-01T10:05:00Z,CUST-103,SQL-101,individual,completed,2,49.50
+TXN-18004,2026-07-02T11:45:00+03:00,CUST-104,PIPE-201,individual,refunded,1,120.00
+TXN-18005,2026-07-02T13:30:00Z,CUST-105,GOV-301,organization,completed,1,180.00
+TXN-18006,2026-07-03T07:55:00Z,CUST-106,SQL-101,individual,completed,1,49.50
+TXN-18007,2026-07-03T12:10:00Z,CUST-107,PIPE-201,organization,refunded,1,120.00
+TXN-18008,2026-07-04T14:25:00Z,CUST-108,GOV-301,individual,completed,2,118.25
+TXN-18009,not-a-timestamp,CUST-109,SQL-101,individual,completed,1,49.50
+TXN-18010,2026-07-04T16:00:00Z,,PIPE-201,organization,completed,1,120.00
+TXN-18011,2026-07-05T08:00:00Z,CUST-111,SQL-101,individual,completed,-1,49.50
+TXN-18002,2026-07-05T09:00:00Z,CUST-112,PIPE-201,organization,pending,1,120.00

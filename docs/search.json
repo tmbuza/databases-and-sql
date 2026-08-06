@@ -2522,7 +2522,7 @@
     "href": "14-testing-monitoring-and-observability.html",
     "title": "Testing, Monitoring, and Observability",
     "section": "",
-    "text": "Learning objectives",
+    "text": "Learning objectives\nData pipelines rarely fail only by crashing. A run can finish successfully and still publish stale, incomplete, duplicated, or implausible data. Reliable pipelines therefore need three related capabilities:\nThis chapter builds those capabilities around a small orders pipeline. The example produces structured run metadata, evaluates service-level objectives (SLOs), and creates a monitoring dashboard from multiple simulated runs.\nBy the end of this chapter, you will be able to:",
     "crumbs": [
       "Orchestration and Reliable Operations",
       "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
@@ -2533,18 +2533,128 @@
     "href": "14-testing-monitoring-and-observability.html#learning-objectives",
     "title": "Testing, Monitoring, and Observability",
     "section": "",
-    "text": "Test functions, stage boundaries, data contracts, and complete runs.\nMonitor freshness, volume, quality, duration, and failures.\nCreate run metadata that supports fast diagnosis.",
+    "text": "test functions, stage boundaries, data contracts, and complete runs;\nmonitor freshness, volume, quality, duration, and failures;\ndefine actionable SLOs and alert conditions;\nemit structured run metadata that supports fast diagnosis; and\ndistinguish symptoms, causes, and debugging evidence.",
     "crumbs": [
       "Orchestration and Reliable Operations",
       "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
     ]
   },
   {
-    "objectID": "14-testing-monitoring-and-observability.html#supporting-example",
-    "href": "14-testing-monitoring-and-observability.html#supporting-example",
+    "objectID": "14-testing-monitoring-and-observability.html#a-layered-testing-strategy",
+    "href": "14-testing-monitoring-and-observability.html#a-layered-testing-strategy",
     "title": "Testing, Monitoring, and Observability",
-    "section": "Supporting example",
-    "text": "Supporting example\nRun python -m pytest -q to verify the starter transformation and end-to-end workflow.",
+    "section": "A layered testing strategy",
+    "text": "A layered testing strategy\nNo single test answers every reliability question. A useful test suite moves from fast, isolated checks to broader workflow validation.\n\n\n\n\n\n\n\n\n\nLayer\nMain question\nExample\nTypical frequency\n\n\n\n\nUnit\nDoes one function behave correctly?\nRevenue equals quantity * unit_price\nEvery change\n\n\nContract\nDoes data match the expected interface?\nRequired columns and types exist\nEvery run and change\n\n\nIntegration\nDo adjacent stages work together?\nExtracted rows load into the target schema\nEvery change\n\n\nData quality\nIs this run’s data fit for use?\nIDs are unique and prices are non-negative\nEvery run\n\n\nEnd-to-end\nDoes the complete workflow produce the expected output?\nRaw orders become a valid summary\nBefore release; scheduled smoke test\n\n\n\nThe test pyramid still applies: keep many deterministic unit and contract tests, fewer integration tests, and a small number of end-to-end tests. Broad tests are valuable, but they are slower and usually identify a larger area rather than the exact faulty function.\n\nTest behaviour, not implementation details\nA durable test describes an invariant. For example:\ndef test_revenue_is_quantity_times_price():\n    row = {\"quantity\": 3, \"unit_price\": 12.50}\n    assert calculate_revenue(row) == 37.50\nThis test remains useful if the internal implementation changes. A test that mocks every internal call may pass while the real stage boundary is broken.\n\n\nTest the unhappy paths\nProduction incidents usually live outside the ideal sample. Include cases such as:\n\nempty extracts;\nmissing or extra columns;\nnull business keys;\nduplicate records;\ninvalid timestamps and late-arriving data;\nnegative quantities or prices;\npartial writes and retries; and\nupstream timeouts or malformed responses.\n\nThe included test file covers transformation behaviour, contract violations, duplicate detection, and an end-to-end run. Run it from the repository root:\npython -m pytest -q tests/test_14_observable_pipeline.py",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#data-contracts-at-stage-boundaries",
+    "href": "14-testing-monitoring-and-observability.html#data-contracts-at-stage-boundaries",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "Data contracts at stage boundaries",
+    "text": "Data contracts at stage boundaries\nA data contract makes assumptions explicit. At minimum, it should describe:\n\nrequired fields;\naccepted data types and formats;\nnullability;\nuniqueness or key constraints;\nallowed ranges or categories; and\nownership and change expectations.\n\nIn the example pipeline, an order must have order_id, customer_id, order_ts, quantity, and unit_price. Contract validation happens before transformation so that a malformed input cannot quietly contaminate downstream tables.\nREQUIRED_COLUMNS = {\n    \"order_id\",\n    \"customer_id\",\n    \"order_ts\",\n    \"quantity\",\n    \"unit_price\",\n}\nSchema validation and semantic validation solve different problems. A value such as -20.00 can be a valid number while still being an invalid unit price. Both checks are needed.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#what-to-monitor",
+    "href": "14-testing-monitoring-and-observability.html#what-to-monitor",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "What to monitor",
+    "text": "What to monitor\nMonitoring begins with the consumer’s expectations, not with every metric the system can emit. Five signal groups cover most batch pipelines.\n\nFreshness\nFreshness measures how far the newest usable event is behind the observation time:\n\\[\n\\text{freshness lag} = t_{\\text{observed}} - \\max(t_{\\text{event}})\n\\]\nA successful run that republishes yesterday’s extract is operationally successful but not fresh.\n\n\nVolume\nTrack input rows, output rows, rejected rows, and changes from a recent baseline. Volume alerts should allow normal business variation. A zero-row result may be valid for one dataset and a critical failure for another.\n\n\nQuality\nUseful quality measures include:\n\ncompleteness: proportion of required values present;\nuniqueness: proportion of keys without duplication;\nvalidity: proportion satisfying domain rules; and\nconsistency: agreement across related fields or tables.\n\nFor a check with \\(n_{\\text{failed}}\\) failures among \\(n_{\\text{total}}\\) records:\n\\[\n\\text{pass rate} = 1 - \\frac{n_{\\text{failed}}}{n_{\\text{total}}}\n\\]\nAlways store the failed count alongside the rate. A 99.9% pass rate has different consequences for one thousand and one billion records.\n\n\nDuration and throughput\nRecord total duration and stage durations. A rising extract duration can reveal upstream throttling; a rising load duration can reveal target contention. A total duration alone cannot distinguish them.\n\n\nFailures and retries\nTrack terminal status, failure stage, error category, attempt number, and retry count. Repeated successful retries are still a reliability signal: they consume time and often precede a terminal failure.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#from-metrics-to-service-level-objectives",
+    "href": "14-testing-monitoring-and-observability.html#from-metrics-to-service-level-objectives",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "From metrics to service-level objectives",
+    "text": "From metrics to service-level objectives\nAn SLO states the acceptable level of service for a defined measurement window. For this demonstration, a healthy run must meet all of these conditions:\n\n\n\nSignal\nDemonstration SLO\nAlert meaning\n\n\n\n\nStatus\nsuccess\nA pipeline stage failed\n\n\nFreshness lag\nat most 60 minutes\nPublished data is too old\n\n\nInput volume\nat least 800 rows\nExtraction may be incomplete\n\n\nValid-row rate\nat least 98%\nExcessive invalid records\n\n\nDuration\nat most 90 seconds\nThe delivery window is at risk\n\n\n\nThresholds in a real project should come from consumer needs and historical behaviour. Alerts also need a clear owner, severity, notification route, and response playbook. If nobody knows what to do when an alert fires, it is only noise.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#structured-run-metadata",
+    "href": "14-testing-monitoring-and-observability.html#structured-run-metadata",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "Structured run metadata",
+    "text": "Structured run metadata\nLogs explain individual events; run metadata summarizes one workflow execution. A compact run record should include:\n{\n  \"pipeline_name\": \"daily-orders\",\n  \"run_id\": \"daily-orders-20260806T030000Z\",\n  \"started_at\": \"2026-08-06T03:00:00+00:00\",\n  \"status\": \"success\",\n  \"input_rows\": 1024,\n  \"output_rows\": 1011,\n  \"freshness_lag_minutes\": 18.0,\n  \"valid_row_rate\": 0.9873,\n  \"duration_seconds\": 43.2,\n  \"failed_checks\": []\n}\nUse UTC timestamps and carry the same run_id through logs, metrics, lineage records, and alerts. This correlation key turns several disconnected signals into one diagnosable execution.\nAvoid logging secrets, tokens, or complete sensitive records. Log stable identifiers, counts, stage names, error categories, and safe samples where policy permits.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#practical-generate-and-inspect-monitoring-evidence",
+    "href": "14-testing-monitoring-and-observability.html#practical-generate-and-inspect-monitoring-evidence",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "Practical: generate and inspect monitoring evidence",
+    "text": "Practical: generate and inspect monitoring evidence\nThe script scripts/python/14-monitor-observable-pipeline.py creates 30 deterministic pipeline runs. It introduces four controlled incidents: low volume, stale data, poor quality, and excessive duration. Each run is evaluated against the SLOs.\nRun:\npython scripts/python/14-monitor-observable-pipeline.py\nThe script writes:\n\nresults/14-pipeline-run-metadata.csv — one row per run;\nresults/14-monitoring-summary.json — aggregate health and alert counts; and\nresults/figures/14-pipeline-observability-dashboard.png — an operational view of the monitored signals.\n\n\n\n\n\n\n\nFigure 15.1: Thirty pipeline runs with thresholds for duration, volume, valid-row rate, and freshness.\n\n\n\nThe dashboard in Figure 15.1 deliberately separates the signals. A single green “pipeline succeeded” indicator would conceal three of the four data incidents.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#diagnose-with-symptoms-causes-and-evidence",
+    "href": "14-testing-monitoring-and-observability.html#diagnose-with-symptoms-causes-and-evidence",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "Diagnose with symptoms, causes, and evidence",
+    "text": "Diagnose with symptoms, causes, and evidence\nMonitoring tells you that a known condition changed. Observability helps you investigate why.\n\n\n\n\n\n\n\n\nSymptom\nPossible causes\nEvidence to inspect\n\n\n\n\nLow input volume\nPartial extract, upstream delay, real business change\nSource count, extraction window, API pages, historical baseline\n\n\nHigh freshness lag\nLate source, stale cache, wrong watermark\nMaximum event time, watermark, source update time\n\n\nFalling valid-row rate\nSource schema drift, parsing bug, new category\nFailed-rule counts, quarantined samples, deployed version\n\n\nRising duration\nThrottling, data growth, lock contention\nStage timings, retries, query plan, resource metrics\n\n\nOutput exceeds input\nJoin fan-out, replay, duplicate load\nKey cardinality, join diagnostics, idempotency key\n\n\n\nA productive incident workflow is:\n\nidentify the breached SLO and affected runs;\nlocate the first abnormal stage or metric;\ncorrelate evidence by run_id, dataset, and code version;\ncontain the impact, for example by stopping publication or using the last known good table;\ncorrect and safely rerun the affected interval; and\nadd a regression test or monitor that detects the failure earlier.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#alert-design-and-common-failure-modes",
+    "href": "14-testing-monitoring-and-observability.html#alert-design-and-common-failure-modes",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "Alert design and common failure modes",
+    "text": "Alert design and common failure modes\nPrefer alerts that are actionable and close to user impact. Page immediately for a failed critical delivery; route a small baseline deviation to a lower-priority review queue.\nCommon mistakes include:\n\nMonitoring only infrastructure. Healthy CPU and memory do not imply healthy data.\nAlerting on every fluctuation. Static thresholds without business context create alert fatigue.\nRecording only failures. Healthy-run history is required to establish baselines.\nUsing averages alone. Averages can hide tail latency and concentrated data-quality failures.\nDiscarding rejected records. Quarantine them with reason codes and retention controls.\nTreating retries as harmless. Retry trends can expose degrading dependencies.\nKeeping dashboards without ownership. Every critical SLO needs an accountable owner and response path.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#production-hardening",
+    "href": "14-testing-monitoring-and-observability.html#production-hardening",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "Production hardening",
+    "text": "Production hardening\nThe chapter example stores metadata in local files so the workflow is transparent. In production, preserve the same concepts while changing the destination:\n\nsend structured logs to a searchable log platform;\nexport metrics to a time-series monitoring system;\nstore run history in an orchestration metadata database;\nretain lineage between input, transformation, and published dataset;\nversion contracts and validate compatibility during deployment;\nmaintain runbooks for critical alerts; and\ntest alert delivery periodically, not only the alert rule.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#chapter-checklist",
+    "href": "14-testing-monitoring-and-observability.html#chapter-checklist",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "Chapter checklist",
+    "text": "Chapter checklist\nBefore calling a pipeline observable, confirm that:\n\npure transformation functions have deterministic unit tests;\nschemas and semantic rules are validated at boundaries;\na small end-to-end test exercises the real stage sequence;\nfreshness, volume, quality, duration, status, and retries are recorded;\neach run has a unique correlation identifier and UTC timestamps;\nSLOs reflect consumer expectations;\nalerts identify an owner and a response action;\nrejected data is quarantined safely;\ndashboards show trends and thresholds, not only current values; and\nincidents produce regression tests or improved monitors.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
+    ]
+  },
+  {
+    "objectID": "14-testing-monitoring-and-observability.html#key-takeaways",
+    "href": "14-testing-monitoring-and-observability.html#key-takeaways",
+    "title": "Testing, Monitoring, and Observability",
+    "section": "Key takeaways",
+    "text": "Key takeaways\nTesting prevents known defects from reaching production. Monitoring detects known unhealthy conditions during operation. Observability supplies the contextual evidence needed to explain conditions that were not predicted in advance. A reliable pipeline uses all three: layered tests, consumer-centred SLOs, and correlated run evidence that makes recovery faster and safer.",
     "crumbs": [
       "Orchestration and Reliable Operations",
       "<span class='chapter-number'>15</span>  <span class='chapter-title'>Testing, Monitoring, and Observability</span>"
@@ -2555,7 +2665,7 @@
     "href": "15-recovery-idempotency-and-backfills.html",
     "title": "Recovery, Idempotency, and Backfills",
     "section": "",
-    "text": "Learning objectives",
+    "text": "Learning objectives\nPipelines fail. Networks time out, source systems become unavailable, workers stop, and malformed records reach transformations. Reliability does not mean preventing every failure. It means making failure bounded, visible, and safe to recover from.\nThis chapter extends the operational practices from Testing, Monitoring, and Observability. It uses a small SQLite order pipeline to make recovery concrete: a batch is recorded in a run ledger, rows are loaded with deterministic keys, commits occur at explicit boundaries, and bounded backfills use the same production-safe write path as scheduled runs.\nAfter completing this chapter, you will be able to:",
     "crumbs": [
       "Orchestration and Reliable Operations",
       "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
@@ -2566,7 +2676,139 @@
     "href": "15-recovery-idempotency-and-backfills.html#learning-objectives",
     "title": "Recovery, Idempotency, and Backfills",
     "section": "",
-    "text": "Design repeatable runs that do not duplicate outputs.\nResume safely after partial failure.\nPlan bounded backfills without disrupting current production data.",
+    "text": "design repeatable runs that do not duplicate outputs;\nresume safely after partial failure;\ndistinguish retries, replays, recovery, and backfills;\nselect transaction and checkpoint boundaries deliberately;\nplan bounded backfills without disrupting current production data; and\nverify that recovery preserved completeness and uniqueness.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#the-recovery-problem",
+    "href": "15-recovery-idempotency-and-backfills.html#the-recovery-problem",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.1 The recovery problem",
+    "text": "15.1 The recovery problem\nConsider a daily pipeline with four stages:\n\nextract source orders;\nvalidate and transform them;\nload a curated table; and\npublish completion metadata.\n\nIf the worker stops after loading records but before publishing completion, the orchestrator sees a failed run even though some outputs exist. Blindly rerunning the batch can duplicate rows. Deleting everything first can erase valid concurrent data. Skipping the run can leave an incomplete partition.\nA recoverable pipeline records enough state to answer three questions:\n\nWhat was intended? The batch identity and bounded source interval.\nWhat completed? Durable checkpoints, run status, and row counts.\nWhat may be repeated safely? Operations protected by idempotent keys, transactions, or atomic replacement.\n\n\nRecovery vocabulary\n\n\n\n\n\n\n\n\n\nOperation\nPurpose\nTypical trigger\nData interval\n\n\n\n\nRetry\nRepeat a failed attempt\nTransient error\nSame run and interval\n\n\nReplay\nProcess the same input again\nValidation or logic check\nSame historical input\n\n\nResume\nContinue after a checkpoint\nPartial failure\nUnfinished portion\n\n\nBackfill\nRecompute missing or corrected history\nLate data or new logic\nExplicit historical range\n\n\nRebuild\nRecreate a derived asset\nCorruption or major logic change\nEntire asset or large scope\n\n\n\nThese terms describe intent, not implementation. All five still require controlled writes and verification.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#idempotency-as-a-pipeline-contract",
+    "href": "15-recovery-idempotency-and-backfills.html#idempotency-as-a-pipeline-contract",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.2 Idempotency as a pipeline contract",
+    "text": "15.2 Idempotency as a pipeline contract\nAn operation is idempotent when applying it more than once has the same intended effect as applying it once. For a pipeline batch \\(B\\) and target state \\(T\\), the desired property is:\n\\[\nf_B(f_B(T)) = f_B(T).\n\\]\nThis does not mean the second run performs no work. It means repeated execution does not create an additional business effect.\n\nStable identity\nIdempotency begins with stable identifiers:\n\na business key, such as order_id;\na source event identifier;\na deterministic composite key, such as (customer_id, event_time, event_type); or\na content hash when the source supplies no reliable identifier.\n\nAn auto-incrementing target key alone cannot prevent duplicates because every repeated insert receives a new value.\n\n\nIdempotent write patterns\nUpsert by business key. Insert unseen rows and update matching rows. In SQLite, ON CONFLICT ... DO UPDATE makes the conflict behavior explicit.\nINSERT INTO curated_orders (order_id, order_date, customer_id, amount, source_updated_at)\nVALUES (?, ?, ?, ?, ?)\nON CONFLICT(order_id) DO UPDATE SET\n    order_date = excluded.order_date,\n    customer_id = excluded.customer_id,\n    amount = excluded.amount,\n    source_updated_at = excluded.source_updated_at\nWHERE excluded.source_updated_at &gt;= curated_orders.source_updated_at;\nThe timestamp condition prevents older replays from overwriting newer target values.\nReplace a bounded partition. Build the replacement away from the live table, validate it, then swap or replace only the requested partition. This works well when a partition is the unit of correctness.\nAppend with deduplication. Preserve immutable events, enforce a unique event key, and treat duplicates as no-ops. This is appropriate for event histories but not for mutable snapshots.\nCompare-and-set. Update a row only when its current version matches the version previously read. This protects concurrent state changes.\n\n\nIdempotency keys and run identifiers\nA run_id identifies an execution attempt. An idempotency_key identifies the logical effect. Retrying a logical batch should normally create a new attempt identifier while retaining the same idempotency key. For example:\nrun_id:            scheduled__2026-08-06T01:00:00Z__attempt_2\nidempotency_key:   orders__2026-08-05\nConflating the two makes it difficult to distinguish a legitimate retry from an unrelated duplicate request.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#transactions-and-commit-boundaries",
+    "href": "15-recovery-idempotency-and-backfills.html#transactions-and-commit-boundaries",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.3 Transactions and commit boundaries",
+    "text": "15.3 Transactions and commit boundaries\nA database transaction groups statements into an atomic unit: either all committed changes become visible or none do. Transactions are the first defence against partial writes.\nwith connection:\n    load_rows(connection, batch)\n    record_batch_complete(connection, batch_id)\nIf either statement raises an exception, the context manager rolls back both operations. A run ledger must not say succeeded while the corresponding data remains incomplete.\n\nChoosing the boundary\nOne transaction for an entire batch gives simple all-or-nothing behavior but may hold locks, generate a large log, and make long jobs expensive to retry. Smaller transactions reduce lock duration but introduce partial completion. When chunking is necessary:\n\nchoose a stable chunk order;\ncommit data and its checkpoint in the same transaction;\nmake every chunk idempotent; and\nverify the complete batch before publishing it.\n\nThe checkpoint describes the last durably committed unit, never the last row merely read or transformed in memory.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#checkpointing-and-safe-resume",
+    "href": "15-recovery-idempotency-and-backfills.html#checkpointing-and-safe-resume",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.4 Checkpointing and safe resume",
+    "text": "15.4 Checkpointing and safe resume\nA useful checkpoint contains enough information to reproduce the next read:\n\n\n\n\n\n\n\n\nField\nExample\nPurpose\n\n\n\n\npipeline_name\ndaily_orders\nNames the workflow\n\n\nbatch_key\norders__2026-08-05\nIdentifies the logical batch\n\n\nlast_committed_key\nO-00420\nDefines the resume position\n\n\nsource_high_watermark\n2026-08-06T00:00:00Z\nFreezes the source boundary\n\n\nstatus\nrunning\nDescribes lifecycle state\n\n\nupdated_at\ntimestamp\nSupports stale-run detection\n\n\n\nFreezing a high watermark is essential. Without it, a resumed extraction may include records that arrived after the original run began, changing the batch while it is being recovered.\n\nCheckpoint trade-offs\n\nPer batch: least metadata, most repeated work.\nPer chunk: balanced for most batch pipelines.\nPer record: precise but expensive and usually unnecessary.\n\nCheckpoint frequency should reflect the cost of repeating work and the complexity of managing partial state.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#failure-classification-and-retry-policy",
+    "href": "15-recovery-idempotency-and-backfills.html#failure-classification-and-retry-policy",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.5 Failure classification and retry policy",
+    "text": "15.5 Failure classification and retry policy\nRetries help only when the failure may disappear without changing the input or code.\n\n\n\nFailure\nRetry?\nResponse\n\n\n\n\nNetwork timeout\nYes\nExponential backoff with jitter\n\n\nRate limit\nYes\nRespect server delay or quota window\n\n\nTemporary database lock\nYes\nBounded retry\n\n\nInvalid record\nNo\nQuarantine or reject with context\n\n\nSchema incompatibility\nNo\nStop, investigate, and update contract\n\n\nPermission denied\nUsually no\nCorrect identity or policy\n\n\nDeterministic code defect\nNo\nFix, test, and replay\n\n\n\nEvery retry policy needs a maximum attempt count, maximum elapsed time, retryable exception list, and terminal failure action. Unlimited retries convert a visible failure into an invisible stalled pipeline.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#a-runnable-recovery-demonstration",
+    "href": "15-recovery-idempotency-and-backfills.html#a-runnable-recovery-demonstration",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.6 A runnable recovery demonstration",
+    "text": "15.6 A runnable recovery demonstration\nThe companion program scripts/python/15-demonstrate-recovery.py creates a temporary SQLite database and evaluates three cases:\n\na naive append load followed by a retry;\nan idempotent upsert followed by the same retry; and\na simulated failure after one committed chunk, followed by checkpoint-based recovery.\n\nRun it from the repository root:\nbash scripts/bash/15-run-recovery-demo.sh\nThe wrapper writes the database and evidence under results/, then produces Figure 16.1.\n\n\n\n\n\n\nFigure 16.1: Naive retry duplicates rows, while the upsert and checkpointed recovery preserve one row per order.\n\n\n\nThe result summary is machine-readable:\n{\n  \"naive_rows_after_retry\": 12,\n  \"idempotent_rows_after_retry\": 6,\n  \"recovered_rows\": 10,\n  \"expected_recovered_rows\": 10,\n  \"duplicate_business_keys_after_recovery\": 0,\n  \"checkpoint_after_recovery\": 10\n}\nThe demonstration deliberately commits the first chunk before raising an exception. Recovery reads the durable checkpoint, resumes at the next source position, and uses the same upsert operation for all later chunks. Repeating the recovery step remains safe.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#designing-bounded-backfills",
+    "href": "15-recovery-idempotency-and-backfills.html#designing-bounded-backfills",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.7 Designing bounded backfills",
+    "text": "15.7 Designing bounded backfills\nA backfill is a production change, even when it targets old data. Define it with an explicit half-open interval:\n\\[\n[t_{start}, t_{end})\n\\]\nHalf-open intervals compose without overlap: daily windows [Aug 1, Aug 2) and [Aug 2, Aug 3) cover adjacent days exactly once.\n\nBackfill plan\nBefore execution, record:\n\nthe reason and owner;\nstart and exclusive end boundaries;\naffected datasets and downstream consumers;\ncode, schema, and reference-data versions;\nexpected partitions and approximate row volume;\nconcurrency and rate limits;\nvalidation queries;\npause, rollback, or repair conditions; and\nhow completion will be communicated.\n\n\n\nProtect current production work\nUse the same tested transformation and write path as the scheduled pipeline, but isolate the backfill operationally:\n\nassign a distinct run type and backfill identifier;\ncap parallelism so current runs retain capacity;\nprocess small windows in deterministic order;\navoid overlapping live and backfill ownership of a partition;\nvalidate each window before advancing; and\nmake the backfill restartable from its last successful window.\n\nA separate, untested “backfill script” easily drifts from production logic. Parameterize the production job with a bounded interval instead.\n\n\nLate-arriving and corrected records\nEvent time describes when a business event occurred; processing time describes when the pipeline observed it. Late data makes these differ. A robust pipeline can combine:\n\na moving reprocessing window for recent partitions;\nsource update timestamps or change-data-capture positions;\ndeterministic upserts; and\na policy for reopening previously complete partitions.\n\nCompletion should therefore mean “complete under the declared lateness policy,” not “incapable of ever changing.”",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#verification-after-recovery-or-backfill",
+    "href": "15-recovery-idempotency-and-backfills.html#verification-after-recovery-or-backfill",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.8 Verification after recovery or backfill",
+    "text": "15.8 Verification after recovery or backfill\nSuccessful execution is not proof of correct recovery. Verify at several levels.\n\nStructural checks\n\nexpected partitions exist;\nprimary or business keys are unique;\nrequired fields satisfy null constraints;\nschemas match the data contract; and\nno temporary tables or locks remain.\n\n\n\nReconciliation checks\nFor each bounded interval, compare source and target:\n\\[\n\\Delta_{count} = N_{source} - N_{target}\n\\]\nCounts alone can agree while rows differ. Add sums for additive measures, minimum and maximum timestamps, distinct key counts, and deterministic hashes where appropriate.\n\n\nOperational checks\n\nthe run ledger has one terminal status;\ncheckpoints align with committed data;\nretry and error counts are plausible;\ncurrent scheduled runs remained healthy; and\ndownstream refreshes were triggered exactly once.\n\nThe demo writes results/15-recovery-verification.csv, which records the expected and observed value for every acceptance check. This is evidence, not merely console output.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#anti-patterns",
+    "href": "15-recovery-idempotency-and-backfills.html#anti-patterns",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.9 Anti-patterns",
+    "text": "15.9 Anti-patterns\n\nRetry every exception\nMalformed data and broken contracts do not improve with repetition. Classify failures and retry only transient conditions.\n\n\nDelete before reload\nAn unconditional delete creates a period with missing data and can remove changes owned by another run. Stage and validate replacement data or perform deletion and insertion in one controlled transaction.\n\n\nAdvance checkpoints before commit\nIf the process stops between checkpoint advancement and data commit, recovery skips data permanently. Commit the output and checkpoint atomically.\n\n\nUse processing time as the only cursor\nRows can share timestamps, clocks can differ, and late records can fall behind the cursor. Use a stable tie-breaker such as (updated_at, source_id) and overlap windows when the source cannot guarantee ordering.\n\n\nBackfill everything at full concurrency\nHistorical work can saturate databases, APIs, and queues needed by current production runs. Bound both time range and resource consumption.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#recovery-runbook",
+    "href": "15-recovery-idempotency-and-backfills.html#recovery-runbook",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.10 Recovery runbook",
+    "text": "15.10 Recovery runbook\nWhen a production pipeline fails:\n\nContain: pause unsafe downstream publication and prevent overlapping ownership.\nClassify: determine whether the failure is transient, data-related, code-related, or infrastructure-related.\nInspect durable state: read the run ledger, target data, high watermark, and last committed checkpoint.\nSelect an action: retry, resume, replay, bounded backfill, or rebuild.\nEstimate impact: identify missing, duplicated, stale, and downstream data.\nExecute safely: reuse idempotent writes and explicit intervals with controlled concurrency.\nVerify: reconcile source and target, check uniqueness, and confirm checkpoints.\nPublish: release outputs only after acceptance checks pass.\nDocument: retain evidence, incident notes, and preventive actions.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#practical-exercises",
+    "href": "15-recovery-idempotency-and-backfills.html#practical-exercises",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.11 Practical exercises",
+    "text": "15.11 Practical exercises\n\nRun the demonstration twice. Confirm that the recovery table still contains ten unique business keys.\nModify one source amount and rerun the idempotent load with a newer source_updated_at. Confirm that the target changes without adding a row.\nReverse the timestamp comparison in the upsert. Explain how an old replay can now corrupt newer data.\nChange the recovery chunk size from three to four. Simulate failure after the second commit and identify the correct resume position.\nDraft a backfill plan for seven missing daily partitions while the normal daily schedule continues.",
+    "crumbs": [
+      "Orchestration and Reliable Operations",
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
+    ]
+  },
+  {
+    "objectID": "15-recovery-idempotency-and-backfills.html#chapter-summary",
+    "href": "15-recovery-idempotency-and-backfills.html#chapter-summary",
+    "title": "Recovery, Idempotency, and Backfills",
+    "section": "15.12 Chapter summary",
+    "text": "15.12 Chapter summary\nReliable recovery is designed before failure occurs. Stable business keys and deterministic writes make repeated execution safe. Transactions align data with run metadata, while checkpoints reduce repeated work without pretending partial progress is complete. Backfills must be explicitly bounded, resource-aware, restartable, and verified like any other production change.\nThe essential principle is simple: repeat the computation when necessary, but never repeat an unintended business effect.",
     "crumbs": [
       "Orchestration and Reliable Operations",
       "<span class='chapter-number'>16</span>  <span class='chapter-title'>Recovery, Idempotency, and Backfills</span>"
@@ -2577,7 +2819,7 @@
     "href": "16-security-governance-and-lineage.html",
     "title": "Security, Governance, and Lineage",
     "section": "",
-    "text": "Learning objectives",
+    "text": "Learning objectives\nSecurity, governance, and lineage are not separate layers added after a pipeline works. They define whether the pipeline is allowed to run, which data it may process, how its actions can be reviewed, and whether a published value can be traced back to its origin.\nThis chapter develops a compact control model for a customer-order pipeline. The example is intentionally local and reproducible, but the same reasoning applies to cloud object stores, warehouses, orchestrators, and streaming systems.\nBy the end of this chapter, you will be able to:",
     "crumbs": [
       "Production Data Systems",
       "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
@@ -2588,7 +2830,161 @@
     "href": "16-security-governance-and-lineage.html#learning-objectives",
     "title": "Security, Governance, and Lineage",
     "section": "",
-    "text": "Protect credentials and sensitive data across pipeline stages.\nApply least privilege, retention, and audit controls.\nRecord lineage from source fields to published outputs.",
+    "text": "protect credentials and sensitive data across pipeline stages;\napply least privilege, retention, and audit controls;\ndistinguish authentication, authorization, encryption, masking, and deletion;\nrecord dataset- and column-level lineage from source fields to published outputs;\nturn governance requirements into testable pipeline controls; and\ngenerate an evidence bundle that supports operational review.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#why-these-concerns-belong-together",
+    "href": "16-security-governance-and-lineage.html#why-these-concerns-belong-together",
+    "title": "Security, Governance, and Lineage",
+    "section": "Why these concerns belong together",
+    "text": "Why these concerns belong together\nA reliable pipeline answers more than did the job succeed?\n\n\n\n\n\n\n\n\nConcern\nQuestion\nTypical evidence\n\n\n\n\nSecurity\nWho or what may access the data?\nroles, policies, secret references, access logs\n\n\nPrivacy\nHow is sensitive data minimized and protected?\nclassification, masking rules, retention rules\n\n\nGovernance\nWho owns the data and which rules apply?\ncatalog metadata, control results, approvals\n\n\nLineage\nWhere did this output come from?\nsource-to-target mappings, run identifiers\n\n\nAuditability\nCan an independent reviewer reconstruct events?\nimmutable events, timestamps, actor and outcome\n\n\n\nThese concerns reinforce one another. Classification determines access and retention rules. Lineage identifies every downstream asset affected by a sensitive source. Audit events show whether controls ran and whether exceptions were approved.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#start-with-data-classification",
+    "href": "16-security-governance-and-lineage.html#start-with-data-classification",
+    "title": "Security, Governance, and Lineage",
+    "section": "Start with data classification",
+    "text": "Start with data classification\nControls should be proportional to the data. A practical classification scheme is small enough to be used consistently.\n\n\n\n\n\n\n\n\nClass\nExample\nDefault handling\n\n\n\n\nPublic\npublished aggregate statistics\nbroad read access; integrity controls\n\n\nInternal\npipeline run metrics\nauthenticated organizational access\n\n\nConfidential\ncustomer identifiers and order details\nrestricted roles, encryption, auditing\n\n\nRestricted\npasswords, access tokens, regulated identifiers\navoid collection where possible; strongest controls\n\n\n\nClassification should be attached to fields, not only datasets. A table can contain public aggregates alongside confidential identifiers. Field-level labels make masking, projection, and lineage checks more precise.\ndataset: raw.customer_orders\nowner: data-platform\nfields:\n  customer_id:\n    classification: confidential\n  email:\n    classification: confidential\n    purpose: order-notification\n  order_total:\n    classification: internal",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#protect-credentials-and-sensitive-data",
+    "href": "16-security-governance-and-lineage.html#protect-credentials-and-sensitive-data",
+    "title": "Security, Governance, and Lineage",
+    "section": "Protect credentials and sensitive data",
+    "text": "Protect credentials and sensitive data\n\nKeep secrets outside source code\nCredentials must not be embedded in Python files, notebooks, shell scripts, container images, or committed configuration. Code should receive a reference at runtime and fail clearly when it is unavailable.\nimport os\n\ndatabase_url = os.environ.get(\"PIPELINE_DATABASE_URL\")\nif not database_url:\n    raise RuntimeError(\"PIPELINE_DATABASE_URL is required\")\nEnvironment variables are an interface, not a complete secret-management system. In production, use the platform’s managed secret store, limit who can read each secret, encrypt it, rotate it, and record access. Never print connection strings or full configuration objects to logs.\n\n\nReduce exposure at every stage\nA useful sequence is:\n\ncollect only fields required for a declared purpose;\nrestrict ingestion identities to required source objects;\nencrypt data in transit and at rest;\nremove or transform identifiers as early as practical;\npublish only approved columns and aggregation levels; and\ndelete expired data and verify deletion.\n\nPseudonymization replaces a direct identifier with a stable token. It reduces casual exposure but is not anonymization: linkage or auxiliary information may still identify a person.\nimport hashlib\nimport hmac\n\ndef tokenise(value: str, key: bytes) -&gt; str:\n    return hmac.new(key, value.encode(), hashlib.sha256).hexdigest()[:20]\nUse a secret key from a managed store when stable pseudonyms are required. A plain unkeyed hash of predictable values such as email addresses is vulnerable to guessing.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#apply-least-privilege",
+    "href": "16-security-governance-and-lineage.html#apply-least-privilege",
+    "title": "Security, Governance, and Lineage",
+    "section": "Apply least privilege",
+    "text": "Apply least privilege\nLeast privilege grants each workload only the actions and resources required for its current responsibility.\n\n\n\n\n\n\n\n\nIdentity\nRequired access\nAccess to avoid\n\n\n\n\nExtractor\nread approved source tables; write raw landing area\nwarehouse administration\n\n\nTransformer\nread raw zone; write curated zone\nsource credentials\n\n\nPublisher\nread approved curated views; write serving tables\nraw personal fields\n\n\nAnalyst\nread serving views\nwrite production data\n\n\nAuditor\nread control metadata and audit events\nalter data or logs\n\n\n\nSeparate human identities from service identities. Avoid shared accounts. Prefer short-lived credentials and narrowly scoped roles. A role named pipeline-admin assigned to every job is convenient but destroys meaningful authorization boundaries.\n\nEvaluate access as a policy decision\nAn access decision can be expressed as:\n\\[\n\\operatorname{allow}(i,a,r,c) = \\operatorname{roleAllows}(i,a,r) \\land \\operatorname{conditionsHold}(c)\n\\]\nwhere \\(i\\) is the identity, \\(a\\) the action, \\(r\\) the resource, and \\(c\\) contextual conditions such as environment or network. Default deny means the absence of a matching allow rule produces denial.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#retention-and-defensible-deletion",
+    "href": "16-security-governance-and-lineage.html#retention-and-defensible-deletion",
+    "title": "Security, Governance, and Lineage",
+    "section": "Retention and defensible deletion",
+    "text": "Retention and defensible deletion\nRetention is a lifecycle rule, not simply a storage setting. For each dataset, record:\n\npurpose and owner;\nretention duration and triggering event;\nlegal or operational exceptions;\ndeletion method;\ndownstream copies covered by the rule; and\nevidence that deletion completed.\n\nIf a record was created at time \\(t_c\\) and retained for \\(d\\) days, its ordinary expiration time is:\n\\[\nt_e = t_c + d\n\\]\nA legal hold or documented exception may suspend deletion, but the exception should have an owner, reason, approval, and review date. Backups and derived datasets must be included; deleting only the landing table does not satisfy an end-to-end retention policy.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#design-useful-audit-events",
+    "href": "16-security-governance-and-lineage.html#design-useful-audit-events",
+    "title": "Security, Governance, and Lineage",
+    "section": "Design useful audit events",
+    "text": "Design useful audit events\nAn audit log should support reconstruction without leaking the protected data itself. Record metadata such as:\n{\n  \"event_time\": \"2026-08-06T06:00:00Z\",\n  \"run_id\": \"dsdp16-demo\",\n  \"actor\": \"svc-transformer\",\n  \"action\": \"publish\",\n  \"resource\": \"curated.daily_sales\",\n  \"outcome\": \"allowed\",\n  \"policy_id\": \"POL-PUBLISH-004\"\n}\nAvoid logging raw rows, secrets, tokens, or unnecessary personal fields. Protect audit logs from alteration, control access separately, synchronize clocks, define retention, and monitor gaps. Application logs explain behavior; audit logs establish accountable actions. They may overlap, but they are not interchangeable.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#record-lineage",
+    "href": "16-security-governance-and-lineage.html#record-lineage",
+    "title": "Security, Governance, and Lineage",
+    "section": "Record lineage",
+    "text": "Record lineage\nLineage connects a published asset to its upstream datasets, transformations, code version, and pipeline run.\n\nDataset-level lineage\nDataset-level lineage shows movement between assets:\nflowchart LR\n  A[\"Source orders\"] --&gt; B[\"Raw orders\"]\n  B --&gt; C[\"Curated orders\"]\n  C --&gt; D[\"Daily sales\"]\nThis graph supports impact analysis: if raw_orders changes, which downstream assets may need review?\n\n\nColumn-level lineage\nColumn-level lineage explains individual fields.\n\n\n\n\n\n\n\n\n\nOutput field\nSource fields\nTransformation\nClassification\n\n\n\n\ncustomer_token\ncustomer_id\nkeyed HMAC, truncated\nconfidential\n\n\norder_date\nordered_at\nconvert to UTC date\ninternal\n\n\nnet_amount\ngross_amount, discount\ngross_amount - discount\ninternal\n\n\ndaily_net_sales\norder_date, net_amount\nsum by date\ninternal\n\n\n\nGood lineage includes identifiers that connect metadata to an actual execution:\n\npipeline and task names;\nrun ID and timestamps;\ninput and output asset versions;\ntransformation or code version;\nsource-to-target field mappings; and\ncontrol outcomes.\n\nSQL parsing can automate some mappings, but dynamic code, external APIs, and business semantics often require explicit metadata. Generated lineage should be validated, not assumed complete.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#governance-as-executable-controls",
+    "href": "16-security-governance-and-lineage.html#governance-as-executable-controls",
+    "title": "Security, Governance, and Lineage",
+    "section": "Governance as executable controls",
+    "text": "Governance as executable controls\nPolicies become operational when the pipeline can evaluate them and produce evidence.\n\n\n\n\n\n\n\n\nPolicy statement\nExecutable control\nFailure response\n\n\n\n\nPublished data must not contain direct identifiers\ndeny-list schema test\nblock publication\n\n\nEvery dataset must have an owner\nmetadata completeness test\nquarantine registration\n\n\nRestricted data expires after its approved period\nexpiration scan\ndelete or open exception\n\n\nEvery output field must have lineage\nlineage coverage test\nfail metadata gate\n\n\nOnly the publisher role writes serving tables\nauthorization policy test\ndeny and alert\n\n\n\nDefine the control owner, frequency, threshold, response, and evidence location. A dashboard showing a failed control without an accountable response is observation, not governance.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#worked-example-generate-a-governance-evidence-bundle",
+    "href": "16-security-governance-and-lineage.html#worked-example-generate-a-governance-evidence-bundle",
+    "title": "Security, Governance, and Lineage",
+    "section": "Worked example: generate a governance evidence bundle",
+    "text": "Worked example: generate a governance evidence bundle\nThe script scripts/python/16-governance-lineage-demo.py models five controls, writes machine-readable audit and lineage artifacts, and creates a summary plot. Run it from the repository root:\nbash scripts/bash/16-run-governance-lineage-demo.sh\nThe generated files are:\n\nresults/16-control-results.csv — control-level status and evidence;\nresults/16-audit-events.jsonl — accountable pipeline actions;\nresults/16-column-lineage.json — source-to-target field mappings;\nresults/16-governance-summary.json — aggregate counts and pass rate; and\nresults/figures/16-governance-control-status.png — control results by domain.\n\n\n\n\n\n\n\nFigure 17.1: Governance controls evaluated by the worked example.\n\n\n\nThe example contains one deliberate failure: a restricted raw dataset has passed its retention limit. This demonstrates an important distinction. The pipeline should not hide the failure to obtain a perfect score; it should emit evidence and trigger the defined response.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#review-and-incident-workflow",
+    "href": "16-security-governance-and-lineage.html#review-and-incident-workflow",
+    "title": "Security, Governance, and Lineage",
+    "section": "Review and incident workflow",
+    "text": "Review and incident workflow\nWhen a control fails:\n\ncontain exposure or stop publication when required;\npreserve audit evidence without copying sensitive values;\nidentify affected assets through lineage;\nassign an accountable owner and remediation deadline;\ndocument any temporary exception and its expiry;\nrerun the control after remediation; and\nimprove the preventive control when the same failure could recur.\n\nLineage shortens the path from detection to scope. If a source field was exposed incorrectly, the lineage graph identifies downstream tables and reports that require investigation or rebuilding.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#security-and-governance-checklist",
+    "href": "16-security-governance-and-lineage.html#security-and-governance-checklist",
+    "title": "Security, Governance, and Lineage",
+    "section": "Security and governance checklist",
+    "text": "Security and governance checklist\nBefore promoting a pipeline, confirm that:\n\ndatasets and sensitive fields are classified;\ncollection is limited to a documented purpose;\nsecrets are externally managed and never logged;\nservice roles are distinct and least-privileged;\ntransport and storage encryption are enabled;\ndirect identifiers are excluded from published assets unless approved;\nretention rules include derivatives and backups;\naudit events contain actor, action, resource, outcome, policy, and run ID;\naudit evidence is protected from alteration;\ndataset- and column-level lineage are recorded;\nevery governed asset has an owner;\ncontrol failures block, quarantine, alert, or open an accountable exception; and\naccess and exceptions are reviewed periodically.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#common-failure-modes",
+    "href": "16-security-governance-and-lineage.html#common-failure-modes",
+    "title": "Security, Governance, and Lineage",
+    "section": "Common failure modes",
+    "text": "Common failure modes\nSecurity by obscurity. Hidden locations and obscure table names are not access controls.\nSecrets in configuration committed to Git. Removing a secret from the latest commit does not remove it from history; revoke and rotate it.\nMasking only in the dashboard. The serving table still exposes the value to other consumers. Apply protection at the earliest appropriate reusable layer.\nLineage without run identity. A static diagram documents intent but cannot prove which inputs produced a particular output.\nRetention without downstream coverage. Copies, exports, caches, and backups silently preserve expired data.\nAudit logs containing payloads. Evidence collection becomes a new sensitive-data store.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#summary",
+    "href": "16-security-governance-and-lineage.html#summary",
+    "title": "Security, Governance, and Lineage",
+    "section": "Summary",
+    "text": "Summary\nA trustworthy pipeline minimizes sensitive data, keeps credentials outside code, separates identities, and grants only required permissions. Governance translates ownership, retention, and publication rules into executable controls. Audit events show what occurred, while lineage connects outputs to specific inputs and transformations. Together, these practices make failures containable, reviews evidence-based, and data products defensible.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
+    ]
+  },
+  {
+    "objectID": "16-security-governance-and-lineage.html#exercises",
+    "href": "16-security-governance-and-lineage.html#exercises",
+    "title": "Security, Governance, and Lineage",
+    "section": "Exercises",
+    "text": "Exercises\n\nAdd a legal_hold field to the retention control. Require an owner and review date whenever it is true.\nAdd a schema rule that blocks email, phone, and full_name from the published dataset.\nExtend the lineage file with code version and input checksum fields.\nChange the deliberate retention failure to a pass, rerun the script, and compare the evidence bundle.\nDesign least-privilege roles for a pipeline with ingestion, validation, transformation, publication, and audit tasks.",
     "crumbs": [
       "Production Data Systems",
       "<span class='chapter-number'>17</span>  <span class='chapter-title'>Security, Governance, and Lineage</span>"
@@ -2599,7 +2995,7 @@
     "href": "17-ci-cd-and-pipeline-environments.html",
     "title": "CI/CD and Pipeline Environments",
     "section": "",
-    "text": "Learning objectives",
+    "text": "Learning objectives\nBy the end of this chapter, you will be able to:",
     "crumbs": [
       "Production Data Systems",
       "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
@@ -2610,7 +3006,205 @@
     "href": "17-ci-cd-and-pipeline-environments.html#learning-objectives",
     "title": "CI/CD and Pipeline Environments",
     "section": "",
-    "text": "Validate pipeline changes before merging.\nSeparate development, test, staging, and production configuration.\nPromote versioned code and schemas through controlled releases.",
+    "text": "validate pipeline changes before merging;\nseparate development, test, staging, and production configuration;\npromote versioned code and schemas through controlled releases;\ndesign CI checks and CD gates around data-specific failure modes; and\nproduce auditable evidence that a release is ready for promotion.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#from-a-working-pipeline-to-a-releasable-pipeline",
+    "href": "17-ci-cd-and-pipeline-environments.html#from-a-working-pipeline-to-a-releasable-pipeline",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "From a working pipeline to a releasable pipeline",
+    "text": "From a working pipeline to a releasable pipeline\nA pipeline that runs successfully on a laptop is not automatically safe to release. Production delivery must answer a wider set of questions:\n\nDoes the code pass unit, integration, and data-contract tests?\nIs the database migration compatible with the currently deployed version?\nAre credentials and endpoints selected at runtime rather than embedded in code?\nCan the exact artifact tested in staging be promoted to production?\nIs there a rollback or roll-forward path if the release fails?\nCan an operator reconstruct who approved the release and what evidence they saw?\n\nContinuous integration (CI) supplies fast evidence about every proposed change. Continuous delivery (CD) packages a validated change and keeps it ready for controlled release. Continuous deployment goes one step further and releases every qualifying change automatically. Data pipelines often use continuous delivery with explicit production approval because schema evolution, backfills, external dependencies, and irreversible writes increase the cost of an unsafe release.\n\n\nCode\nflowchart TD\n    A[\"Commit and pull request\"] --&gt; B[\"Static checks and tests\"]\n    B --&gt; C[\"Build immutable release\"]\n    C --&gt; D[\"Deploy to staging\"]\n    D --&gt; E[\"Smoke and contract checks\"]\n    E --&gt; F{\"Production gate\"}\n    F --&gt;|Approved| G[\"Promote same release\"]\n    F --&gt;|Rejected| H[\"Fix or retire release\"]\n\n\n\n\n\nflowchart TD\n    A[\"Commit and pull request\"] --&gt; B[\"Static checks and tests\"]\n    B --&gt; C[\"Build immutable release\"]\n    C --&gt; D[\"Deploy to staging\"]\n    D --&gt; E[\"Smoke and contract checks\"]\n    E --&gt; F{\"Production gate\"}\n    F --&gt;|Approved| G[\"Promote same release\"]\n    F --&gt;|Rejected| H[\"Fix or retire release\"]\n\n\n\n\n\n\nThe central principle is build once, promote many. Rebuilding separately for staging and production creates two artifacts with the same apparent version but potentially different dependencies or bytes. Promotion should change environment configuration, not application code or the release artifact.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#the-four-environments",
+    "href": "17-ci-cd-and-pipeline-environments.html#the-four-environments",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "The four environments",
+    "text": "The four environments\nEnvironment separation limits blast radius and makes validation progressive. The environment names matter less than their distinct purposes and controls.\n\n\n\n\n\n\n\n\n\n\nEnvironment\nMain purpose\nData profile\nTypical trigger\nPrimary controls\n\n\n\n\nDevelopment\nRapid iteration and debugging\nSmall, synthetic, or masked\nLocal command or feature branch\nDeveloper credentials; disposable resources\n\n\nTest\nRepeatable automated verification\nDeterministic fixtures\nPull request or push\nIsolated services; no manual edits\n\n\nStaging\nProduction-like release validation\nRepresentative, protected test data\nSuccessful CI on the release branch\nRestricted access; smoke and contract tests\n\n\nProduction\nDeliver trusted data products\nAuthoritative operational data\nApproved promotion\nLeast privilege; monitoring; audit trail; recovery plan\n\n\n\nSeparation must be real. Renaming four configuration files while all four environments share one database and one powerful credential does not provide isolation. Each environment should have its own resource identifiers, secrets, access policies, state, and retention rules.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#configuration-without-code-drift",
+    "href": "17-ci-cd-and-pipeline-environments.html#configuration-without-code-drift",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Configuration without code drift",
+    "text": "Configuration without code drift\nCode defines pipeline behavior. Configuration supplies values that legitimately vary by environment: storage locations, database endpoints, schedules, concurrency limits, alert routes, and feature flags. Secrets are configuration values, but they require a dedicated secret manager and must never be committed.\nThe following environment variables illustrate a minimal runtime contract:\nPIPELINE_ENV=staging\nPIPELINE_INPUT_URI=s3://cdi-dsdp-staging/raw/orders/\nPIPELINE_OUTPUT_URI=s3://cdi-dsdp-staging/curated/orders/\nPIPELINE_SCHEMA_VERSION=3\nPIPELINE_MAX_WORKERS=4\nThe application should validate this contract at startup and fail before processing if a required value is absent or invalid. A useful configuration layer follows three rules:\n\nSafe defaults are limited to local development.\nEnvironment-specific values enter through runtime configuration.\nSecrets are referenced by identifier and resolved only inside the target environment.\n\nAvoid a growing collection of conditionals such as if production. Those branches create behaviors that cannot be exercised faithfully before production. Prefer one code path with validated parameters.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#version-the-complete-release-unit",
+    "href": "17-ci-cd-and-pipeline-environments.html#version-the-complete-release-unit",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Version the complete release unit",
+    "text": "Version the complete release unit\nA pipeline release is more than a Python file. It may include:\n\nsource code and locked dependencies;\ntransformation definitions;\nschema and data-contract versions;\ndatabase migrations;\ninfrastructure or orchestration definitions;\nrunbooks and rollback instructions; and\nthe commit SHA, build timestamp, and artifact digest.\n\nA release manifest connects these elements. For example:\n{\n  \"release_id\": \"dsdp-orders-17.3.0\",\n  \"commit_sha\": \"8b45d6f\",\n  \"schema_version\": 3,\n  \"artifact_digest\": \"sha256:...\",\n  \"minimum_reader_schema\": 2\n}\nSemantic versions can communicate compatibility to people, while a commit SHA and cryptographic digest identify exact source and artifact bytes. Use both when practical. A mutable label such as latest is convenient for exploration but inadequate for promotion or rollback.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#what-ci-must-test-for-a-data-pipeline",
+    "href": "17-ci-cd-and-pipeline-environments.html#what-ci-must-test-for-a-data-pipeline",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "What CI must test for a data pipeline",
+    "text": "What CI must test for a data pipeline\nApplication tests are necessary but incomplete for pipelines. CI should layer inexpensive checks before slower ones so failures arrive quickly.\n\nStatic and unit checks\nThe first layer checks formatting, linting, type assumptions, imports, and deterministic transformation units. Unit tests should cover boundary values, null handling, duplicate rules, time zones, and numerical tolerances. They should not require network access or shared infrastructure.\n\n\nIntegration tests\nIntegration tests exercise real boundaries using isolated, temporary services. Examples include loading a fixture into a temporary PostgreSQL database, writing and rereading Parquet, or verifying object-store path construction. The test environment must be reproducible and disposable.\n\n\nData-contract tests\nA data contract describes what downstream consumers may rely on. CI can detect:\n\nremoved or renamed required fields;\nincompatible type changes;\nnewly nullable identifiers;\nbroken uniqueness or referential rules;\nchanged units, time zones, or category meanings; and\nunacceptable distribution changes in a representative fixture.\n\nSchema compatibility is directional. Adding an optional field is often backward compatible; removing a required field is not. The release gate must evaluate compatibility against the deployed consumer contract, not merely confirm that the new schema parses.\n\n\nMigration and idempotency tests\nDatabase migrations should be tested from the current production version to the proposed version. Where rollback is unsafe, test a roll-forward correction. Rerun the pipeline against the same fixture and verify that it does not duplicate rows or corrupt state. This connects delivery controls to the recovery and idempotency techniques developed in Recovery, Idempotency, and Backfills.\n\n\nSecurity and supply-chain checks\nCI should scan committed content for secrets, inspect dependencies for known vulnerabilities, generate a dependency inventory where required, and build artifacts with narrowly scoped credentials. CI logs are not a safe place for tokens, connection strings, or raw production records.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#a-promotion-readiness-case-study",
+    "href": "17-ci-cd-and-pipeline-environments.html#a-promotion-readiness-case-study",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "A promotion-readiness case study",
+    "text": "A promotion-readiness case study\nSuppose an orders pipeline is moving from schema version 2 to version 3. The release adds an optional discount_code, preserves all required fields, and uses the same artifact digest across staging and production. The team defines six controls:\n\nunit tests pass;\nintegration tests pass;\nthe proposed schema is backward compatible;\nstaging smoke tests pass;\nthe artifact digest matches the staged artifact; and\nthe recovery plan has been reviewed.\n\nRun the companion script from the repository root:\nbash scripts/bash/17-run-promotion-readiness.sh\nIt reads an explicit case-study manifest, evaluates the release controls, writes a machine-readable report, and generates Figure 18.1. The script exits with a non-zero status if any required control fails, which makes it usable as a CI gate.\n\n\n\n\n\n\nFigure 18.1: Promotion readiness by environment. Production promotion requires every mandatory control to pass.\n\n\n\nThe plot distinguishes evidence accumulated in CI and staging from the complete production gate. A high percentage is not a license to average away a critical failure: artifact identity and schema compatibility are mandatory controls. Therefore, the validator uses an all-required-controls rule rather than a weighted score to decide readiness.\nThe generated JSON report is suitable for retention with the workflow run:\n{\n  \"release_id\": \"dsdp-orders-17.3.0\",\n  \"decision\": \"promote\",\n  \"required_controls_passed\": 6,\n  \"required_controls_total\": 6\n}",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#designing-the-ci-workflow",
+    "href": "17-ci-cd-and-pipeline-environments.html#designing-the-ci-workflow",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Designing the CI workflow",
+    "text": "Designing the CI workflow\nThe companion workflow at .github/workflows/17-pipeline-ci-cd.yml demonstrates the control flow. A production repository would adapt dependency installation, service containers, deployment commands, and cloud identity to its platform.\nKey design choices include:\n\nMinimum permissions: the workflow begins with read-only repository contents.\nDependency caching: caching speeds installation but never replaces version locking.\nSeparated jobs: validation, build, staging verification, and production promotion have visible boundaries.\nImmutable artifacts: the build job records the commit SHA and artifact digest.\nEnvironment protection: the production job targets a protected environment where reviewers and branch rules can be configured.\nConcurrency: only one production promotion proceeds at a time.\n\nDo not treat a CI configuration file as proof that controls are active. Repository settings must actually configure required status checks, protected branches, protected environments, authorized reviewers, and secret scopes.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#staging-as-a-release-rehearsal",
+    "href": "17-ci-cd-and-pipeline-environments.html#staging-as-a-release-rehearsal",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Staging as a release rehearsal",
+    "text": "Staging as a release rehearsal\nStaging should answer questions that CI cannot answer with isolated fixtures:\n\nCan the release start with target-environment configuration?\nCan it authenticate using staging identity and least privilege?\nCan it read and write expected formats and partitions?\nAre orchestration schedules, retries, and timeouts valid?\nDo lineage, metrics, logs, and alerts appear correctly?\nCan a representative downstream consumer read the output?\n\nA smoke test should be small, fast, and diagnostic. It can process a bounded input partition into an isolated output prefix, validate row counts and schema, then remove or expire the test output. A full historical backfill is not a smoke test and should have its own capacity and approval plan.\nProduction-like does not mean copying unrestricted production data. Use synthetic, masked, tokenized, or carefully sampled data according to governance requirements. Preserve the shapes and edge cases required for meaningful validation without expanding sensitive-data exposure.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#production-gates",
+    "href": "17-ci-cd-and-pipeline-environments.html#production-gates",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Production gates",
+    "text": "Production gates\nAn effective gate asks for evidence, not confidence. Before approval, reviewers should see:\n\n\n\n\n\n\n\nEvidence\nQuestion answered\n\n\n\n\nTest summary\nDid automated verification pass?\n\n\nSchema comparison\nIs the change compatible with deployed readers?\n\n\nArtifact digest\nIs this the same artifact tested in staging?\n\n\nMigration plan\nHow will state move safely?\n\n\nRecovery plan\nHow will the team contain and recover from failure?\n\n\nObservability link\nHow will the release be watched after promotion?\n\n\nChange record\nWho approved what, and when?\n\n\n\nManual approval is valuable only when the reviewer has the authority, context, and evidence to make a decision. A button that everyone clicks automatically is delay, not control.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#deployment-strategies-for-pipelines",
+    "href": "17-ci-cd-and-pipeline-environments.html#deployment-strategies-for-pipelines",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Deployment strategies for pipelines",
+    "text": "Deployment strategies for pipelines\nPipeline releases require strategies suited to scheduled work and persistent data.\n\nShadow execution\nRun the new version against a bounded copy or mirrored stream without publishing its output. Compare row-level results, aggregates, latency, and resource use. Shadow runs provide strong evidence when transformation logic changes, but they increase compute cost and require careful isolation.\n\n\nCanary execution\nSend a limited partition, tenant, region, or percentage of input to the new version. Define success criteria and an automatic stop condition before starting. Canary boundaries must prevent two versions from writing conflicting state.\n\n\nBlue-green release\nMaintain old and new pipeline environments or output locations, validate the new one, then switch a pointer or consumer view. This supports rapid reversal but requires duplicate capacity and careful handling of writes that arrive during the transition.\n\n\nScheduled cutover\nPause at a safe watermark, deploy, validate state, and resume from an explicit checkpoint. This is common for batch pipelines. The acceptable pause duration and catch-up capacity must be known beforehand.\nWhatever strategy is chosen, separate code rollback from data recovery. Restoring old code does not automatically reverse schema changes, emitted events, overwritten partitions, or downstream decisions. Sometimes the safest response is to stop writes, repair forward, and replay from a trusted checkpoint.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#schema-evolution-as-a-release-sequence",
+    "href": "17-ci-cd-and-pipeline-environments.html#schema-evolution-as-a-release-sequence",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Schema evolution as a release sequence",
+    "text": "Schema evolution as a release sequence\nBreaking schema changes should be decomposed into compatible releases. An expand-and-contract sequence is safer than changing producers and consumers simultaneously:\n\nExpand the schema with the new optional field or table.\nDeploy consumers that understand both old and new representations.\nDeploy producers that populate the new representation.\nBackfill and verify historical state if required.\nObserve until old readers and data are no longer present.\nContract by removing the deprecated representation in a later release.\n\nThis sequence turns one tightly coupled deployment into observable, reversible stages. Compatibility tests in CI should enforce the allowed transition at each stage.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#secrets-and-environment-identity",
+    "href": "17-ci-cd-and-pipeline-environments.html#secrets-and-environment-identity",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Secrets and environment identity",
+    "text": "Secrets and environment identity\nUse workload identity or short-lived credentials where the platform supports them. Avoid long-lived cloud keys stored as repository secrets. Each job and environment should receive only the permissions needed for its task:\n\nCI can read source and publish a release artifact.\nStaging deployment can update staging resources only.\nProduction promotion can deploy the approved artifact but should not modify CI history.\nThe pipeline runtime can access its defined inputs, outputs, checkpoints, and monitoring endpoints.\n\nPrevent untrusted pull-request code from gaining access to protected secrets. Review how forked contributions, reusable workflows, shell interpolation, and third-party actions interact with credentials.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#observability-during-promotion",
+    "href": "17-ci-cd-and-pipeline-environments.html#observability-during-promotion",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Observability during promotion",
+    "text": "Observability during promotion\nA release is not complete when deployment succeeds. Define a post-promotion observation window and compare at least:\n\nrun success and retry rates;\nfreshness and end-to-end latency;\ninput, accepted, rejected, and output row counts;\ncontract and quality-rule failures;\ncheckpoint or watermark movement;\ncost and resource saturation; and\ndownstream consumer errors.\n\nAnnotate dashboards and logs with release_id, commit SHA, schema version, and environment. Without release metadata, an operator may see a regression but struggle to connect it to the change that caused it.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#common-failure-patterns",
+    "href": "17-ci-cd-and-pipeline-environments.html#common-failure-patterns",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Common failure patterns",
+    "text": "Common failure patterns\n\nRebuilding per environment\nThe production artifact differs from the staged artifact even though both use the same version label. Build once, calculate a digest, and verify the digest at every promotion boundary.\n\n\nTesting with production credentials\nCI becomes a path into authoritative data and expands the blast radius of a compromised dependency or workflow. Give tests disposable resources and constrained identities.\n\n\nEnvironment-specific code branches\nProduction-only behavior remains untested. Keep one implementation and inject validated configuration.\n\n\nTreating deployment success as pipeline success\nThe scheduler accepted the new definition, but the first run produces late or invalid data. Add staging smoke tests and a production observation window with data-level signals.\n\n\nAutomatic rollback after irreversible writes\nOld code is restored while partially transformed data remains. Classify release actions by reversibility, stop unsafe writes, and use an explicit recovery or roll-forward procedure.\n\n\nSchema checks without consumer context\nThe proposed schema is internally valid but breaks an active reader. Compare changes against registered contracts and minimum supported reader versions.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#practical-release-checklist",
+    "href": "17-ci-cd-and-pipeline-environments.html#practical-release-checklist",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Practical release checklist",
+    "text": "Practical release checklist\nBefore merging:\n\nStatic, unit, integration, contract, and idempotency checks pass.\nThe change has no committed secrets or environment-specific endpoints.\nSchema and migration compatibility are understood.\nDependencies and workflow actions are pinned according to project policy.\n\nBefore production promotion:\n\nThe staged artifact digest matches the approved release digest.\nStaging smoke tests and representative consumer checks pass.\nRuntime configuration and least-privilege identity are verified.\nRecovery, replay, and communication responsibilities are explicit.\nMonitoring views and post-release success criteria are ready.\n\nAfter promotion:\n\nThe first scheduled or triggered runs are observed through completion.\nFreshness, volume, quality, latency, and consumer signals remain within limits.\nRelease evidence and approvals are retained.\nTemporary compatibility paths are assigned an owner and removal date.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#exercises",
+    "href": "17-ci-cd-and-pipeline-environments.html#exercises",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Exercises",
+    "text": "Exercises\n\nExercise 1: Classify configuration\nFor a pipeline you know, classify each value as code, non-secret configuration, secret, or release metadata. Explain where it should be stored and who should be allowed to change it.\n\n\nExercise 2: Break the gate safely\nCopy config/17-release-manifest.json, set one required control to false, and run the readiness script against the copy:\npython scripts/python/17-validate-promotion.py \\\n  --manifest path/to/modified-manifest.json \\\n  --report results/17-modified-readiness.json \\\n  --figure results/figures/17-modified-readiness.png\nConfirm that the decision becomes block and the process exits unsuccessfully. Identify which CI job should surface this failure.\n\n\nExercise 3: Plan an expand-and-contract migration\nChoose one breaking schema change, then describe the producer, consumer, backfill, observation, and cleanup releases required to deliver it compatibly.\n\n\nExercise 4: Define the observation window\nWrite five measurable success criteria for the first production run after promotion. Include at least one freshness measure, one data-quality measure, and one downstream-consumer measure.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#key-takeaways",
+    "href": "17-ci-cd-and-pipeline-environments.html#key-takeaways",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Key takeaways",
+    "text": "Key takeaways\n\nCI for pipelines must test data contracts, migrations, and idempotency in addition to application code.\nDevelopment, test, staging, and production need genuinely isolated resources, identities, and state.\nBuild a release once and promote the same versioned, digest-identified artifact.\nProduction gates should require concrete evidence about compatibility, recovery, identity, and staging behavior.\nDeployment is complete only after the promoted pipeline processes data successfully under observation.\nCode rollback and data recovery are different operations and must be planned separately.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
+    ]
+  },
+  {
+    "objectID": "17-ci-cd-and-pipeline-environments.html#repository-artifacts",
+    "href": "17-ci-cd-and-pipeline-environments.html#repository-artifacts",
+    "title": "CI/CD and Pipeline Environments",
+    "section": "Repository artifacts",
+    "text": "Repository artifacts\nThis chapter adds the following executable and generated artifacts:\n17-ci-cd-and-pipeline-environments.qmd\n.github/workflows/17-pipeline-ci-cd.yml\nconfig/17-release-manifest.json\nscripts/bash/17-run-promotion-readiness.sh\nscripts/python/17-validate-promotion.py\nresults/17-promotion-readiness.json\nresults/figures/17-promotion-readiness.png",
     "crumbs": [
       "Production Data Systems",
       "<span class='chapter-number'>18</span>  <span class='chapter-title'>CI/CD and Pipeline Environments</span>"
@@ -2621,7 +3215,7 @@
     "href": "18-end-to-end-pipeline-case-study.html",
     "title": "End-to-End Pipeline Case Study",
     "section": "",
-    "text": "Learning objectives",
+    "text": "Learning objectives\nBy the end of this chapter, you will be able to:",
     "crumbs": [
       "Production Data Systems",
       "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
@@ -2632,18 +3226,194 @@
     "href": "18-end-to-end-pipeline-case-study.html#learning-objectives",
     "title": "End-to-End Pipeline Case Study",
     "section": "",
-    "text": "Assemble extraction, validation, transformation, and loading stages.\nVerify outputs and operational metadata.\nEvaluate the pipeline against reliability and governance requirements.",
+    "text": "assemble extraction, validation, transformation, and loading stages;\nmake a batch pipeline deterministic, idempotent, and observable;\nquarantine invalid records without silently losing evidence;\nverify warehouse outputs and operational metadata;\nevaluate the pipeline against reliability and governance requirements; and\ndistinguish a successful process exit from a trustworthy data product.",
     "crumbs": [
       "Production Data Systems",
       "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
     ]
   },
   {
-    "objectID": "18-end-to-end-pipeline-case-study.html#starter-execution",
-    "href": "18-end-to-end-pipeline-case-study.html#starter-execution",
+    "objectID": "18-end-to-end-pipeline-case-study.html#the-case-study",
+    "href": "18-end-to-end-pipeline-case-study.html#the-case-study",
     "title": "End-to-End Pipeline Case Study",
-    "section": "Starter execution",
-    "text": "Starter execution\nbash scripts/bash/00-check-environment.sh\nbash scripts/bash/07-run-starter-pipeline.sh\npython -m pytest -q",
+    "section": "The case study",
+    "text": "The case study\nThe CDI Learning Platform receives a daily export of course transactions. Analysts need a table that reports net revenue by transaction, course, customer segment, and transaction date. The source is deliberately small enough to inspect, but it contains conditions that production pipelines must handle:\n\nduplicate transaction identifiers;\nmalformed timestamps;\nmissing customer identifiers;\nunsupported transaction statuses;\nnegative quantities; and\nreruns of the same input file.\n\nThe pipeline treats the raw file as immutable evidence. Valid rows are standardized and loaded into SQLite; invalid rows are written to a quarantine file with explicit reasons. Every run also emits a machine-readable manifest and appends one record to an operational run ledger.\n\n\nCode\nflowchart TD\n    A[\"Raw CSV extract\"] --&gt; B[\"Extract and fingerprint\"]\n    B --&gt; C[\"Validate contract\"]\n    C --&gt;|valid| D[\"Transform fields\"]\n    C --&gt;|invalid| E[\"Quarantine CSV\"]\n    D --&gt; F[\"Idempotent SQLite load\"]\n    F --&gt; G[\"Reconciliation and checks\"]\n    G --&gt; H[\"Run manifest and metrics\"]\n\n\n\n\n\nflowchart TD\n    A[\"Raw CSV extract\"] --&gt; B[\"Extract and fingerprint\"]\n    B --&gt; C[\"Validate contract\"]\n    C --&gt;|valid| D[\"Transform fields\"]\n    C --&gt;|invalid| E[\"Quarantine CSV\"]\n    D --&gt; F[\"Idempotent SQLite load\"]\n    F --&gt; G[\"Reconciliation and checks\"]\n    G --&gt; H[\"Run manifest and metrics\"]",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#repository-artifacts",
+    "href": "18-end-to-end-pipeline-case-study.html#repository-artifacts",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Repository artifacts",
+    "text": "Repository artifacts\nThe chapter package follows repository-relative paths.\n\n\n\n\n\n\n\nPath\nPurpose\n\n\n\n\ndata/raw/18-course-transactions.csv\nImmutable example source export\n\n\nconfigs/18-pipeline.json\nDataset contract and runtime paths\n\n\nscripts/python/18-run-end-to-end-pipeline.py\nExtract, validate, transform, load, and verify\n\n\nscripts/bash/18-run-end-to-end-pipeline.sh\nRepository-root-aware execution wrapper\n\n\ntests/test_18_end_to_end_pipeline.py\nUnit and integration tests\n\n\ndata/processed/18-valid-transactions.csv\nValid standardized rows\n\n\ndata/quarantine/18-invalid-transactions.csv\nRejected rows and reasons\n\n\ndata/warehouse/18-learning-platform.sqlite\nSQLite analytical warehouse\n\n\nresults/18-pipeline-run.json\nLatest run manifest\n\n\nresults/18-pipeline-run-history.csv\nAppend-only operational ledger\n\n\nresults/figures/18-pipeline-run-summary.svg\nPortable run-summary plot\n\n\n\nGenerated outputs are included so the chapter can be read immediately. Running the pipeline recreates them from the source data.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#define-the-contract-before-moving-data",
+    "href": "18-end-to-end-pipeline-case-study.html#define-the-contract-before-moving-data",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "1. Define the contract before moving data",
+    "text": "1. Define the contract before moving data\nThe configuration file separates business rules from control flow. It declares the required columns, accepted statuses, currency, input location, and output locations. The pipeline still validates the configuration itself: a missing key should fail early rather than produce a partially correct dataset.\nThe transaction contract is:\n\n\n\n\n\n\n\n\nField\nRule\nStandardized representation\n\n\n\n\ntransaction_id\nRequired and unique within the extract\nText\n\n\ntransaction_at\nISO 8601 timestamp\nUTC timestamp text\n\n\ncustomer_id\nRequired\nText\n\n\ncourse_id\nRequired\nText\n\n\ncustomer_segment\nOne of individual, organization\nLowercase text\n\n\nstatus\nOne of completed, refunded\nLowercase text\n\n\nquantity\nPositive integer\nInteger\n\n\nunit_price\nNon-negative decimal\nDecimal text rounded to two places\n\n\n\nCompleted transactions produce positive net revenue. Refunds produce negative net revenue:\n\\[\n\\text{net revenue} =\n\\begin{cases}\nq \\times p, & \\text{status = completed} \\\\\n-q \\times p, & \\text{status = refunded}\n\\end{cases}\n\\]\nMoney is parsed with Decimal, not binary floating-point arithmetic. The warehouse stores integer cents, which makes reconciliation exact.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#extract-without-mutating-the-source",
+    "href": "18-end-to-end-pipeline-case-study.html#extract-without-mutating-the-source",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "2. Extract without mutating the source",
+    "text": "2. Extract without mutating the source\nExtraction performs three control tasks before parsing business fields:\n\nconfirm that the input exists;\ncompute its SHA-256 fingerprint; and\nconfirm that its header matches the required schema.\n\nThe fingerprint is a compact identity for the exact source bytes. It connects the manifest, warehouse run ledger, and input file without renaming or editing the raw export. An identical rerun therefore has the same fingerprint.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#validate-and-quarantine-explicitly",
+    "href": "18-end-to-end-pipeline-case-study.html#validate-and-quarantine-explicitly",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "3. Validate and quarantine explicitly",
+    "text": "3. Validate and quarantine explicitly\nValidation is row-oriented so that one bad record does not hide the state of the rest of the batch. Each row is either accepted once or quarantined once. A rejected row carries one or more pipe-separated reason codes such as:\n\nmissing_customer_id;\ninvalid_transaction_at;\nquantity_must_be_positive; or\nduplicate_transaction_id.\n\nThis creates an important reconciliation invariant:\n\\[\n\\text{source rows} = \\text{valid rows} + \\text{quarantined rows}\n\\]\nQuarantine is not deletion. It is an evidence-preserving workflow for investigation, correction, and controlled replay.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#transform-valid-records",
+    "href": "18-end-to-end-pipeline-case-study.html#transform-valid-records",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "4. Transform valid records",
+    "text": "4. Transform valid records\nTransformation normalizes categorical values, converts timestamps to UTC, derives transaction_date, and calculates net_revenue_cents. It also records source_row_number, source_sha256, and pipeline_run_id. These lineage fields make it possible to trace a warehouse record to a precise source row and execution.\nThe processed CSV provides a transparent interchange artifact. The SQLite table provides typed storage and SQL access. Both are produced from the same validated in-memory records, avoiding divergent business logic.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#load-idempotently",
+    "href": "18-end-to-end-pipeline-case-study.html#load-idempotently",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "5. Load idempotently",
+    "text": "5. Load idempotently\nThe target table uses transaction_id as its primary key and an upsert as its load strategy. Reprocessing the same batch updates the same business keys instead of appending duplicates. The load occurs inside a database transaction, so either the batch and its run metadata commit together or neither does.\nIdempotency does not mean that every metric stays unchanged. The second execution has a different run identifier and timestamp, and its manifest records a new operational event. The business table, however, converges to the same state for the same input.\nSELECT\n    transaction_date,\n    course_id,\n    SUM(net_revenue_cents) / 100.0 AS net_revenue\nFROM fact_course_transactions\nGROUP BY transaction_date, course_id\nORDER BY transaction_date, course_id;",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#verify-before-declaring-success",
+    "href": "18-end-to-end-pipeline-case-study.html#verify-before-declaring-success",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "6. Verify before declaring success",
+    "text": "6. Verify before declaring success\nThe pipeline checks the following conditions after loading:\n\nextracted rows equal valid plus quarantined rows;\ndistinct valid transaction identifiers equal valid rows;\nall loaded transaction identifiers are present in the target;\nthe source net-revenue total equals the corresponding warehouse total; and\nno null business keys exist in the loaded records.\n\nA process that exits with code zero but fails reconciliation is not successful. The script raises an exception, rolls back when appropriate, and returns a non-zero exit status when an invariant fails.\nThe supplied run produces the following expected results:\n\n\n\nMetric\nExpected value\n\n\n\n\nSource rows\n12\n\n\nValid rows\n8\n\n\nQuarantined rows\n4\n\n\nValidity rate\n66.7%\n\n\nNet revenue\n$734.50\n\n\nWarehouse rows after load\n8\n\n\nReconciliation status\npassed\n\n\n\n\n\n\nPipeline run summary: accepted and quarantined records, validity rate, and signed net revenue.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#observe-the-run",
+    "href": "18-end-to-end-pipeline-case-study.html#observe-the-run",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "7. Observe the run",
+    "text": "7. Observe the run\nThe manifest records the facts needed by both people and monitoring systems:\n\nrun ID, start time, finish time, and duration;\npipeline and schema versions;\nsource path, byte size, and SHA-256 fingerprint;\nextracted, valid, quarantined, and loaded counts;\nvalidity rate and net revenue;\nreconciliation checks; and\nfinal status.\n\nThe latest-run JSON supports dashboards and incident diagnosis. The CSV history supports trend analysis across runs. In a production orchestrator, the same metrics would also be emitted to centralized logs and monitoring infrastructure.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#running-the-case-study",
+    "href": "18-end-to-end-pipeline-case-study.html#running-the-case-study",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Running the case study",
+    "text": "Running the case study\nFrom the repository root:\nbash scripts/bash/18-run-end-to-end-pipeline.sh\npython -m pytest -q tests/test_18_end_to_end_pipeline.py\nTo run the Python entry point directly:\npython scripts/python/18-run-end-to-end-pipeline.py \\\n  --config configs/18-pipeline.json\nThe script accepts --run-id for reproducible demonstrations and --no-history for tests or disposable runs.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#inspecting-the-warehouse",
+    "href": "18-end-to-end-pipeline-case-study.html#inspecting-the-warehouse",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Inspecting the warehouse",
+    "text": "Inspecting the warehouse\nUse Python when the SQLite command-line client is unavailable:\nimport sqlite3\n\nwith sqlite3.connect(\"data/warehouse/18-learning-platform.sqlite\") as connection:\n    rows = connection.execute(\"\"\"\n        SELECT customer_segment,\n               ROUND(SUM(net_revenue_cents) / 100.0, 2) AS net_revenue\n        FROM fact_course_transactions\n        GROUP BY customer_segment\n        ORDER BY customer_segment\n    \"\"\").fetchall()\n\nprint(rows)\nExpected result:\n[('individual', 314.5), ('organization', 420.0)]",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#failure-and-recovery-exercises",
+    "href": "18-end-to-end-pipeline-case-study.html#failure-and-recovery-exercises",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Failure and recovery exercises",
+    "text": "Failure and recovery exercises\n\nExercise 1: Schema drift\nRename unit_price in a copy of the raw file. Run the pipeline against the copy and confirm that extraction fails before the warehouse is modified. Explain why guessing a replacement column would be unsafe.\n\n\nExercise 2: Correct and replay quarantine\nCorrect one invalid row in a new source file, give it a unique transaction identifier, and rerun. Confirm that the business table gains exactly one row and that reconciliation still passes.\n\n\nExercise 3: Prove idempotency\nRun the original batch twice. Query the fact-table count after each run. The run ledger should grow, but the fact table should remain at eight rows.\n\n\nExercise 4: Add an operational threshold\nFail the pipeline when the validity rate falls below a configurable threshold. Decide whether that rule belongs before or after loading and justify the transaction boundary.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#production-hardening-decisions",
+    "href": "18-end-to-end-pipeline-case-study.html#production-hardening-decisions",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Production hardening decisions",
+    "text": "Production hardening decisions\nThis local pipeline demonstrates the reliability pattern, but scale changes the implementation choices.\n\n\n\n\n\n\n\n\nConcern\nCase-study choice\nProduction extension\n\n\n\n\nSource\nLocal CSV\nObject storage, API, CDC, or message stream\n\n\nExecution\nOne Python process\nManaged orchestrator with retries and SLAs\n\n\nStorage\nSQLite\nTransactional warehouse or lakehouse\n\n\nSecrets\nNone required\nSecret manager and workload identity\n\n\nSchema\nJSON contract\nVersioned schema registry and compatibility policy\n\n\nQuality\nDeterministic row rules\nDataset-level expectations and anomaly detection\n\n\nObservability\nJSON, CSV, SVG\nCentral logs, metrics, traces, alerts, and dashboards\n\n\nRecovery\nSafe rerun\nCheckpoints, partition replay, and backfill controls\n\n\n\nThe invariant stays the same: a pipeline must make data movement explainable, repeatable, and verifiable.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#governance-review",
+    "href": "18-end-to-end-pipeline-case-study.html#governance-review",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Governance review",
+    "text": "Governance review\nBefore promoting the pipeline, answer these questions:\n\nWho owns the source contract and approves changes?\nHow long should raw, quarantine, and run-history artifacts be retained?\nWhich fields contain personal or sensitive information?\nWho may query the warehouse and who may inspect quarantine?\nHow are corrections approved and replayed?\nWhich run evidence is required for an audit?\n\nThis case study uses synthetic identifiers and contains no direct personal data. Real customer data would require documented classification, least-privilege access, encryption, retention limits, and deletion procedures.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#reliability-acceptance-checklist",
+    "href": "18-end-to-end-pipeline-case-study.html#reliability-acceptance-checklist",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Reliability acceptance checklist",
+    "text": "Reliability acceptance checklist\n\nThe source is immutable and fingerprinted.\nRequired columns and field rules are explicit.\nInvalid records retain reasons and lineage.\nThe transform is deterministic for the same source and configuration.\nThe business load is idempotent.\nDatabase writes use a transaction.\nCounts and monetary totals reconcile.\nRun metadata identifies code, schema, source, and outcome.\nAutomated tests cover valid data, invalid data, and reruns.\nRecovery and ownership procedures are documented.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#key-takeaways",
+    "href": "18-end-to-end-pipeline-case-study.html#key-takeaways",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Key takeaways",
+    "text": "Key takeaways\n\nEnd-to-end reliability comes from connected controls, not from any single tool.\nA source fingerprint and row-level lineage make results traceable.\nQuarantine preserves evidence while allowing valid data to progress.\nPrimary keys and upserts make business-state reruns idempotent.\nReconciliation converts pipeline completion into a testable claim.\nOperational metadata is part of the data product, not an afterthought.",
+    "crumbs": [
+      "Production Data Systems",
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
+    ]
+  },
+  {
+    "objectID": "18-end-to-end-pipeline-case-study.html#chapter-summary",
+    "href": "18-end-to-end-pipeline-case-study.html#chapter-summary",
+    "title": "End-to-End Pipeline Case Study",
+    "section": "Chapter summary",
+    "text": "Chapter summary\nThis case study assembled a complete batch pipeline around a small transaction dataset. The implementation fingerprints the source, validates a declared contract, quarantines invalid rows, transforms money and timestamps deterministically, loads SQLite with idempotent upserts, and verifies record counts and revenue. Tests, a run manifest, a history ledger, and a summary plot demonstrate how engineering, observability, and governance work together. The same control pattern can be carried from a local teaching pipeline to a production platform even when the underlying storage and orchestration technologies change.",
     "crumbs": [
       "Production Data Systems",
       "<span class='chapter-number'>19</span>  <span class='chapter-title'>End-to-End Pipeline Case Study</span>"
@@ -2654,18 +3424,18 @@
     "href": "999-appendix.html",
     "title": "Appendix A — Appendix",
     "section": "",
-    "text": "Common commands",
+    "text": "Environment setup\nThis appendix is the quick-reference companion to the guide. Use it when you need to set up the repository, recall a SQL or Python pattern, validate a pipeline run, recover safely, or diagnose a failure. Run commands from the repository root unless a section says otherwise.\nCreate and activate the repository-specific Python environment:\nOn Windows PowerShell, activate the environment with:\nConfirm that the expected tools are available:\nRender the complete guide:\nRender only this appendix during editing:\nDeactivate the Python environment when finished:",
     "crumbs": [
       "Appendices",
       "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
     ]
   },
   {
-    "objectID": "999-appendix.html#common-commands",
-    "href": "999-appendix.html#common-commands",
+    "objectID": "999-appendix.html#environment-setup",
+    "href": "999-appendix.html#environment-setup",
     "title": "Appendix A — Appendix",
     "section": "",
-    "text": "python3.12 -m venv .venv\nsource .venv/bin/activate\npython -m pip install --upgrade pip\npython -m pip install -r requirements.txt\nquarto render",
+    "text": "python3.12 -m venv .venv\nsource .venv/bin/activate\npython -m pip install --upgrade pip\npython -m pip install -r requirements.txt\n\n.venv\\Scripts\\Activate.ps1\n\npython --version\npython -m pip --version\nquarto --version\ngit --version\n\nquarto render\n\nquarto render 999-appendix.qmd\n\ndeactivate",
     "crumbs": [
       "Appendices",
       "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
@@ -2676,7 +3446,150 @@
     "href": "999-appendix.html#repository-map",
     "title": "Appendix A — Appendix",
     "section": "Repository map",
-    "text": "Repository map\n\ndata/raw: immutable source extracts\ndata/processed: validated and transformed outputs\nsrc/data_pipelines: reusable pipeline package\nscripts/bash: repeatable command-line entry points\nscripts/sql: schema, query, join, aggregation, and extraction examples\ntests: automated pipeline checks\nresults and logs: run evidence and operational records",
+    "text": "Repository map\n\n\n\n\n\n\n\n\nPath\nPurpose\nVersion-control convention\n\n\n\n\ndata/raw/\nImmutable source extracts or local input samples\nKeep large or sensitive data out of Git\n\n\ndata/processed/\nValidated, transformed, analysis-ready outputs\nRetain .gitkeep; regenerate outputs\n\n\nsrc/data_pipelines/\nReusable pipeline package\nTrack source code\n\n\nscripts/python/\nFocused Python entry points and demonstrations\nTrack scripts\n\n\nscripts/bash/\nRepeatable command-line wrappers\nTrack executable scripts\n\n\nscripts/sql/\nSchema, query, join, aggregation, and extraction SQL\nTrack SQL files\n\n\ntests/\nUnit, integration, contract, and data-quality tests\nTrack tests and fixtures\n\n\nresults/\nSmall run summaries and generated evidence\nTrack only intentional artifacts\n\n\nresults/figures/\nFigures generated by chapter scripts\nTrack publication-ready figures\n\n\nlogs/\nLocal operational records\nRetain .gitkeep; ignore run logs\n\n\ndocs/\nRendered Quarto site\nGenerate through quarto render\n\n\n.github/workflows/\nContinuous-integration and delivery definitions\nTrack workflow files\n\n\n.githooks/\nRepository-specific Git hooks\nTrack hooks and activate locally\n\n\nlibrary/\nBibliography and supporting reference files\nTrack curated references\n\n\n\nActivate the repository hooks after cloning:\ngit config core.hooksPath .githooks\ngit config --get core.hooksPath",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#configuration-conventions",
+    "href": "999-appendix.html#configuration-conventions",
+    "title": "Appendix A — Appendix",
+    "section": "Configuration conventions",
+    "text": "Configuration conventions\nKeep configuration separate from code. Store safe defaults in tracked configuration files, local overrides in ignored files, and secrets in environment variables or a managed secret store.\nTypical environment variables include:\nexport PIPELINE_ENV=development\nexport DATABASE_URL='postgresql://user:password@localhost:5432/analytics'\nexport PIPELINE_RUN_ID='manual-2026-08-06'\nexport LOG_LEVEL=INFO\nRead configuration explicitly in Python:\nimport os\n\ndatabase_url = os.environ[\"DATABASE_URL\"]\npipeline_env = os.getenv(\"PIPELINE_ENV\", \"development\")\nlog_level = os.getenv(\"LOG_LEVEL\", \"INFO\")\nUse os.environ[...] for required values so the process fails immediately when one is missing. Use os.getenv(...) only when a safe default exists. Never print credentials, tokens, or complete connection strings to logs.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#sql-quick-reference",
+    "href": "999-appendix.html#sql-quick-reference",
+    "title": "Appendix A — Appendix",
+    "section": "SQL quick reference",
+    "text": "SQL quick reference\n\nInspect and filter rows\nSELECT customer_id, order_date, order_total\nFROM orders\nWHERE order_date &gt;= DATE '2026-01-01'\n  AND order_total &gt; 0\nORDER BY order_date DESC;\n\n\nAggregate at an explicit grain\nSELECT\n    customer_id,\n    COUNT(*) AS order_count,\n    SUM(order_total) AS lifetime_value\nFROM orders\nGROUP BY customer_id;\nState the intended grain before writing the query. In this example, the result must contain one row per customer_id.\n\n\nJoin without accidental duplication\nSELECT\n    o.order_id,\n    o.order_date,\n    c.customer_name\nFROM orders AS o\nJOIN customers AS c\n  ON o.customer_id = c.customer_id;\nBefore and after a join, compare row counts and key uniqueness. A one-to-many relationship legitimately expands rows; an unexpected expansion usually signals a duplicate key or an incomplete join condition.\n\n\nHandle missing values deliberately\nSELECT\n    order_id,\n    COALESCE(discount_amount, 0) AS discount_amount\nFROM orders\nWHERE cancelled_at IS NULL;\nNULL means unknown or absent; it is not equal to zero or an empty string. Use IS NULL and IS NOT NULL, not = NULL.\n\n\nDeduplicate deterministically\nWITH ranked AS (\n    SELECT\n        *,\n        ROW_NUMBER() OVER (\n            PARTITION BY customer_id\n            ORDER BY updated_at DESC, source_record_id DESC\n        ) AS row_number\n    FROM customer_updates\n)\nSELECT *\nFROM ranked\nWHERE row_number = 1;\nAlways include a stable tie-breaker. Without one, repeated executions may select different records.\n\n\nUse transactions for related writes\nBEGIN;\n\nDELETE FROM daily_sales\nWHERE sales_date = DATE '2026-08-05';\n\nINSERT INTO daily_sales (sales_date, store_id, revenue)\nSELECT sales_date, store_id, SUM(order_total)\nFROM orders\nWHERE sales_date = DATE '2026-08-05'\nGROUP BY sales_date, store_id;\n\nCOMMIT;\nIf validation fails before the commit, execute ROLLBACK;. Transaction behavior varies by database and statement type, so verify the target platform’s guarantees.\n\n\nParameterize values\ncursor.execute(\n    \"SELECT * FROM orders WHERE order_date &gt;= %s\",\n    (start_date,),\n)\nUse the placeholder style required by the database driver. Never construct SQL by concatenating untrusted values.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#python-pipeline-patterns",
+    "href": "999-appendix.html#python-pipeline-patterns",
+    "title": "Appendix A — Appendix",
+    "section": "Python pipeline patterns",
+    "text": "Python pipeline patterns\n\nUse a clear entry point\ndef main() -&gt; int:\n    \"\"\"Run the pipeline and return a process exit code.\"\"\"\n    extract()\n    transform()\n    load()\n    return 0\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n\n\nManage database resources safely\nfrom contextlib import closing\nimport sqlite3\n\nwith closing(sqlite3.connect(\"data/pipeline.db\")) as connection:\n    connection.execute(\"PRAGMA foreign_keys = ON\")\n    rows = connection.execute(\n        \"SELECT customer_id, customer_name FROM customers\"\n    ).fetchall()\nFor writes, use the driver’s transaction context or commit explicitly only after validation.\n\n\nLog events with useful context\nimport logging\n\nlogging.basicConfig(\n    level=\"INFO\",\n    format=\"%(asctime)s %(levelname)s %(name)s %(message)s\",\n)\nlogger = logging.getLogger(__name__)\n\nlogger.info(\n    \"pipeline_stage_complete stage=%s rows=%d run_id=%s\",\n    \"transform\",\n    row_count,\n    run_id,\n)\nUseful fields include run_id, environment, stage, source, target, row count, duration, and status. Avoid logging full records when they may contain personal or confidential data.\n\n\nWrite outputs atomically\nWrite to a temporary path, validate the result, and then replace the destination:\nfrom pathlib import Path\n\ntarget = Path(\"data/processed/customers.csv\")\ntemporary = target.with_suffix(\".csv.tmp\")\n\ndataframe.to_csv(temporary, index=False)\ntemporary.replace(target)\nAtomic replacement prevents readers from observing a partially written file on supported filesystems.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#data-contracts-and-quality-checks",
+    "href": "999-appendix.html#data-contracts-and-quality-checks",
+    "title": "Appendix A — Appendix",
+    "section": "Data contracts and quality checks",
+    "text": "Data contracts and quality checks\nA useful data contract identifies:\n\nthe dataset owner and consumers;\nthe row grain and primary or business key;\nrequired columns, data types, and nullability;\naccepted value domains and units;\nfreshness and completeness expectations;\nschema-evolution rules;\nhandling requirements for sensitive fields.\n\nApply inexpensive checks early and boundary-specific checks before publishing.\n\n\n\n\n\n\n\n\nCheck\nQuestion answered\nExample failure\n\n\n\n\nSchema\nAre expected columns and types present?\norder_total changes from numeric to text\n\n\nCompleteness\nAre required values populated?\nMissing customer_id\n\n\nUniqueness\nIs the declared key unique?\nDuplicate order_id\n\n\nValidity\nDo values obey domain rules?\nNegative quantity\n\n\nReferential integrity\nDo foreign keys resolve?\nOrder references an unknown customer\n\n\nFreshness\nIs the data recent enough?\nLatest partition is two days late\n\n\nVolume\nIs row count within a plausible range?\nSource delivers 5% of normal volume\n\n\nReconciliation\nDo source and target totals agree?\nRevenue changes during transformation\n\n\n\nA failed hard contract should stop publication. A warning-level check may allow the run to continue, but it must be visible and assigned for follow-up.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#pipeline-execution-checklist",
+    "href": "999-appendix.html#pipeline-execution-checklist",
+    "title": "Appendix A — Appendix",
+    "section": "Pipeline execution checklist",
+    "text": "Pipeline execution checklist\n\nBefore a run\n\nConfirm the environment and target database.\nConfirm that credentials are available without displaying them.\nRecord the logical data interval and a unique run identifier.\nVerify source availability, schema, and expected freshness.\nCheck storage capacity and target permissions.\nDecide whether the run is incremental, full, or a backfill.\nConfirm that concurrent runs cannot process the same interval unsafely.\n\n\n\nDuring a run\n\nRecord start and finish times for every stage.\nCapture input, rejected, and output row counts.\nPreserve checkpoints needed for safe retries.\nStop on contract-breaking errors.\nKeep logs structured and free of secrets.\n\n\n\nAfter a run\n\nValidate schema, uniqueness, completeness, and referential integrity.\nReconcile important counts and totals with the source.\nConfirm that the expected partition or watermark was published.\nRecord run status, duration, code version, and data interval.\nNotify downstream consumers when required.\nRetain evidence according to the project’s governance policy.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#testing-reference",
+    "href": "999-appendix.html#testing-reference",
+    "title": "Appendix A — Appendix",
+    "section": "Testing reference",
+    "text": "Testing reference\nRun the complete test suite:\npython -m pytest -q\nRun a specific test module or test:\npython -m pytest tests/test_transform.py -q\npython -m pytest tests/test_transform.py::test_rejects_negative_quantity -q\n\n\n\n\n\n\n\n\nTest level\nScope\nTypical assertion\n\n\n\n\nUnit\nOne transformation or helper\nKnown input produces known output\n\n\nSchema\nDataset structure\nColumns, types, and nullability match contract\n\n\nData quality\nDataset content\nKeys are unique and values are valid\n\n\nIntegration\nDatabase, API, or filesystem boundary\nComponent reads and writes correctly\n\n\nContract\nProducer-consumer interface\nRequired fields and semantics remain compatible\n\n\nEnd-to-end\nComplete representative flow\nPublished result is correct and observable\n\n\nRecovery\nRetry or backfill behavior\nRe-execution does not duplicate data\n\n\n\nGood fixtures are small, deterministic, representative, and explicit about edge cases. Include empty input, missing values, duplicated keys, boundary dates, malformed records, and late-arriving data where relevant.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#idempotency-retries-and-backfills",
+    "href": "999-appendix.html#idempotency-retries-and-backfills",
+    "title": "Appendix A — Appendix",
+    "section": "Idempotency, retries, and backfills",
+    "text": "Idempotency, retries, and backfills\nAn idempotent run produces the same intended target state when repeated for the same logical input. Common strategies include:\n\nupserting by a stable business key;\nreplacing a complete partition inside a transaction;\nrecording processed source identifiers;\nusing deterministic output names;\nadvancing a watermark only after successful publication.\n\nRetry only failures likely to be temporary, such as timeouts, rate limits, or brief service unavailability. Use bounded attempts with exponential backoff and jitter. Do not blindly retry invalid credentials, malformed input, contract violations, or deterministic transformation errors.\nFor a backfill:\n\nDefine the exact historical interval.\nEstimate source load, target load, runtime, and storage.\nIsolate backfill state from the normal schedule when necessary.\nProcess bounded partitions in a controlled order.\nApply the same contracts as a normal run.\nReconcile each partition and the complete interval.\nConfirm that current scheduled data was not overwritten or skipped.\nRecord who initiated the backfill, why, and what changed.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#observability-and-incident-triage",
+    "href": "999-appendix.html#observability-and-incident-triage",
+    "title": "Appendix A — Appendix",
+    "section": "Observability and incident triage",
+    "text": "Observability and incident triage\nMonitor the pipeline from three complementary views:\n\n\n\n\n\n\n\n\nSignal\nExamples\nDiagnostic value\n\n\n\n\nLogs\nStage transitions, validation failures, exception context\nExplains individual events\n\n\nMetrics\nDuration, rows processed, failure rate, data freshness\nReveals trends and threshold breaches\n\n\nLineage and run metadata\nInput version, code version, output partition\nConnects a result to its causes\n\n\n\nWhen an alert fires:\n\nIdentify the affected environment, pipeline, run, stage, and data interval.\nDetermine whether the failure is active and whether bad data was published.\nProtect consumers by pausing publication or marking affected data when required.\nInspect the first meaningful error and compare it with recent successful runs.\nClassify the problem as source, code, configuration, infrastructure, data quality, or downstream.\nRecover with the smallest safe action: retry, resume, roll back, or backfill.\nValidate the repaired output before declaring recovery.\nDocument the timeline, impact, cause, and preventive action.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#security-and-governance-checklist",
+    "href": "999-appendix.html#security-and-governance-checklist",
+    "title": "Appendix A — Appendix",
+    "section": "Security and governance checklist",
+    "text": "Security and governance checklist\n\nGrant each service account only the permissions it needs.\nSeparate development, staging, and production credentials.\nEncrypt sensitive data in transit and at rest.\nKeep secrets out of source control, logs, notebooks, and generated pages.\nMinimize collection and retention of personal data.\nMask or tokenize sensitive fields outside approved environments.\nRecord dataset ownership, classification, lineage, and retention rules.\nReview schema and access changes through version control.\nTest restoration procedures, not only backups.\nPreserve auditable evidence for production changes and backfills.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#troubleshooting-guide",
+    "href": "999-appendix.html#troubleshooting-guide",
+    "title": "Appendix A — Appendix",
+    "section": "Troubleshooting guide",
+    "text": "Troubleshooting guide\n\nThe virtual environment is active, but imports fail\nConfirm that python and pip resolve inside .venv, then install dependencies through that interpreter:\nwhich python\npython -m pip --version\npython -m pip install -r requirements.txt\nUsing python -m pip avoids installing into a different interpreter by mistake.\n\n\nA SQL query returns too many rows\nCheck the grain of each input, uniqueness of join keys, join predicates, and any many-to-many relationship. Compare these diagnostics before and after the join:\nSELECT COUNT(*) AS rows, COUNT(DISTINCT order_id) AS distinct_orders\nFROM orders;\n\n\nA pipeline succeeds but publishes no data\nInspect the configured interval, timezone, watermark, filters, source freshness, and rejected-row counts. Treat an unexpectedly empty output as a quality failure rather than automatic success.\n\n\nA retry creates duplicates\nThe write path is not idempotent for the chosen key or interval. Stop repeated retries, identify affected partitions, remove or supersede duplicates safely, and change the load strategy to an upsert or transactional partition replacement.\n\n\nA backfill overwrites current data\nPause the affected writer, identify which partitions changed, restore or rebuild those partitions from authoritative inputs, and reconcile them. Before resuming, separate backfill and scheduled-run state or enforce interval-level locking.\n\n\nQuarto reports a missing citation\nConfirm that the citation key exists in library/references.bib, that the bibliography path is configured in _quarto.yml, and that the key matches exactly. Section identifiers should use the {#sec-*} convention, such as {#sec-appendix}.\n\n\nGenerated figures do not appear\nRun the producing script, confirm that it writes to the path referenced by the chapter, and verify filename capitalization. Paths are case-sensitive in many continuous-integration environments even when they appear case-insensitive locally.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#exit-codes",
+    "href": "999-appendix.html#exit-codes",
+    "title": "Appendix A — Appendix",
+    "section": "Exit codes",
+    "text": "Exit codes\nCommand-line pipeline scripts should return a meaningful process status:\n\n\n\nExit code\nMeaning\n\n\n\n\n0\nSuccessful completion\n\n\n1\nGeneral pipeline failure\n\n\n2\nInvalid command-line arguments or configuration\n\n\n3\nSource unavailable or extraction failure\n\n\n4\nData-contract or transformation failure\n\n\n5\nLoad, publication, or reconciliation failure\n\n\n\nThese codes are a project convention, not a universal standard. Document any different scheme beside the entry point and keep it stable for schedulers and monitoring systems.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#glossary",
+    "href": "999-appendix.html#glossary",
+    "title": "Appendix A — Appendix",
+    "section": "Glossary",
+    "text": "Glossary\nBackfill\nA controlled run that processes a historical interval that was missed or must be recomputed.\nCheckpoint\nPersisted progress that allows a failed run to resume without repeating all completed work.\nData contract\nAn explicit agreement about a dataset’s structure, semantics, quality, ownership, and delivery expectations.\nData lineage\nThe recorded relationships among sources, transformations, runs, and outputs.\nIdempotency\nThe property that repeating an operation for the same logical input leaves the target in the same intended state.\nOrchestration\nCoordination of pipeline tasks, dependencies, schedules, retries, and operational state.\nPartition\nA bounded subset of data, commonly organized by date, region, or another processing key.\nRecovery point objective (RPO)\nThe maximum acceptable amount of data loss measured in time.\nRecovery time objective (RTO)\nThe target time for restoring a service or pipeline after disruption.\nSchema drift\nAn unplanned or unmanaged change to the structure or types of source data.\nWatermark\nA recorded boundary indicating how far incremental processing has progressed.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "999-appendix.html#final-release-check",
+    "href": "999-appendix.html#final-release-check",
+    "title": "Appendix A — Appendix",
+    "section": "Final release check",
+    "text": "Final release check\nBefore publishing a completed version of the guide:\npython -m pytest -q\nquarto render\ngit status --short\nConfirm that tests pass, the book renders without unresolved citations or cross-references, generated artifacts are current, no credentials or local datasets are staged, and all intentional source files are included in version control.",
     "crumbs": [
       "Appendices",
       "<span class='chapter-number'>A</span>  <span class='chapter-title'>Appendix</span>"
